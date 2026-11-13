@@ -52,6 +52,13 @@ export type TokenState = "ok" | "used" | "invalid";
 export const checkToken = createServerFn({ method: "POST" })
   .validator((d: unknown) => z.object({ token: z.string().min(8).max(200) }).parse(d))
   .handler(async ({ data }): Promise<{ state: TokenState }> => {
+    const { rateLimit, RateLimitedError } = await import("./core.server");
+    try {
+      await rateLimit("check", 120);
+    } catch (e) {
+      if (e instanceof RateLimitedError) return { state: "invalid" };
+      throw e;
+    }
     const { getSql } = await import("@/lib/db");
     const sql = await getSql();
     const rows = await sql<{ used: boolean }>`select used from pulse_invitees where token = ${data.token}`;
@@ -64,7 +71,9 @@ export const checkToken = createServerFn({ method: "POST" })
 const submitSchema = z.object({
   token: z.string().min(8).max(200).optional(),
   lang: z.enum(["en", "ar"]),
-  answers: z.record(z.string().max(40), z.union([z.number(), z.string().max(2000)])),
+  answers: z
+    .record(z.string().max(40), z.union([z.number(), z.string().max(2000)]))
+    .refine((o) => Object.keys(o).length <= 150, "too many answers"),
   department: z.string().max(80).optional(),
   tenure: z.string().max(20).optional(),
   level: z.string().max(20).optional(),
@@ -73,13 +82,20 @@ const submitSchema = z.object({
 
 export type SubmitResult =
   | { ok: true }
-  | { ok: false; reason: "closed" | "not_open_yet" | "token_required" | "token_used" | "token_invalid" | "incomplete" };
+  | { ok: false; reason: "closed" | "not_open_yet" | "token_required" | "token_used" | "token_invalid" | "incomplete" | "rate_limited" };
 
 export const submitResponse = createServerFn({ method: "POST" })
   .validator((d: unknown) => submitSchema.parse(d))
   .handler(async ({ data }): Promise<SubmitResult> => {
-    const { loadConfig, newId, todayIn } = await import("./core.server");
+    const { loadConfig, newId, todayIn, rateLimit, RateLimitedError } = await import("./core.server");
     const { getSql } = await import("@/lib/db");
+    try {
+      // Generous: a whole office can share one address. This stops scripts, not colleagues.
+      await rateLimit(data.token ? "submit-token" : "submit-open", data.token ? 200 : 120);
+    } catch (e) {
+      if (e instanceof RateLimitedError) return { ok: false, reason: "rate_limited" };
+      throw e;
+    }
     const config = await loadConfig();
     const today = todayIn(config.general.timezone);
     if (config.general.status !== "open") return { ok: false, reason: "closed" };

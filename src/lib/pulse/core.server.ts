@@ -25,6 +25,14 @@ export class BadRequestError extends Error {
   }
 }
 
+export class RateLimitedError extends Error {
+  readonly status = 429;
+  constructor() {
+    super("Too many requests");
+    this.name = "RateLimitedError";
+  }
+}
+
 export const newId = () => randomUUID();
 export const newToken = () => randomBytes(24).toString("base64url");
 export const newCode = () => randomBytes(18).toString("base64url");
@@ -221,4 +229,36 @@ export function clockIn(timezone: string): string {
   } catch {
     return new Date().toISOString().slice(11, 16);
   }
+}
+
+// ── Abuse protection ─────────────────────────────────────────────────────────
+
+function callerAddress(): string | null {
+  const request = getRequest();
+  if (!request) return null;
+  const h = request.headers;
+  const raw = h.get("x-vercel-forwarded-for") ?? h.get("x-real-ip") ?? h.get("x-forwarded-for");
+  return raw ? raw.split(",")[0].trim() || null : null;
+}
+
+/**
+ * Counts one call from the caller's network address within the current hour and throws
+ * RateLimitedError past `limit`. Only a salted one-way hash of the address is kept, per hour,
+ * and it is never linked to a response, an invitation or an account.
+ */
+export async function rateLimit(kind: string, limit: number): Promise<void> {
+  const address = callerAddress();
+  if (!address) return;
+  const sql = await getSql();
+  const hour = new Date();
+  hour.setUTCMinutes(0, 0, 0);
+  const bucket = createHash("sha256").update(`${secretKey().toString("hex")}|${kind}|${address}|${hour.toISOString()}`).digest("hex");
+  const rows = await sql.query<{ n: number }>(
+    `insert into pulse_ratelimit (bucket, hour, n) values ($1, $2::timestamptz, 1)
+     on conflict (bucket, hour) do update set n = pulse_ratelimit.n + 1
+     returning n`,
+    [bucket, hour.toISOString()],
+  );
+  if (Number(rows[0]?.n ?? 0) > limit) throw new RateLimitedError();
+  if (Math.random() < 0.02) await sql`delete from pulse_ratelimit where hour < now() - interval '3 hours'`;
 }

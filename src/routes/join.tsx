@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
@@ -22,6 +22,14 @@ function Join() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const next = `/join?code=${encodeURIComponent(code ?? "")}`;
+
+  // Lets a person holding a valid invitation create an account (see /api/auth sign-up gate).
+  useEffect(() => {
+    if (!code) return;
+    document.cookie = `pulse_invite=${encodeURIComponent(code)}; path=/; max-age=3600; SameSite=Lax${
+      window.location.protocol === "https:" ? "; Secure" : ""
+    }`;
+  }, [code]);
 
   return (
     <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 py-6">

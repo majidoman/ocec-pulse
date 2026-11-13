@@ -345,6 +345,8 @@ function SurveyPage() {
                 ? loc({ en: "Not sent. Your answers are still here. Check your connection and press Submit again.", ar: "لم تُرسل. إجاباتك ما زالت هنا. تحقق من الاتصال واضغط إرسال مجدداً." })
                 : failure === "incomplete"
                   ? loc({ en: "Some required questions are unanswered. Go back and check each page.", ar: "بعض الأسئلة المطلوبة بلا إجابة. عُد وراجع كل صفحة." })
+                  : failure === "rate_limited"
+                    ? loc({ en: "Too many submissions from this network just now. Wait a few minutes and press Submit again. Your answers are still here.", ar: "عدد كبير من الإرسالات من هذه الشبكة الآن. انتظر دقائق ثم اضغط إرسال مجدداً. إجاباتك ما زالت هنا." })
                   : failure === "closed" || failure === "not_open_yet"
                     ? loc({ en: "The census is not accepting answers right now.", ar: "التعداد لا يستقبل الإجابات الآن." })
                     : loc({ en: "This link cannot be used to submit.", ar: "لا يمكن الإرسال بهذا الرابط." })}
