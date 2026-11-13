@@ -2,6 +2,7 @@ import type { ReactNode, CSSProperties } from "react";
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
+import { EnvBanner } from "@/components/env-banner";
 import { Rehydrate } from "@/components/rehydrate";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useApp } from "@/lib/store";
@@ -41,6 +42,7 @@ function RootDocument() {
       </head>
       <body>
         <PreviewHostBridge />
+        <EnvBanner />
         <AuthProvider>
           <Rehydrate />
           <TooltipProvider delayDuration={200}>
