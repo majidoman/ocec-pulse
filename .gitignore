@@ -4,6 +4,7 @@ node_modules
 .tanstack
 .env
 .env.*
+!.env.example
 *.log
 .grok/preview.log
 .grok/status
