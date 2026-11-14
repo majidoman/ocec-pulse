@@ -39,6 +39,7 @@ import { Route as SettingsCalendarRouteImport } from './routes/settings/calendar
 import { Route as SettingsDangerRouteImport } from './routes/settings/danger'
 import { Route as SettingsDepartmentsRouteImport } from './routes/settings/departments'
 import { Route as SettingsEmailRouteImport } from './routes/settings/email'
+import { Route as SettingsHistoryRouteImport } from './routes/settings/history'
 import { Route as SettingsIntegrationsRouteImport } from './routes/settings/integrations'
 import { Route as SettingsRemindersRouteImport } from './routes/settings/reminders'
 import { Route as SettingsUsersRouteImport } from './routes/settings/users'
@@ -197,6 +198,11 @@ const SettingsEmailRoute = SettingsEmailRouteImport.update({
   path: '/email',
   getParentRoute: () => SettingsRouteRoute,
 } as any)
+const SettingsHistoryRoute = SettingsHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => SettingsRouteRoute,
+} as any)
 const SettingsIntegrationsRoute = SettingsIntegrationsRouteImport.update({
   id: '/integrations',
   path: '/integrations',
@@ -262,6 +268,7 @@ export interface FileRoutesByFullPath {
   '/settings/danger': typeof SettingsDangerRoute
   '/settings/departments': typeof SettingsDepartmentsRoute
   '/settings/email': typeof SettingsEmailRoute
+  '/settings/history': typeof SettingsHistoryRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/reminders': typeof SettingsRemindersRoute
   '/settings/users': typeof SettingsUsersRoute
@@ -299,6 +306,7 @@ export interface FileRoutesByTo {
   '/settings/danger': typeof SettingsDangerRoute
   '/settings/departments': typeof SettingsDepartmentsRoute
   '/settings/email': typeof SettingsEmailRoute
+  '/settings/history': typeof SettingsHistoryRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/reminders': typeof SettingsRemindersRoute
   '/settings/users': typeof SettingsUsersRoute
@@ -339,6 +347,7 @@ export interface FileRoutesById {
   '/settings/danger': typeof SettingsDangerRoute
   '/settings/departments': typeof SettingsDepartmentsRoute
   '/settings/email': typeof SettingsEmailRoute
+  '/settings/history': typeof SettingsHistoryRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/reminders': typeof SettingsRemindersRoute
   '/settings/users': typeof SettingsUsersRoute
@@ -380,6 +389,7 @@ export interface FileRouteTypes {
     | '/settings/danger'
     | '/settings/departments'
     | '/settings/email'
+    | '/settings/history'
     | '/settings/integrations'
     | '/settings/reminders'
     | '/settings/users'
@@ -417,6 +427,7 @@ export interface FileRouteTypes {
     | '/settings/danger'
     | '/settings/departments'
     | '/settings/email'
+    | '/settings/history'
     | '/settings/integrations'
     | '/settings/reminders'
     | '/settings/users'
@@ -456,6 +467,7 @@ export interface FileRouteTypes {
     | '/settings/danger'
     | '/settings/departments'
     | '/settings/email'
+    | '/settings/history'
     | '/settings/integrations'
     | '/settings/reminders'
     | '/settings/users'
@@ -693,6 +705,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsEmailRouteImport
       parentRoute: typeof SettingsRouteRoute
     }
+    '/settings/history': {
+      id: '/settings/history'
+      path: '/history'
+      fullPath: '/settings/history'
+      preLoaderRoute: typeof SettingsHistoryRouteImport
+      parentRoute: typeof SettingsRouteRoute
+    }
     '/settings/integrations': {
       id: '/settings/integrations'
       path: '/integrations'
@@ -792,6 +811,7 @@ interface SettingsRouteRouteChildren {
   SettingsDangerRoute: typeof SettingsDangerRoute
   SettingsDepartmentsRoute: typeof SettingsDepartmentsRoute
   SettingsEmailRoute: typeof SettingsEmailRoute
+  SettingsHistoryRoute: typeof SettingsHistoryRoute
   SettingsIntegrationsRoute: typeof SettingsIntegrationsRoute
   SettingsRemindersRoute: typeof SettingsRemindersRoute
   SettingsUsersRoute: typeof SettingsUsersRoute
@@ -807,6 +827,7 @@ const SettingsRouteRouteChildren: SettingsRouteRouteChildren = {
   SettingsDangerRoute: SettingsDangerRoute,
   SettingsDepartmentsRoute: SettingsDepartmentsRoute,
   SettingsEmailRoute: SettingsEmailRoute,
+  SettingsHistoryRoute: SettingsHistoryRoute,
   SettingsIntegrationsRoute: SettingsIntegrationsRoute,
   SettingsRemindersRoute: SettingsRemindersRoute,
   SettingsUsersRoute: SettingsUsersRoute,

@@ -189,6 +189,25 @@ export async function audit(actor: string, en: string, ar: string): Promise<void
   await sql`insert into pulse_audit (actor, action_en, action_ar) values (${actor}, ${en}, ${ar})`;
 }
 
+/**
+ * Like audit(), but if the same person's most recent entry has the same text and is under
+ * `minutes` old, its time is moved forward instead of adding a duplicate line (settings save
+ * as you type).
+ */
+export async function auditCoalesced(actor: string, en: string, ar: string, minutes = 15): Promise<void> {
+  const sql = await getSql();
+  const last = await sql<{ id: number; actor: string; action_en: string; recent: boolean }>`
+    select id, actor, action_en, (at > now() - make_interval(mins => ${minutes})) as recent
+    from pulse_audit order by id desc limit 1
+  `;
+  const row = last[0];
+  if (row && row.actor === actor && row.action_en === en && row.recent) {
+    await sql`update pulse_audit set at = now() where id = ${row.id}`;
+    return;
+  }
+  await audit(actor, en, ar);
+}
+
 export function actorOf(ctx: StaffContext): string {
   return ctx.email ?? ctx.name ?? ctx.userId;
 }

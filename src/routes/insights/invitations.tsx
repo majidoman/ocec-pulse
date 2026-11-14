@@ -3,18 +3,17 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { PageFrame } from "@/components/page-frame";
 import { Qr } from "@/components/qr";
+import { RosterUpload } from "@/components/roster-upload";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useCensus } from "@/lib/census";
 import {
   getInvitationOverview,
   retryFailedInvitations,
   sendCampaignBatch,
   startCampaign,
-  uploadRoster,
   type InvitationOverview,
 } from "@/lib/pulse/api";
 import { canEditSettings } from "@/lib/pulse/config";
@@ -24,26 +23,12 @@ import { useT } from "@/lib/store";
 
 export const Route = createFileRoute("/insights/invitations")({ component: InvitationsPage });
 
-/** Accepts "email", "department,email" or "email,department" per line. */
-function parseRoster(text: string) {
-  return text
-    .split(/\r?\n/)
-    .map((line) => line.split(/[,;\t]/).map((c) => c.trim().replace(/^"|"$/g, "")))
-    .map((cells) => {
-      const email = cells.find((c) => c.includes("@"));
-      if (!email) return null;
-      const dept = cells.find((c) => c && c !== email) ?? null;
-      return { email, departmentId: dept };
-    })
-    .filter((r): r is { email: string; departmentId: string | null } => r !== null);
-}
-
 function InvitationsPage() {
   const { t, loc } = useT();
   const { departments, currentRole, status, allowOpenLink } = useCensus();
+  const timezone = useSettings((st) => st.general.timezone);
   const [data, setData] = useState<InvitationOverview | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [paste, setPaste] = useState("");
   const [name, setName] = useState("");
   const [audience, setAudience] = useState("all");
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
@@ -70,27 +55,6 @@ function InvitationsPage() {
         </Card>
       </PageFrame>
     );
-  }
-
-  async function addPeople(text: string) {
-    const rows = parseRoster(text);
-    if (!rows.length) return toast.error(loc({ en: "No email addresses found.", ar: "لم يُعثر على عناوين بريد." }));
-    setBusy(true);
-    try {
-      const res = await uploadRoster({ data: { rows } });
-      toast.success(
-        loc({
-          en: `${res.added} added · ${res.skipped} already listed · ${res.invalid} invalid`,
-          ar: `أُضيف ${res.added} · موجود مسبقاً ${res.skipped} · غير صالح ${res.invalid}`,
-        }),
-      );
-      setPaste("");
-      await load();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setBusy(false);
-    }
   }
 
   async function send() {
@@ -150,34 +114,7 @@ function InvitationsPage() {
       </Card>
 
       <div className="grid gap-3 lg:grid-cols-2">
-        <Card>
-          <h2 className="mb-1 text-sm font-semibold text-ink">{loc({ en: "1 · Add people", ar: "١ · إضافة أشخاص" })}</h2>
-          <p className="mb-3 text-sm text-muted">
-            {loc({
-              en: "One person per line: the email, and optionally the department name. Paste from Excel or upload a CSV.",
-              ar: "شخص في كل سطر: البريد، واسم الإدارة اختيارياً. الصق من إكسل أو ارفع ملف CSV.",
-            })}
-          </p>
-          <Textarea rows={5} dir="ltr" placeholder={"name@company.com, Culinary & Banqueting\nname2@company.com"} value={paste} onChange={(e) => setPaste(e.target.value)} />
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button disabled={busy || !paste.trim()} onClick={() => void addPeople(paste)}>
-              {loc({ en: "Add to list", ar: "إضافة إلى القائمة" })}
-            </Button>
-            <label className="inline-flex h-11 cursor-pointer items-center rounded-md border border-border bg-paper px-4 text-sm">
-              {loc({ en: "Upload CSV", ar: "رفع CSV" })}
-              <input
-                type="file"
-                accept=".csv,.txt"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void f.text().then((text) => addPeople(text));
-                  e.target.value = "";
-                }}
-              />
-            </label>
-          </div>
-        </Card>
+        <RosterUpload departments={departments} timezone={timezone} lastUpload={data?.lastUpload ?? null} onDone={load} />
 
         <Card>
           <h2 className="mb-1 text-sm font-semibold text-ink">{loc({ en: "2 · Send personal links", ar: "٢ · إرسال الروابط الشخصية" })}</h2>

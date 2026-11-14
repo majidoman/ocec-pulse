@@ -23,6 +23,15 @@ Each release has a version, a date, what changed in plain words, and how to undo
   - The introduction now states the real confidentiality minimum from Settings (no longer a fixed "5"), explains that the survey is anonymous and not just confidential, and says who reads written comments.
   - The progress bar moved from the top to just above the Back/Next buttons, as a plain bar with no "page x of 15" counter.
   - Fix: question text no longer overlaps the top edge of its answer card.
+- **Staff list upload.**
+  - Accepts Excel (.xlsx) as well as CSV or pasted rows; a template can be downloaded from the page.
+  - A check screen appears before anything is saved: people ready to add, repeated rows, invalid emails, rows with no email, count per department.
+  - A department name that matches no department now blocks the save and is listed by name. The admin either fixes the file or ticks "Add them without a department". Before, such people were added silently with no department.
+  - Progress bar while saving; large lists are saved in parts of 250.
+  - Confirmation with the date and time (survey time zone), file name, who uploaded and the counts. The last upload stays visible on the Invitations page.
+  - One history entry per upload, however large.
+- **Change history.** New page under Settings listing every administrator action, newest first, with search. Settings saves are now recorded by the server with the section and field changed, and old → new for dates, numbers and on/off values. Repeated edits to the same field within 15 minutes are merged into one entry.
+- Uses the `read-excel-file` library, pinned to 9.3.14.
 
 ## [1.1.0] — 2026-11-13 — commit d5881fc
 Security hardening after the audit.

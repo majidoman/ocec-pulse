@@ -123,17 +123,43 @@ export interface RosterInput {
 }
 
 /** Add people to the invitation list. Existing emails keep their token and status. */
-export async function addInvitees(rows: RosterInput[], config: PulseConfig): Promise<{ added: number; skipped: number; invalid: number }> {
-  const sql = await getSql();
-  const known = new Set(config.departments.map((d) => d.id));
-  const byName = new Map<string, string>();
+/**
+ * Resolve a department cell from an uploaded staff list: its id, its English name (any case) or its
+ * Arabic name. Returns null when the cell is empty and undefined when it names no known department.
+ */
+export function matchDepartment(raw: string | null | undefined, config: PulseConfig): string | null | undefined {
+  const v = (raw ?? "").trim();
+  if (!v) return null;
   for (const d of config.departments) {
-    byName.set(d.name.en.trim().toLowerCase(), d.id);
-    byName.set(d.name.ar.trim(), d.id);
+    if (d.id === v || d.name.en.trim().toLowerCase() === v.toLowerCase() || d.name.ar.trim() === v) return d.id;
   }
-  let added = 0;
+  return undefined;
+}
+
+export interface AddInviteesResult {
+  added: number;
+  skipped: number;
+  invalid: number;
+  /** Rows added (or that would be added) with no department because the cell was empty. */
+  noDepartment: number;
+  /** Rows whose department name matched nothing. */
+  unmatched: number;
+  unmatchedNames: string[];
+  /** True when nothing was saved because of unmatched departments and allowUnmatched was false. */
+  blocked: boolean;
+}
+
+export async function addInvitees(
+  rows: RosterInput[],
+  config: PulseConfig,
+  opts: { allowUnmatched?: boolean } = {},
+): Promise<AddInviteesResult> {
+  const prepared: { email: string; dept: string | null }[] = [];
+  const unmatchedNames = new Map<string, number>();
   let skipped = 0;
   let invalid = 0;
+  let noDepartment = 0;
+  let unmatched = 0;
   const seen = new Set<string>();
   for (const row of rows.slice(0, 5000)) {
     const email = row.email.trim().toLowerCase();
@@ -146,18 +172,33 @@ export async function addInvitees(rows: RosterInput[], config: PulseConfig): Pro
       continue;
     }
     seen.add(email);
-    const raw = (row.departmentId ?? "").trim();
-    const dept = known.has(raw) ? raw : (byName.get(raw.toLowerCase()) ?? byName.get(raw) ?? null);
+    const dept = matchDepartment(row.departmentId, config);
+    if (dept === undefined) {
+      unmatched += 1;
+      const name = (row.departmentId ?? "").trim().slice(0, 80);
+      unmatchedNames.set(name, (unmatchedNames.get(name) ?? 0) + 1);
+    } else if (dept === null) {
+      noDepartment += 1;
+    }
+    prepared.push({ email, dept: dept ?? null });
+  }
+  const names = [...unmatchedNames.keys()].slice(0, 20);
+  if (unmatched > 0 && !opts.allowUnmatched) {
+    return { added: 0, skipped, invalid, noDepartment, unmatched, unmatchedNames: names, blocked: true };
+  }
+  const sql = await getSql();
+  let added = 0;
+  for (const r of prepared) {
     const res = await sql<{ id: string }>`
       insert into pulse_invitees (id, email, department_id, token)
-      values (${newId()}, ${email}, ${dept}, ${newToken()})
+      values (${newId()}, ${r.email}, ${r.dept}, ${newToken()})
       on conflict (email) do nothing
       returning id
     `;
     if (res.length) added += 1;
     else skipped += 1;
   }
-  return { added, skipped, invalid };
+  return { added, skipped, invalid, noDepartment, unmatched, unmatchedNames: names, blocked: false };
 }
 
 export async function inviteeStats(config: PulseConfig): Promise<InviteeStats> {

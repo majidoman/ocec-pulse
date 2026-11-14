@@ -20,6 +20,7 @@ import type {
   Results,
   StaffInviteRow,
   StaffRow,
+  RosterUploadSummary,
 } from "./results-types";
 
 const ROLES = ["super", "pc", "exec", "head", "viewer"] as const;
@@ -275,7 +276,13 @@ export const saveAdminConfig = createServerFn({ method: "POST" })
         `تغيير حد المجهولية: ${previous.anonymity.kFloor} ← ${next.anonymity.kFloor}`,
       );
     }
+    const { describeConfigChanges } = await import("./changes");
+    const change = describeConfigChanges(
+      previous as unknown as Record<string, unknown>,
+      next as unknown as Record<string, unknown>,
+    );
     await core.saveConfig(next);
+    if (change) await core.auditCoalesced(core.actorOf(staff), change.en.slice(0, 1000), change.ar.slice(0, 1000));
     return { ok: true, closedAt: next.general.closedAt ?? null };
   });
 
@@ -291,13 +298,14 @@ export const logAudit = createServerFn({ method: "POST" })
 
 export const listAudit = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
-  .handler(async ({ context }): Promise<AuditRow[]> => {
+  .validator((d: unknown) => z.object({ limit: z.number().int().min(1).max(1000).optional() }).optional().parse(d))
+  .handler(async ({ data, context }): Promise<AuditRow[]> => {
     const core = await import("./core.server");
     const { getSql } = await import("@/lib/db");
     await core.requireStaff(context.userId, core.ADMIN_ROLES);
     const sql = await getSql();
     const rows = await sql<{ id: number; at: string | Date; actor: string; action_en: string; action_ar: string }>`
-      select id, at, actor, action_en, action_ar from pulse_audit order by id desc limit 60
+      select id, at, actor, action_en, action_ar from pulse_audit order by at desc, id desc limit ${data?.limit ?? 60}
     `;
     return rows.map((r) => ({
       id: Number(r.id),
@@ -548,17 +556,73 @@ export const uploadRoster = createServerFn({ method: "POST" })
         rows: z
           .array(z.object({ email: z.string().max(300), departmentId: z.string().max(120).nullable().optional() }))
           .max(5000),
+        allowUnmatched: z.boolean().optional(),
+        /** Large lists arrive in parts; the last part records one dated summary and one audit entry. */
+        batch: z
+          .object({
+            id: z.string().min(8).max(64),
+            index: z.number().int().min(0),
+            count: z.number().int().min(1).max(100),
+            source: z.string().max(120),
+          })
+          .optional(),
       })
       .parse(d),
   )
-  .handler(async ({ data, context }): Promise<{ added: number; skipped: number; invalid: number }> => {
+  .handler(async ({ data, context }): Promise<AddInviteesResultView> => {
     const core = await import("./core.server");
     const mail = await import("./mail.server");
     const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
-    const res = await mail.addInvitees(data.rows, await core.loadConfig());
-    await core.audit(core.actorOf(staff), `Added ${res.added} people to the invitation list`, `إضافة ${res.added} إلى قائمة الدعوات`);
-    return res;
+    const res = await mail.addInvitees(data.rows, await core.loadConfig(), { allowUnmatched: data.allowUnmatched });
+    if (res.blocked) {
+      throw new core.BadRequestError(
+        `Department not recognised: ${res.unmatchedNames.join(", ")}. Fix the names in the file, or choose to add these people without a department.`,
+      );
+    }
+    const batch = data.batch ?? { id: core.newId(), index: 0, count: 1, source: "pasted list" };
+    type Running = RosterUploadSummary & { id: string };
+    const prev = await core.readSetting<Running>("roster_upload_running");
+    const run: Running =
+      prev && prev.id === batch.id && batch.index > 0
+        ? prev
+        : { id: batch.id, at: "", by: core.actorOf(staff), source: batch.source, rows: 0, added: 0, skipped: 0, invalid: 0, noDepartment: 0, unmatched: 0 };
+    run.rows += data.rows.length;
+    run.added += res.added;
+    run.skipped += res.skipped;
+    run.invalid += res.invalid;
+    run.noDepartment += res.noDepartment;
+    run.unmatched += res.unmatched;
+    let summary: RosterUploadSummary | null = null;
+    if (batch.index >= batch.count - 1) {
+      const { id: _id, ...rest } = run;
+      summary = { ...rest, at: new Date().toISOString() };
+      await core.writeSetting("roster_last_upload", summary);
+      await core.writeSetting("roster_upload_running", null);
+      await core.audit(
+        core.actorOf(staff),
+        `Uploaded staff list (${summary.source}): ${summary.added} added, ${summary.skipped} already listed, ${summary.invalid} invalid${
+          summary.noDepartment + summary.unmatched ? `, ${summary.noDepartment + summary.unmatched} without department` : ""
+        }`,
+        `رفع قائمة الموظفين (${summary.source}): أُضيف ${summary.added}، موجود مسبقاً ${summary.skipped}، غير صالح ${summary.invalid}${
+          summary.noDepartment + summary.unmatched ? `، بلا إدارة ${summary.noDepartment + summary.unmatched}` : ""
+        }`,
+      );
+    } else {
+      await core.writeSetting("roster_upload_running", run);
+    }
+    return { ...res, summary };
   });
+
+export type AddInviteesResultView = {
+  added: number;
+  skipped: number;
+  invalid: number;
+  noDepartment: number;
+  unmatched: number;
+  unmatchedNames: string[];
+  blocked: boolean;
+  summary: RosterUploadSummary | null;
+};
 
 export interface InvitationOverview {
   stats: InviteeStats;
@@ -566,6 +630,7 @@ export interface InvitationOverview {
   mail: { passwordSet: boolean; problem: string | null };
   surveyUrl: string;
   failures: { email: string; error: string }[];
+  lastUpload: RosterUploadSummary | null;
 }
 
 export const getInvitationOverview = createServerFn({ method: "GET" })
@@ -591,7 +656,9 @@ export const getInvitationOverview = createServerFn({ method: "GET" })
       select email, send_error from pulse_invitees where send_error is not null order by email limit 50
     `;
     const passwordSet = await mail.smtpPasswordSet();
+    const lastUpload = await core.readSetting<RosterUploadSummary>("roster_last_upload");
     return {
+      lastUpload,
       stats: await mail.inviteeStats(config),
       campaigns: campaigns.map((c) => ({
         id: c.id,

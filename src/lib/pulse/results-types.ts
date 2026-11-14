@@ -132,3 +132,16 @@ export interface AuditRow {
   en: string;
   ar: string;
 }
+
+/** The last completed staff-list upload, shown on the Invitations page. */
+export interface RosterUploadSummary {
+  at: string;
+  by: string;
+  source: string;
+  rows: number;
+  added: number;
+  skipped: number;
+  invalid: number;
+  noDepartment: number;
+  unmatched: number;
+}
