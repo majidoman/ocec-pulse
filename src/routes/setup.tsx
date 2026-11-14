@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { authClient } from "@/lib/auth/client";
+import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { claimOwner, completeSetup, getSetupState, type SetupState } from "@/lib/pulse/api";
 import { usePulse } from "@/lib/pulse/session";
 import { useSettings } from "@/lib/settings-store";
@@ -131,6 +132,7 @@ function SetupPage() {
 
 function AccountStep({ requiresCode, onDone }: { requiresCode: boolean; onDone: () => void }) {
   const { loc } = useT();
+  const { user, isPending } = useCurrentUserState();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -138,6 +140,54 @@ function AccountStep({ requiresCode, onDone }: { requiresCode: boolean; onDone: 
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function becomeOwner() {
+    await claimOwner({ data: { code: code.trim() || undefined } });
+    const me = await usePulse.getState().loadMe();
+    if (me?.role !== "super") throw new Error(loc({ en: "Could not make this account the owner.", ar: "تعذّر جعل هذا الحساب مالكاً." }));
+    await usePulse.getState().loadAdmin();
+    onDone();
+  }
+
+  if (isPending) return <div className="h-40 animate-pulse rounded-2xl bg-sand-2" aria-busy="true" />;
+
+  if (user) {
+    // Already signed in (e.g. arrived from the dashboard): just confirm, with the setup code if required.
+    return (
+      <Card>
+        <h1 className="font-display text-2xl text-ink">{loc({ en: "Make this account the owner", ar: "اجعل هذا الحساب مالكاً" })}</h1>
+        <p className="mt-1 text-sm text-muted" dir="auto">
+          {loc({ en: "Signed in as", ar: "مسجّل الدخول باسم" })} {user.primaryEmail ?? user.displayName}
+        </p>
+        <form
+          className="mt-5 grid gap-4"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setError(null);
+            setBusy(true);
+            try {
+              await becomeOwner();
+            } catch (err) {
+              setError(err instanceof Error ? err.message : loc({ en: "Something went wrong.", ar: "حدث خطأ." }));
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {requiresCode ? (
+            <div className="grid gap-1.5">
+              <Label htmlFor="code">{loc({ en: "Setup code", ar: "رمز الإعداد" })}</Label>
+              <Input id="code" dir="ltr" autoComplete="off" value={code} onChange={(e) => setCode(e.target.value)} />
+            </div>
+          ) : null}
+          {error ? <p className="text-sm text-score-crit" role="alert">{error}</p> : null}
+          <Button type="submit" disabled={busy}>
+            {loc({ en: "Make me the owner", ar: "اجعلني المالك" })}
+          </Button>
+        </form>
+      </Card>
+    );
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -156,11 +206,7 @@ function AccountStep({ requiresCode, onDone }: { requiresCode: boolean; onDone: 
           return;
         }
       }
-      await claimOwner({ data: { code: code.trim() || undefined } });
-      const me = await usePulse.getState().loadMe();
-      if (me?.role !== "super") throw new Error(loc({ en: "Could not make this account the owner.", ar: "تعذّر جعل هذا الحساب مالكاً." }));
-      await usePulse.getState().loadAdmin();
-      onDone();
+      await becomeOwner();
     } catch (err) {
       setError(err instanceof Error ? err.message : loc({ en: "Something went wrong.", ar: "حدث خطأ." }));
     } finally {
