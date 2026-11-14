@@ -3,6 +3,18 @@
 Every change that reaches the live site is listed here, newest first.
 Each release has a version, a date, what changed in plain words, and how to undo it.
 
+## [Package 0.1] — 2026-11-14 — branch `package` — for installation testing
+Self-hosted installation package (does not change the Vercel test or live sites).
+- Plain Node server build (`npm run build:selfhost`) with no Grok layer; runs on any server with Docker.
+- Docker Compose: app, PostgreSQL (not exposed), jobs (nightly backups kept 14 days, daily reminders), optional HTTPS (Caddy).
+- First-run setup wizard at `/setup`: setup code, owner account, organisation, departments, dates, finish. Locked once finished.
+- `SETUP_CODE` required to claim ownership on installed copies; `/api/health` for monitoring.
+- `install.ps1` (Windows) and `install.sh` (Linux): generate secrets, build, start, show the setup code.
+- `INSTALL.md`: install, wizard, backups, restore, update, HTTPS, security notes, troubleshooting.
+- Settings form labels now linked to their fields (screen readers).
+- Rate limit trusts only the proxy-added address.
+- Verified here: standalone build, wizard (11 checks), runtime rehearsal with the real entrypoint, backup and restore round trip, full test (65 checks). Not verified: the Docker image build itself and install.ps1 (no Docker Hub access or PowerShell here).
+
 ## [Unreleased] — on the test site, waiting for approval
 - Test-site banner: an amber "TEST ENVIRONMENT" strip appears on every page of the test site only.
 - This changelog and the release procedure (`RELEASING.md`).
