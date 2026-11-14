@@ -166,6 +166,23 @@ export async function requireStaff(userId: string, roles?: StaffRole[]): Promise
 
 export const ADMIN_ROLES: StaffRole[] = ["super", "pc"];
 
+// ── First-run setup code ─────────────────────────────────────────────────────
+// An installed copy sets SETUP_CODE (see .env). Until an owner exists, anyone who can reach the
+// address could otherwise claim it; with a code, only the installer can.
+
+export function setupCodeRequired(): boolean {
+  return (process.env.SETUP_CODE ?? "").trim().length > 0;
+}
+
+export async function setupCodeMatches(given: string | undefined): Promise<boolean> {
+  const expected = (process.env.SETUP_CODE ?? "").trim();
+  if (!expected) return true;
+  const { timingSafeEqual } = await import("node:crypto");
+  const a = createHash("sha256").update(expected).digest();
+  const b = createHash("sha256").update((given ?? "").trim()).digest();
+  return timingSafeEqual(a, b);
+}
+
 /** The first signed-in user becomes the owner. Fails once any administrator exists. */
 export async function claimOwnership(userId: string): Promise<void> {
   const sql = await getSql();

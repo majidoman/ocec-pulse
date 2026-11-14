@@ -86,7 +86,7 @@ export const t = {
     vsLast: "vs last year",
     pts: "pts",
     ofHouse: "of the house",
-    liveCycle: "Live cycle",
+    liveCycle: "Current survey",
     method: "Methodology",
     likert: "5-point Likert",
     census: "Census, not sample",

@@ -12,6 +12,9 @@ import { grokPwaPlugin } from "./scripts/grok-pwa-plugin.mjs";
 import { appEnvPlugin } from "./scripts/app-env-plugin.mjs";
 import { isMigrationFile } from "./scripts/migration-plan.mjs";
 
+/** Building the client-installed package (Docker) instead of the Vercel deployment. */
+const selfHosted = process.env.SELF_HOSTED === "1";
+
 /** The files `src/lib/db.ts` globs — same directory, same non-recursive scope. */
 function hasGlobbedMigrations(root: string): boolean {
   try {
@@ -164,18 +167,24 @@ export default defineConfig(({ command, isPreview }) => ({
     // Dev-only /__app-env, read by scripts/check-auth-invariant.mjs.
     appEnvPlugin(),
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
-    grokPwaPlugin(),
+    // Left out of the self-hosted package (SELF_HOSTED=1): no Grok layer at all.
+    ...(selfHosted ? [] : [grokPwaPlugin()]),
     tailwindcss(),
     tanstackStart(),
     ...(command === "build" || isPreview
       ? [
-          nitro({
-            preset: "vercel",
-            // Auto-registers server/middleware/* (the PWA install page +
-            // manifest + head-tag middleware). Nitro v3 defaults serverDir to
-            // false, so removing this silently unwires /?install=1 on deploys.
-            serverDir: "./server",
-          }),
+          nitro(
+            selfHosted
+              ? // Client-installed package: a plain Node server (.output/server/index.mjs), no Grok middleware.
+                { preset: "node-server" }
+              : {
+                  preset: "vercel",
+                  // Auto-registers server/middleware/* (the PWA install page +
+                  // manifest + head-tag middleware). Nitro v3 defaults serverDir to
+                  // false, so removing this silently unwires /?install=1 on deploys.
+                  serverDir: "./server",
+                },
+          ),
         ]
       : []),
     viteReact(),

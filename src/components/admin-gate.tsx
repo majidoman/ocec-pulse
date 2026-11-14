@@ -6,7 +6,7 @@ import { Mark } from "@/components/mark";
 import { Button } from "@/components/ui/button";
 import { UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
-import { claimOwner, runReminders } from "@/lib/pulse/api";
+import { runReminders } from "@/lib/pulse/api";
 import { canEditSettings } from "@/lib/pulse/config";
 import { usePulse } from "@/lib/pulse/session";
 import { useSettings } from "@/lib/settings-store";
@@ -49,7 +49,6 @@ export function AdminGate({ children, adminOnly = false }: { children: ReactNode
   const me = usePulse((s) => s.me);
   const meState = usePulse((s) => s.meState);
   const source = useSettings((s) => s.source);
-  const [claiming, setClaiming] = useState(false);
   const [adminError, setAdminError] = useState<string | null>(null);
   const userId = user?.id ?? null;
 
@@ -103,23 +102,9 @@ export function AdminGate({ children, adminOnly = false }: { children: ReactNode
             })}
           </p>
           <p className="text-sm text-ink">{me.email ?? me.name ?? ""}</p>
-          <Button
-            disabled={claiming}
-            onClick={async () => {
-              setClaiming(true);
-              try {
-                await claimOwner();
-                const who = await usePulse.getState().loadMe();
-                if (who?.role) await usePulse.getState().loadAdmin();
-              } catch (err) {
-                toast.error(err instanceof Error ? err.message : "Could not claim ownership");
-              } finally {
-                setClaiming(false);
-              }
-            }}
-          >
-            {loc({ en: "Claim ownership", ar: "تولّي الملكية" })}
-          </Button>
+          <a href="/setup" className="inline-flex h-11 items-center justify-center rounded-md bg-ink px-5 text-sm font-medium text-paper">
+            {loc({ en: "Start setup", ar: "ابدأ الإعداد" })}
+          </a>
           <UserButton />
         </Shell>
       );

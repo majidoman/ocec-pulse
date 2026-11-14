@@ -203,9 +203,37 @@ export const getMe = createServerFn({ method: "GET" })
 
 export const claimOwner = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
+  .validator((d: unknown) => z.object({ code: z.string().max(200).optional() }).optional().parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const core = await import("./core.server");
+    // Installed copies set SETUP_CODE: only the person holding it can become the owner.
+    if (!(await core.setupCodeMatches(data?.code))) throw new core.ForbiddenError("The setup code is not correct.");
+    await core.claimOwnership(context.userId);
+    return { ok: true };
+  });
+
+export interface SetupState {
+  /** No administrator yet: the first-run wizard starts from the account step. */
+  needsOwner: boolean;
+  /** The installer set a setup code that must be entered to claim ownership. */
+  requiresCode: boolean;
+  /** The owner pressed Finish in the wizard. */
+  completed: boolean;
+}
+
+export const getSetupState = createServerFn({ method: "GET" }).handler(async (): Promise<SetupState> => {
+  const core = await import("./core.server");
+  const done = await core.readSetting<{ at: string }>("setup_completed");
+  return { needsOwner: (await core.staffCount()) === 0, requiresCode: core.setupCodeRequired(), completed: !!done };
+});
+
+export const completeSetup = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .handler(async ({ context }): Promise<{ ok: true }> => {
     const core = await import("./core.server");
-    await core.claimOwnership(context.userId);
+    const staff = await core.requireStaff(context.userId, ["super"]);
+    await core.writeSetting("setup_completed", { at: new Date().toISOString(), by: core.actorOf(staff) });
+    await core.audit(core.actorOf(staff), "Finished the setup wizard", "أنهى معالج الإعداد");
     return { ok: true };
   });
 
