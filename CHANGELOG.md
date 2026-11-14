@@ -10,7 +10,7 @@ Each release has a version, a date, what changed in plain words, and how to undo
   - New settings: *Short name* (Settings → General, e.g. "OCEC") and *Product name* (Settings → Branding, e.g. "OCEC Pulse").
   - Every text, question, email and export that named OCEC now uses `{org}` (short name), `{orgName}` (full name) or `{app}` (product name), filled in from settings in both languages. Editors can use the same placeholders in their own questions and emails.
   - New installs start neutral ("Pulse", "your organisation") until the client's names are entered.
-  - App icon, install manifest and link-preview image replaced with neutral versions; the app no longer uses Grok's manifest or icon files.
+  - App icon, install manifest and link-preview image replaced with neutral versions. Known leftover: the Grok platform layer still adds its own manifest and a grey Grok placeholder icon link to every page (ours comes first). Removing that means editing the Grok platform files and ends the option of moving back to Grok.
   - **Release step:** after this goes live, enter OCEC's full name, short name and product name in Settings once, or the live site shows the neutral names.
   - Undo: roll back in Vercel. No database change.
 - **Arabic wording:** "تعداد" (census) replaced by "استبيان" (survey) on every screen, email and setting default (39 places). Where the point is that everyone is asked, it reads "استبيان شامل لا عيّنة".
