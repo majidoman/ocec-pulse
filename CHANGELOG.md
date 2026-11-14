@@ -15,6 +15,10 @@ Each release has a version, a date, what changed in plain words, and how to undo
   - Undo: roll back in Vercel. No database change.
 - **Arabic wording:** "تعداد" (census) replaced by "استبيان" (survey) on every screen, email and setting default (39 places). Where the point is that everyone is asked, it reads "استبيان شامل لا عيّنة".
   - Note: Arabic email and privacy texts already saved in Settings keep their old wording until edited there.
+- **Test sign-in without a password (test site only).** A secret link signs you in as a test account for any role (super admin, People & Culture, executive, department head, viewer) so each view can be checked quickly.
+  - Works only where the `TEST_ACCESS_KEY` setting exists; it is set on the test environment only. The live site refuses it even with the key (checked: 404).
+  - Rate-limited and written to the audit log. Test accounts are named `tester-<role>@test-access.local`.
+  - Undo: delete the `TEST_ACCESS_KEY` setting in Vercel (link stops working at once on the next deploy) or roll back.
 
 ## [1.1.0] — 2026-11-13 — commit d5881fc
 Security hardening after the audit.

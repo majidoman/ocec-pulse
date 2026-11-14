@@ -15,6 +15,7 @@ import { Route as InsightsRouteRouteImport } from './routes/insights/route'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
+import { Route as ApiTestAccessRouteImport } from './routes/api/test-access'
 import { Route as InsightsIndexRouteImport } from './routes/insights/index'
 import { Route as InsightsActionsRouteImport } from './routes/insights/actions'
 import { Route as InsightsAiRouteImport } from './routes/insights/ai'
@@ -74,6 +75,11 @@ const LoginRoute = LoginRouteImport.update({
 const SettingsRouteRoute = SettingsRouteRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTestAccessRoute = ApiTestAccessRouteImport.update({
+  id: '/api/test-access',
+  path: '/api/test-access',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InsightsIndexRoute = InsightsIndexRouteImport.update({
@@ -234,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/api/test-access': typeof ApiTestAccessRoute
   '/insights/actions': typeof InsightsActionsRoute
   '/insights/ai': typeof InsightsAiRoute
   '/insights/benchmarks': typeof InsightsBenchmarksRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/api/test-access': typeof ApiTestAccessRoute
   '/insights/actions': typeof InsightsActionsRoute
   '/insights/ai': typeof InsightsAiRoute
   '/insights/benchmarks': typeof InsightsBenchmarksRoute
@@ -309,6 +317,7 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/api/test-access': typeof ApiTestAccessRoute
   '/insights/actions': typeof InsightsActionsRoute
   '/insights/ai': typeof InsightsAiRoute
   '/insights/benchmarks': typeof InsightsBenchmarksRoute
@@ -349,6 +358,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/join'
     | '/login'
+    | '/api/test-access'
     | '/insights/actions'
     | '/insights/ai'
     | '/insights/benchmarks'
@@ -385,6 +395,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/join'
     | '/login'
+    | '/api/test-access'
     | '/insights/actions'
     | '/insights/ai'
     | '/insights/benchmarks'
@@ -423,6 +434,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/join'
     | '/login'
+    | '/api/test-access'
     | '/insights/actions'
     | '/insights/ai'
     | '/insights/benchmarks'
@@ -462,6 +474,7 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
+  ApiTestAccessRoute: typeof ApiTestAccessRoute
   SurveyCompleteRoute: typeof SurveyCompleteRoute
   SurveyIndexRoute: typeof SurveyIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -510,6 +523,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/test-access': {
+      id: '/api/test-access'
+      path: '/api/test-access'
+      fullPath: '/api/test-access'
+      preLoaderRoute: typeof ApiTestAccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/insights/': {
@@ -804,6 +824,7 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,
+  ApiTestAccessRoute: ApiTestAccessRoute,
   SurveyCompleteRoute: SurveyCompleteRoute,
   SurveyIndexRoute: SurveyIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
