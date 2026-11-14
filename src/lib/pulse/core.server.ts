@@ -273,8 +273,14 @@ function callerAddress(): string | null {
   const request = getRequest();
   if (!request) return null;
   const h = request.headers;
-  const raw = h.get("x-vercel-forwarded-for") ?? h.get("x-real-ip") ?? h.get("x-forwarded-for");
-  return raw ? raw.split(",")[0].trim() || null : null;
+  // Vercel's own header and X-Real-IP are set by the platform/proxy. In X-Forwarded-For the visitor can
+  // prepend fake entries, so trust only the last one (added by the proxy in front of the app).
+  const trusted = h.get("x-vercel-forwarded-for") ?? h.get("x-real-ip");
+  if (trusted) return trusted.split(",")[0].trim() || null;
+  const xff = h.get("x-forwarded-for");
+  if (!xff) return null;
+  const parts = xff.split(",").map((p) => p.trim()).filter(Boolean);
+  return parts[parts.length - 1] ?? null;
 }
 
 /**
