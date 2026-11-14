@@ -32,6 +32,7 @@ Each release has a version, a date, what changed in plain words, and how to undo
   - One history entry per upload, however large.
 - **Change history.** New page under Settings listing every administrator action, newest first, with search. Settings saves are now recorded by the server with the section and field changed, and old → new for dates, numbers and on/off values. Repeated edits to the same field within 15 minutes are merged into one entry.
 - Uses the `read-excel-file` library, pinned to 9.3.14.
+- Settings → General: clearer labels. "Cycle" is now **Survey name** (with an example), "Census status" is **Survey status**, "Field dates" is **Survey open and close dates**.
 
 ## [1.1.0] — 2026-11-13 — commit d5881fc
 Security hardening after the audit.

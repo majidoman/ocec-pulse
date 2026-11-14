@@ -32,7 +32,7 @@ function GeneralPage() {
       </Card>
       <Card className="grid gap-4 md:grid-cols-2">
         <Field
-          label={loc({ en: "Census status", ar: "حالة الاستبيان" })}
+          label={loc({ en: "Survey status", ar: "حالة الاستبيان" })}
           hint={loc({
             en: "Answers are accepted only while the status is Open and today is inside the field dates.",
             ar: "تُقبل الإجابات فقط حين تكون الحالة «مفتوح» واليوم ضمن تواريخ الميدان.",
@@ -46,7 +46,7 @@ function GeneralPage() {
           </select>
         </Field>
         <Field
-          label={loc({ en: "Field dates", ar: "تواريخ الميدان" })}
+          label={loc({ en: "Survey open and close dates", ar: "تاريخا فتح الاستبيان وإغلاقه" })}
           hint={loc({ en: "Set under Delivery calendar.", ar: "تُضبط من تقويم التنفيذ." })}
         >
           <Link to="/settings/calendar" className="flex h-11 items-center rounded-md border border-border bg-paper px-3 text-sm text-ink">
@@ -77,8 +77,16 @@ function GeneralPage() {
           onChange={(v) => patch({ orgShort: { ...g.orgShort, en: v } })}
         />
         <TextField label="الاسم المختصر (AR)" value={g.orgShort.ar} onChange={(v) => patch({ orgShort: { ...g.orgShort, ar: v } })} />
-        <TextField label="Cycle (EN)" value={g.cycleName.en} onChange={(v) => patch({ cycleName: { ...g.cycleName, en: v } })} />
-        <TextField label="الدورة (AR)" value={g.cycleName.ar} onChange={(v) => patch({ cycleName: { ...g.cycleName, ar: v } })} />
+        <TextField
+          label="Survey name (EN)"
+          value={g.cycleName.en}
+          hint={loc({
+            en: "Shown to staff at the top of the survey and in emails, e.g. Staff Survey 2026.",
+            ar: "يظهر للموظفين أعلى الاستبيان وفي الرسائل، مثل: استبيان الموظفين 2026.",
+          })}
+          onChange={(v) => patch({ cycleName: { ...g.cycleName, en: v } })}
+        />
+        <TextField label="اسم الاستبيان (AR)" value={g.cycleName.ar} onChange={(v) => patch({ cycleName: { ...g.cycleName, ar: v } })} />
         <TextField
           label={loc({ en: "Public address of this app", ar: "العنوان العام للتطبيق" })}
           value={g.publicUrl}
