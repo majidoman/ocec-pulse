@@ -29,7 +29,7 @@ One package, installed on a server the client controls. Everything runs in Docke
 ### Windows test machine
 1. Install and start **Docker Desktop**; wait for "Engine running".
 2. Unzip the package to a folder, e.g. `C:\Pulse`.
-3. Right-click `install.ps1` → **Run with PowerShell**.
+3. Double-click **`Install.cmd`** (or right-click `install.ps1` → **Run with PowerShell**).
    If Windows blocks it, open PowerShell in the folder and run:
    `powershell -ExecutionPolicy Bypass -File .\install.ps1`
 4. Press Enter to accept `http://localhost:8080`.
