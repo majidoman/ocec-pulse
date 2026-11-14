@@ -263,7 +263,7 @@ export const saveAdminConfig = createServerFn({ method: "POST" })
       await core.audit(
         core.actorOf(staff),
         `Changed census status: ${previous.general.status} → ${next.general.status}`,
-        `تغيير حالة التعداد: ${previous.general.status} ← ${next.general.status}`,
+        `تغيير حالة الاستبيان: ${previous.general.status} ← ${next.general.status}`,
       );
     } else {
       next.general.closedAt = previous.general.closedAt;
@@ -463,9 +463,9 @@ export const inviteStaff = createServerFn({ method: "POST" })
           mail.bilingual(
             data.email,
             `${org.en} — access to the census results`,
-            `${org.ar} — صلاحية الاطلاع على نتائج التعداد`,
+            `${org.ar} — صلاحية الاطلاع على نتائج الاستبيان`,
             `You have been invited to the ${org.en} census workspace.\n\nOpen this link, sign in or create an account, and your access is activated:\n\n${link}\n\nThe link works once.`,
-            `تمت دعوتك إلى مساحة تعداد ${org.ar}.\n\nافتح هذا الرابط وسجّل الدخول أو أنشئ حساباً ليُفعَّل وصولك:\n\n${link}\n\nيعمل الرابط مرة واحدة.`,
+            `تمت دعوتك إلى مساحة استبيان ${org.ar}.\n\nافتح هذا الرابط وسجّل الدخول أو أنشئ حساباً ليُفعَّل وصولك:\n\n${link}\n\nيعمل الرابط مرة واحدة.`,
           ),
         ]);
         emailed = Boolean(res[0]?.ok);

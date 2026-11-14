@@ -70,7 +70,7 @@ function Join() {
             <p className="text-sm leading-relaxed text-muted">
               {loc({
                 en: "Activate access to the census results for this account. The link works once.",
-                ar: "فعّل صلاحية الاطلاع على نتائج التعداد لهذا الحساب. يعمل الرابط مرة واحدة.",
+                ar: "فعّل صلاحية الاطلاع على نتائج الاستبيان لهذا الحساب. يعمل الرابط مرة واحدة.",
               })}
             </p>
             <UserButton />

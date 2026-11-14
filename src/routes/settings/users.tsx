@@ -17,7 +17,7 @@ export const Route = createFileRoute("/settings/users")({ component: UsersPage }
 
 const ROLE_HELP: Record<StaffRole, { en: string; ar: string }> = {
   super: { en: "Everything, including deleting data and managing admins.", ar: "كل شيء، بما فيه حذف البيانات وإدارة المديرين." },
-  pc: { en: "Runs the census: settings, invitations, all results.", ar: "يدير التعداد: الإعدادات والدعوات وكل النتائج." },
+  pc: { en: "Runs the census: settings, invitations, all results.", ar: "يدير الاستبيان: الإعدادات والدعوات وكل النتائج." },
   exec: { en: "Reads all results and comments. Cannot change anything.", ar: "يقرأ كل النتائج والتعليقات دون تعديل." },
   head: { en: "Reads house totals and their own department only.", ar: "يقرأ مجاميع البيت وإدارته فقط." },
   viewer: { en: "Reads results without comments.", ar: "يقرأ النتائج دون التعليقات." },

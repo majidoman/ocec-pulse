@@ -191,7 +191,7 @@ function InvitationsPage() {
           ) : null}
           {status !== "open" ? (
             <div className="mb-3 rounded-xl bg-sand-2 px-4 py-3 text-sm text-ink">
-              {loc({ en: "The census is not open. Open it in Settings → General before sending.", ar: "التعداد غير مفتوح. افتحه من الإعدادات ← عام قبل الإرسال." })}
+              {loc({ en: "The census is not open. Open it in Settings → General before sending.", ar: "الاستبيان غير مفتوح. افتحه من الإعدادات ← عام قبل الإرسال." })}
             </div>
           ) : null}
           <div className="flex flex-col gap-3">

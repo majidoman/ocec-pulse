@@ -177,7 +177,7 @@ const defaultReminders: ReminderRule[] = [
     enabled: true,
     sent: 0,
     bodyEn: "A quiet note: the census is still open, still confidential, still about twelve minutes.",
-    bodyAr: "ملاحظة هادئة: التعداد ما زال مفتوحاً وسرياً، وما زال نحو اثنتي عشرة دقيقة.",
+    bodyAr: "ملاحظة هادئة: الاستبيان ما زال مفتوحاً وسرياً، وما زال نحو اثنتي عشرة دقيقة.",
   },
   {
     id: "d7",
@@ -195,7 +195,7 @@ const defaultReminders: ReminderRule[] = [
     enabled: true,
     sent: 0,
     bodyEn: "Last week of the census. Five minutes on a phone is enough to start.",
-    bodyAr: "الأسبوع الأخير من التعداد. خمس دقائق على الهاتف تكفي للبدء.",
+    bodyAr: "الأسبوع الأخير من الاستبيان. خمس دقائق على الهاتف تكفي للبدء.",
   },
 ];
 
@@ -241,7 +241,7 @@ export function defaultConfig(): PulseConfig {
       noExternalTraining: true,
       privacyNotice: {
         en: "This census is anonymous. We do not store your name, email, IP address or device fingerprint with your answers. Results are never shown for groups smaller than five people. If you received a personal link, it is used only to make sure each person answers once; it is not stored with your response.",
-        ar: "هذا التعداد مجهول الهوية. لا نحتفظ باسمك أو بريدك أو عنوان جهازك مع إجاباتك. لا تُعرض النتائج لمجموعات أقل من خمسة أشخاص. إن وصلك رابط شخصي فهو يُستخدم فقط لضمان إجابة واحدة لكل شخص ولا يُحفظ مع إجابتك.",
+        ar: "هذا الاستبيان مجهول الهوية. لا نحتفظ باسمك أو بريدك أو عنوان جهازك مع إجاباتك. لا تُعرض النتائج لمجموعات أقل من خمسة أشخاص. إن وصلك رابط شخصي فهو يُستخدم فقط لضمان إجابة واحدة لكل شخص ولا يُحفظ مع إجابتك.",
       },
     },
     email: {
@@ -258,7 +258,7 @@ export function defaultConfig(): PulseConfig {
       bodyEn:
         "Hello,\n\nThis is your confidential link for the {{org_name}} employee census. It cannot be traced to your answers. The census closes {{close_date}}.\n\n{{survey_link}}",
       bodyAr:
-        "مرحباً،\n\nهذا رابطك السري لتعداد موظفي {{org_name}}. لا يمكن ربطه بإجاباتك. يُغلق التعداد في {{close_date}}.\n\n{{survey_link}}",
+        "مرحباً،\n\nهذا رابطك السري لاستبيان موظفي {{org_name}}. لا يمكن ربطه بإجاباتك. يُغلق الاستبيان في {{close_date}}.\n\n{{survey_link}}",
     },
     reminderCfg: { enabled: true, quietStart: "21:00", quietEnd: "07:00", rules: defaultReminders },
     integrations: { webhook: "" },

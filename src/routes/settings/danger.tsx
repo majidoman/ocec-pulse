@@ -62,7 +62,7 @@ function DangerPage() {
         </p>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" disabled={status === "open"} onClick={() => patchGeneral({ status: "open" })}>
-            {status === "draft" ? loc({ en: "Open census", ar: "فتح التعداد" }) : t("reopenCensus")}
+            {status === "draft" ? loc({ en: "Open census", ar: "فتح الاستبيان" }) : t("reopenCensus")}
           </Button>
           <Button variant="outline" disabled={status === "closed"} onClick={() => patchGeneral({ status: "closed" })}>
             {t("closeCensus")}

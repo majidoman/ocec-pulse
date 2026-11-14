@@ -7,7 +7,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "What is {app} and Voice 2026?",
     },
     a: {
-      ar: "{app} منصة مشاركة الموظفين في {orgName}. صوت ٢٠٢٦ هو تعداد سري لكل من يعمل في البيت — من المطابخ إلى الطابق التنفيذي — لمعرفة ما يقوّي المشاركة وما يعطّلها.",
+      ar: "{app} منصة مشاركة الموظفين في {orgName}. صوت ٢٠٢٦ هو استبيان سري لكل من يعمل في البيت — من المطابخ إلى الطابق التنفيذي — لمعرفة ما يقوّي المشاركة وما يعطّلها.",
       en: "{app} is the employee-engagement platform for {orgName}. Voice 2026 is a confidential census of everyone who makes the house work — kitchens to the executive floor.",
     },
   },

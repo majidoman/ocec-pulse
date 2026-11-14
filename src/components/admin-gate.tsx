@@ -95,7 +95,7 @@ export function AdminGate({ children, adminOnly = false }: { children: ReactNode
     if (me.canClaim) {
       return (
         <Shell>
-          <p className="font-display text-3xl text-ink">{loc({ en: "Set up this census", ar: "إعداد هذا التعداد" })}</p>
+          <p className="font-display text-3xl text-ink">{loc({ en: "Set up this census", ar: "إعداد هذا الاستبيان" })}</p>
           <p className="text-sm leading-relaxed text-muted">
             {loc({
               en: "No administrator exists yet. The first person to claim ownership becomes the super admin and can invite everyone else. Do this now, before sharing the address with anyone.",
@@ -130,13 +130,13 @@ export function AdminGate({ children, adminOnly = false }: { children: ReactNode
         <p className="text-sm leading-relaxed text-muted">
           {loc({
             en: "You are signed in, but this account has not been given access to the census results. Ask People & Culture for an invitation link, then open it while signed in.",
-            ar: "أنت مسجّل الدخول، لكن هذا الحساب لم يُمنح صلاحية الاطلاع على نتائج التعداد. اطلب رابط دعوة من الأفراد والثقافة وافتحه وأنت مسجّل الدخول.",
+            ar: "أنت مسجّل الدخول، لكن هذا الحساب لم يُمنح صلاحية الاطلاع على نتائج الاستبيان. اطلب رابط دعوة من الأفراد والثقافة وافتحه وأنت مسجّل الدخول.",
           })}
         </p>
         <p className="text-sm text-ink">{me.email ?? ""}</p>
         <div className="flex flex-wrap items-center gap-3">
           <Button asChild variant="outline">
-            <Link to="/">{loc({ en: "Back to the census", ar: "العودة إلى التعداد" })}</Link>
+            <Link to="/">{loc({ en: "Back to the census", ar: "العودة إلى الاستبيان" })}</Link>
           </Button>
           <UserButton />
         </div>
@@ -146,7 +146,7 @@ export function AdminGate({ children, adminOnly = false }: { children: ReactNode
   if (adminError) {
     return (
       <Shell>
-        <p className="font-display text-2xl text-ink">{loc({ en: "Could not load the census", ar: "تعذّر تحميل التعداد" })}</p>
+        <p className="font-display text-2xl text-ink">{loc({ en: "Could not load the census", ar: "تعذّر تحميل الاستبيان" })}</p>
         <p className="text-sm text-muted">{adminError}</p>
         <Button onClick={() => window.location.reload()}>{loc({ en: "Reload", ar: "إعادة التحميل" })}</Button>
       </Shell>
@@ -160,7 +160,7 @@ export function AdminGate({ children, adminOnly = false }: { children: ReactNode
         <p className="text-sm leading-relaxed text-muted">
           {loc({
             en: "Your role can read results but cannot change the census.",
-            ar: "دورك يسمح بقراءة النتائج دون تعديل التعداد.",
+            ar: "دورك يسمح بقراءة النتائج دون تعديل الاستبيان.",
           })}
         </p>
         <Button asChild>

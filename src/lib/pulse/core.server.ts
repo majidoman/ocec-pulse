@@ -179,7 +179,7 @@ export async function claimOwnership(userId: string): Promise<void> {
     returning user_id
   `;
   if (!rows.length) throw new ForbiddenError("An administrator already exists. Ask them for an invitation.");
-  await audit(profile.email ?? userId, "Claimed ownership of the census", "تولّى ملكية التعداد");
+  await audit(profile.email ?? userId, "Claimed ownership of the census", "تولّى ملكية الاستبيان");
 }
 
 // ── Audit ────────────────────────────────────────────────────────────────────

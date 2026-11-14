@@ -25,7 +25,7 @@ function AnonPage() {
           label={loc({ en: "Delete the invitation list (days after close)", ar: "حذف قائمة الدعوات (أيام بعد الإغلاق)" })}
           type="number"
           value={a.inviteDeleteDays}
-          hint={loc({ en: "Email addresses are deleted automatically this many days after the census is closed. 0 keeps them until you delete them.", ar: "تُحذف عناوين البريد تلقائياً بعد هذا العدد من الأيام من إغلاق التعداد. ٠ يبقيها حتى تحذفها." })}
+          hint={loc({ en: "Email addresses are deleted automatically this many days after the census is closed. 0 keeps them until you delete them.", ar: "تُحذف عناوين البريد تلقائياً بعد هذا العدد من الأيام من إغلاق الاستبيان. ٠ يبقيها حتى تحذفها." })}
           onChange={(v) => patch({ inviteDeleteDays: Math.max(0, Math.round(Number(v)) || 0) })}
         />
         <TextField

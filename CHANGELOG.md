@@ -13,6 +13,8 @@ Each release has a version, a date, what changed in plain words, and how to undo
   - App icon, install manifest and link-preview image replaced with neutral versions; the app no longer uses Grok's manifest or icon files.
   - **Release step:** after this goes live, enter OCEC's full name, short name and product name in Settings once, or the live site shows the neutral names.
   - Undo: roll back in Vercel. No database change.
+- **Arabic wording:** "تعداد" (census) replaced by "استبيان" (survey) on every screen, email and setting default (39 places). Where the point is that everyone is asked, it reads "استبيان شامل لا عيّنة".
+  - Note: Arabic email and privacy texts already saved in Settings keep their old wording until edited there.
 
 ## [1.1.0] — 2026-11-13 — commit d5881fc
 Security hardening after the audit.

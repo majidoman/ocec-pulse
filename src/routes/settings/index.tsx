@@ -32,7 +32,7 @@ function GeneralPage() {
       </Card>
       <Card className="grid gap-4 md:grid-cols-2">
         <Field
-          label={loc({ en: "Census status", ar: "حالة التعداد" })}
+          label={loc({ en: "Census status", ar: "حالة الاستبيان" })}
           hint={loc({
             en: "Answers are accepted only while the status is Open and today is inside the field dates.",
             ar: "تُقبل الإجابات فقط حين تكون الحالة «مفتوح» واليوم ضمن تواريخ الميدان.",

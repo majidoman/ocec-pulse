@@ -117,7 +117,7 @@ function SurveyPage() {
       ? null
       : status !== "open"
         ? {
-            title: loc({ en: "The census is not open", ar: "التعداد غير مفتوح" }),
+            title: loc({ en: "The census is not open", ar: "الاستبيان غير مفتوح" }),
             body:
               status === "draft"
                 ? loc({ en: "It has not started yet. You will be told when it opens.", ar: "لم يبدأ بعد. سيُعلن عن موعد فتحه." })
@@ -136,7 +136,7 @@ function SurveyPage() {
             : !token && !allowOpenLink
               ? {
                   title: loc({ en: "Use your personal link", ar: "استخدم رابطك الشخصي" }),
-                  body: loc({ en: "This census is answered through the link in your invitation email.", ar: "يُجاب على هذا التعداد عبر الرابط في رسالة الدعوة." }),
+                  body: loc({ en: "This census is answered through the link in your invitation email.", ar: "يُجاب على هذا الاستبيان عبر الرابط في رسالة الدعوة." }),
                 }
               : !token && submittedOpenLink
                 ? {
@@ -152,7 +152,7 @@ function SurveyPage() {
         <div className="mt-10 h-40 animate-pulse rounded-2xl bg-sand-2" />
         {publicState === "error" ? (
           <p className="mt-6 text-sm text-score-crit">
-            {loc({ en: "Could not load the census. Check your connection and reload.", ar: "تعذّر تحميل التعداد. تحقق من الاتصال وأعد التحميل." })}
+            {loc({ en: "Could not load the census. Check your connection and reload.", ar: "تعذّر تحميل الاستبيان. تحقق من الاتصال وأعد التحميل." })}
           </p>
         ) : null}
       </div>
@@ -348,7 +348,7 @@ function SurveyPage() {
                   : failure === "rate_limited"
                     ? loc({ en: "Too many submissions from this network just now. Wait a few minutes and press Submit again. Your answers are still here.", ar: "عدد كبير من الإرسالات من هذه الشبكة الآن. انتظر دقائق ثم اضغط إرسال مجدداً. إجاباتك ما زالت هنا." })
                   : failure === "closed" || failure === "not_open_yet"
-                    ? loc({ en: "The census is not accepting answers right now.", ar: "التعداد لا يستقبل الإجابات الآن." })
+                    ? loc({ en: "The census is not accepting answers right now.", ar: "الاستبيان لا يستقبل الإجابات الآن." })
                     : loc({ en: "This link cannot be used to submit.", ar: "لا يمكن الإرسال بهذا الرابط." })}
             </p>
           ) : null}
