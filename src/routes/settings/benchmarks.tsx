@@ -22,7 +22,7 @@ function BenchSetPage() {
     <PageFrame
       title={t("setBench")}
       hint={loc({
-        en: "Optional. Enter only figures you can source: a previous OCEC survey, or a published or licensed benchmark. Anything left blank is simply not shown.",
+        en: "Optional. Enter only figures you can source: a previous {org} survey, or a published or licensed benchmark. Anything left blank is simply not shown.",
         ar: "اختياري. أدخل فقط أرقاماً لها مصدر: استبيان سابق للمركز أو مقارنة منشورة أو مرخّصة. ما يُترك فارغاً لا يُعرض.",
       })}
     >

@@ -5,7 +5,7 @@
  * a serverless time limit: callers loop until `remaining` reaches zero.
  */
 import { getSql } from "@/lib/db";
-import { applyTokens, formatIsoDate, type PulseConfig } from "./config";
+import { applyTokens, brandNames, brandText, formatIsoDate, type PulseConfig } from "./config";
 import {
   BadRequestError,
   clockIn,
@@ -199,16 +199,18 @@ function closeDate(config: PulseConfig, lang: "en" | "ar") {
 
 function inviteMail(config: PulseConfig, origin: string, row: { email: string; token: string }, extra?: { en: string; ar: string }): OutgoingMail {
   const link = `${origin}/survey?t=${encodeURIComponent(row.token)}`;
+  const names = brandNames(config.general, config.branding);
   const vars = (lang: "en" | "ar") => ({
     survey_link: link,
     close_date: closeDate(config, lang),
-    org_name: config.general.orgName[lang],
+    org_name: names.orgName[lang],
   });
+  const fill = (text: string, lang: "en" | "ar") => brandText(applyTokens(text, vars(lang)), names, lang);
   const withLink = (body: string) => (body.includes(link) ? body : `${body}\n\n${link}`);
   const e = config.email;
-  const bodyEn = withLink(applyTokens(extra ? `${extra.en}\n\n{{survey_link}}` : e.bodyEn, vars("en")));
-  const bodyAr = withLink(applyTokens(extra ? `${extra.ar}\n\n{{survey_link}}` : e.bodyAr, vars("ar")));
-  return bilingual(row.email, applyTokens(e.subjectEn, vars("en")), applyTokens(e.subjectAr, vars("ar")), bodyEn, bodyAr);
+  const bodyEn = withLink(fill(extra ? `${extra.en}\n\n{{survey_link}}` : e.bodyEn, "en"));
+  const bodyAr = withLink(fill(extra ? `${extra.ar}\n\n{{survey_link}}` : e.bodyAr, "ar"));
+  return bilingual(row.email, fill(e.subjectEn, "en"), fill(e.subjectAr, "ar"), bodyEn, bodyAr);
 }
 
 /**

@@ -6,6 +6,13 @@ Each release has a version, a date, what changed in plain words, and how to undo
 ## [Unreleased] — on the test site, waiting for approval
 - Test-site banner: an amber "TEST ENVIRONMENT" strip appears on every page of the test site only.
 - This changelog and the release procedure (`RELEASING.md`).
+- **White-label.** No client name is built into the app any more.
+  - New settings: *Short name* (Settings → General, e.g. "OCEC") and *Product name* (Settings → Branding, e.g. "OCEC Pulse").
+  - Every text, question, email and export that named OCEC now uses `{org}` (short name), `{orgName}` (full name) or `{app}` (product name), filled in from settings in both languages. Editors can use the same placeholders in their own questions and emails.
+  - New installs start neutral ("Pulse", "your organisation") until the client's names are entered.
+  - App icon, install manifest and link-preview image replaced with neutral versions; the app no longer uses Grok's manifest or icon files.
+  - **Release step:** after this goes live, enter OCEC's full name, short name and product name in Settings once, or the live site shows the neutral names.
+  - Undo: roll back in Vercel. No database change.
 
 ## [1.1.0] — 2026-11-13 — commit d5881fc
 Security hardening after the audit.

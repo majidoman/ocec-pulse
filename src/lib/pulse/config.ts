@@ -24,7 +24,10 @@ import type {
 import { DEPARTMENTS, DIMENSIONS, QUESTIONS, SURVEY_NAME } from "../questionnaire";
 
 export interface GeneralSettings {
+  /** Full legal name, e.g. "Oman Convention & Exhibition Centre". Shown as {orgName}. */
   orgName: Localized;
+  /** Short name used inside sentences and questions, e.g. "OCEC". Shown as {org}. */
+  orgShort: Localized;
   cycleName: Localized;
   timezone: string;
   defaultLang: Lang;
@@ -40,6 +43,8 @@ export interface GeneralSettings {
 }
 
 export interface BrandingSettings {
+  /** Product name in the header and browser tab, e.g. "OCEC Pulse". Blank = "<short name> Pulse". Shown as {app}. */
+  appName: Localized;
   logoDataUrl: string;
   primary: string;
   accent: string;
@@ -137,7 +142,7 @@ export interface PulseConfig {
 export interface PublicConfig {
   general: Pick<
     GeneralSettings,
-    "orgName" | "cycleName" | "defaultLang" | "supportEmail" | "supportPhone" | "status" | "allowOpenLink"
+    "orgName" | "orgShort" | "cycleName" | "defaultLang" | "supportEmail" | "supportPhone" | "status" | "allowOpenLink"
   >;
   branding: BrandingSettings;
   calendar: Pick<CalendarSettings, "fieldOpen" | "fieldClose" | "note">;
@@ -200,7 +205,8 @@ export function defaultConfig(): PulseConfig {
   return {
     version: CONFIG_VERSION,
     general: {
-      orgName: { en: "Oman Convention & Exhibition Centre", ar: "مركز عُمان للمؤتمرات والمعارض" },
+      orgName: { en: "", ar: "" },
+      orgShort: { en: "", ar: "" },
       cycleName: SURVEY_NAME,
       timezone: "Asia/Muscat",
       defaultLang: "en",
@@ -211,6 +217,7 @@ export function defaultConfig(): PulseConfig {
       publicUrl: "",
     },
     branding: {
+      appName: { en: "", ar: "" },
       logoDataUrl: "",
       primary: "#142A32",
       accent: "#2C6A6A",
@@ -303,6 +310,7 @@ export function toPublicConfig(c: PulseConfig): PublicConfig {
   return {
     general: {
       orgName: c.general.orgName,
+      orgShort: c.general.orgShort,
       cycleName: c.general.cycleName,
       defaultLang: c.general.defaultLang,
       supportEmail: c.general.supportEmail,
@@ -349,4 +357,52 @@ export function formatIsoDate(iso: string, lang: Lang) {
     year: "numeric",
     timeZone: "Asia/Muscat",
   }).format(d);
+}
+
+// ── White-label names ────────────────────────────────────────────────────────
+// Every client-specific name in copy, questions and emails is written as a placeholder:
+//   {org}      short name   ("OCEC")
+//   {orgName}  full name    ("Oman Convention & Exhibition Centre")
+//   {app}      product name ("OCEC Pulse")
+// and filled in from settings when shown, so the same build serves any client.
+
+export interface BrandNames {
+  org: Localized;
+  orgName: Localized;
+  app: Localized;
+}
+
+const pick = (v: Localized | undefined, lang: Lang) => (v?.[lang] ?? "").trim() || (v?.[lang === "ar" ? "en" : "ar"] ?? "").trim();
+
+export function brandNames(
+  general: { orgName?: Localized; orgShort?: Localized },
+  branding?: { appName?: Localized },
+): BrandNames {
+  const one = (lang: Lang) => {
+    const full = pick(general.orgName, lang);
+    const short = pick(general.orgShort, lang) || full;
+    const org = short || (lang === "ar" ? "مؤسستك" : "your organisation");
+    const orgName = full || org;
+    const app = pick(branding?.appName, lang) || (short ? (lang === "ar" ? `نبض ${short}` : `${short} Pulse`) : lang === "ar" ? "نبض" : "Pulse");
+    return { org, orgName, app };
+  };
+  const en = one("en");
+  const ar = one("ar");
+  return {
+    org: { en: en.org, ar: ar.org },
+    orgName: { en: en.orgName, ar: ar.orgName },
+    app: { en: en.app, ar: ar.app },
+  };
+}
+
+export function brandText(text: string, names: BrandNames, lang: Lang): string {
+  if (!text || !text.includes("{")) return text;
+  return text
+    .replaceAll("{app}", names.app[lang])
+    .replaceAll("{orgName}", names.orgName[lang])
+    .replaceAll("{org}", names.org[lang]);
+}
+
+export function brandLocalized(value: Localized, names: BrandNames): Localized {
+  return { en: brandText(value.en, names, "en"), ar: brandText(value.ar, names, "ar") };
 }

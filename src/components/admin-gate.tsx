@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { AppName } from "@/components/app-name";
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { Mark } from "@/components/mark";
@@ -18,7 +19,9 @@ function Shell({ children }: { children: ReactNode }) {
     <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center gap-6 px-6 py-10">
       <Link to="/" className="flex items-center gap-2.5 text-ink">
         <Mark className="size-9" />
-        <span className="text-sm font-semibold">OCEC Pulse</span>
+        <span className="text-sm font-semibold">
+          <AppName />
+        </span>
       </Link>
       {children}
     </div>

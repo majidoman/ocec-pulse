@@ -10,7 +10,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { authMiddleware } from "@/lib/auth/middleware";
 import type { StaffRole } from "@/lib/types";
-import type { PublicConfig, PulseConfig } from "./config";
+import { brandNames, brandText, type PublicConfig, type PulseConfig } from "./config";
 import type {
   AuditRow,
   CampaignRow,
@@ -356,10 +356,11 @@ export const exportData = createServerFn({ method: "POST" })
       return { filename: "pulse-departments.csv", csv: toCsv(rows) };
     }
     if (data.kind === "items") {
+      const names = brandNames(config.general, config.branding);
       const rows: unknown[][] = [["question_id", "dimension", "question_en", "question_ar", "favourable_pct", "answers"]];
       for (const it of r.items) {
         const q = config.questions.find((x) => x.id === it.id);
-        rows.push([it.id, it.dimension, q?.text.en ?? "", q?.text.ar ?? "", it.favorable, it.n]);
+        rows.push([it.id, it.dimension, brandText(q?.text.en ?? "", names, "en"), brandText(q?.text.ar ?? "", names, "ar"), it.favorable, it.n]);
       }
       return { filename: "pulse-items.csv", csv: toCsv(rows) };
     }
@@ -367,7 +368,7 @@ export const exportData = createServerFn({ method: "POST" })
     for (const c of r.comments ?? []) {
       const q = config.questions.find((x) => x.id === c.question);
       const dept = c.department ? (config.departments.find((x) => x.id === c.department)?.name.en ?? c.department) : "";
-      rows.push([c.question, q?.text.en ?? "", dept, c.body]);
+      rows.push([c.question, brandText(q?.text.en ?? "", brandNames(config.general, config.branding), "en"), dept, c.body]);
     }
     return { filename: "pulse-comments.csv", csv: toCsv(rows) };
   });
@@ -457,7 +458,7 @@ export const inviteStaff = createServerFn({ method: "POST" })
     if (data.sendEmail) {
       try {
         const mail = await import("./mail.server");
-        const org = config.general.orgName;
+        const org = brandNames(config.general, config.branding).orgName;
         const res = await mail.sendMail(config, [
           mail.bilingual(
             data.email,
@@ -692,16 +693,18 @@ export const sendTestEmail = createServerFn({ method: "POST" })
     const vars = (lang: "en" | "ar") => ({
       survey_link: link,
       close_date: formatIsoDate(config.calendar.fieldClose, lang),
-      org_name: config.general.orgName[lang],
+      org_name: brandNames(config.general, config.branding).orgName[lang],
     });
+    const names = brandNames(config.general, config.branding);
+    const fill = (text: string, lang: "en" | "ar") => brandText(applyTokens(text, vars(lang)), names, lang);
     try {
       const res = await mail.sendMail(config, [
         mail.bilingual(
           data.to,
-          `[TEST] ${applyTokens(config.email.subjectEn, vars("en"))}`,
-          applyTokens(config.email.subjectAr, vars("ar")),
-          applyTokens(config.email.bodyEn, vars("en")),
-          applyTokens(config.email.bodyAr, vars("ar")),
+          `[TEST] ${fill(config.email.subjectEn, "en")}`,
+          fill(config.email.subjectAr, "ar"),
+          fill(config.email.bodyEn, "en"),
+          fill(config.email.bodyAr, "ar"),
         ),
       ]);
       return res[0]?.ok ? { ok: true } : { ok: false, error: res[0]?.error ?? "send failed" };
@@ -814,8 +817,8 @@ export const generateAiBriefing = createServerFn({ method: "POST" })
     // Aggregates only, already filtered by the anonymity floor. No comments, no rows.
     const dimName = (id: string) => config.dimensions.find((d) => d.id === id)?.name.en ?? id;
     const stats = {
-      organisation: config.general.orgName.en,
-      cycle: config.general.cycleName.en,
+      organisation: brandNames(config.general, config.branding).orgName.en,
+      cycle: brandText(config.general.cycleName.en, brandNames(config.general, config.branding), "en"),
       respondents: r.total,
       headcount: r.headcount,
       responseRatePct: r.rate,

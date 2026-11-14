@@ -46,7 +46,7 @@ function TrendsPage() {
                 <Card>
                   <p className="text-sm leading-relaxed text-muted">
                     {loc({
-                      en: "No earlier cycle has been loaded, so there is no trend to draw. This cycle becomes the baseline. If OCEC has results from an earlier survey, an administrator can enter them under Settings → Benchmarks & prior year.",
+                      en: "No earlier cycle has been loaded, so there is no trend to draw. This cycle becomes the baseline. If {org} has results from an earlier survey, an administrator can enter them under Settings → Benchmarks & prior year.",
                       ar: "لم تُحمَّل دورة سابقة، فلا اتجاه يُرسم. هذه الدورة تصبح خط الأساس. إن كانت لدى المركز نتائج استبيان سابق فيمكن للمدير إدخالها من الإعدادات ← المقارنات والسنة السابقة.",
                     })}
                   </p>

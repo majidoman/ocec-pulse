@@ -3,12 +3,12 @@ import type { Localized } from "./types";
 export const FAQS: { q: Localized; a: Localized }[] = [
   {
     q: {
-      ar: "ما هو نبض مركز عُمان وصوت ٢٠٢٦؟",
-      en: "What is OCEC Pulse and Voice 2026?",
+      ar: "ما هو {app} وصوت ٢٠٢٦؟",
+      en: "What is {app} and Voice 2026?",
     },
     a: {
-      ar: "نبض مركز عُمان منصة مشاركة الموظفين في مركز عُمان للمؤتمرات والمعارض. صوت ٢٠٢٦ هو تعداد سري لكل من يعمل في البيت — من المطابخ إلى الطابق التنفيذي — لمعرفة ما يقوّي المشاركة وما يعطّلها.",
-      en: "OCEC Pulse is the employee-engagement platform for Oman Convention & Exhibition Centre. Voice 2026 is a confidential census of everyone who makes the house work — kitchens to the executive floor.",
+      ar: "{app} منصة مشاركة الموظفين في {orgName}. صوت ٢٠٢٦ هو تعداد سري لكل من يعمل في البيت — من المطابخ إلى الطابق التنفيذي — لمعرفة ما يقوّي المشاركة وما يعطّلها.",
+      en: "{app} is the employee-engagement platform for {orgName}. Voice 2026 is a confidential census of everyone who makes the house work — kitchens to the executive floor.",
     },
   },
   {
@@ -77,8 +77,8 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "What is eNPS?",
     },
     a: {
-      ar: "سؤال واحد: ما مدى احتمالية أن توصي بالعمل في مركز عُمان؟ من ٠ إلى ١٠. من ٠ إلى ٦ غير موصين، ٧–٨ محايدون، ٩–١٠ موصون. المؤشر = نسبة الموصين ناقص نسبة غير الموصين.",
-      en: "One question: how likely are you to recommend OCEC as a place to work, from 0 to 10. 0–6 are detractors, 7–8 passives, 9–10 promoters. eNPS is promoters minus detractors.",
+      ar: "سؤال واحد: ما مدى احتمالية أن توصي بالعمل في {org}؟ من ٠ إلى ١٠. من ٠ إلى ٦ غير موصين، ٧–٨ محايدون، ٩–١٠ موصون. المؤشر = نسبة الموصين ناقص نسبة غير الموصين.",
+      en: "One question: how likely are you to recommend {org} as a place to work, from 0 to 10. 0–6 are detractors, 7–8 passives, 9–10 promoters. eNPS is promoters minus detractors.",
     },
   },
   {
@@ -173,8 +173,8 @@ export const FAQS: { q: Localized; a: Localized }[] = [
   },
   {
     q: {
-      ar: "هل الاستبيان مصمم لمركز عُمان أم قالب عام للضيافة؟",
-      en: "Is this written for OCEC or a generic hospitality template?",
+      ar: "هل الاستبيان مصمم لـ{org} أم قالب عام للضيافة؟",
+      en: "Is this written for {org} or a generic hospitality template?",
     },
     a: {
       ar: "كُتب لهذا البيت: اجتماعات البيت ستوب، أسابيع الذروة والفعاليات المتتالية، التعمين، شعار «حيث يلتقي العالم»، الاستدامة، والطهي والمآدب. ليست نسخة مستوردة من فندق آخر.",

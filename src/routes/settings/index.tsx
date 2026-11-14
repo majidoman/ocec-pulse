@@ -67,6 +67,16 @@ function GeneralPage() {
         </label>
         <TextField label="Organisation (EN)" value={g.orgName.en} onChange={(v) => patch({ orgName: { ...g.orgName, en: v } })} />
         <TextField label="المؤسسة (AR)" value={g.orgName.ar} onChange={(v) => patch({ orgName: { ...g.orgName, ar: v } })} />
+        <TextField
+          label="Short name (EN)"
+          value={g.orgShort.en}
+          hint={loc({
+            en: "Used inside questions and sentences, e.g. Acme. Blank = the full name.",
+            ar: "يُستخدم داخل الأسئلة والجمل. فارغ = الاسم الكامل.",
+          })}
+          onChange={(v) => patch({ orgShort: { ...g.orgShort, en: v } })}
+        />
+        <TextField label="الاسم المختصر (AR)" value={g.orgShort.ar} onChange={(v) => patch({ orgShort: { ...g.orgShort, ar: v } })} />
         <TextField label="Cycle (EN)" value={g.cycleName.en} onChange={(v) => patch({ cycleName: { ...g.cycleName, en: v } })} />
         <TextField label="الدورة (AR)" value={g.cycleName.ar} onChange={(v) => patch({ cycleName: { ...g.cycleName, ar: v } })} />
         <TextField

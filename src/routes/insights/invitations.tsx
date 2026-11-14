@@ -158,7 +158,7 @@ function InvitationsPage() {
               ar: "شخص في كل سطر: البريد، واسم الإدارة اختيارياً. الصق من إكسل أو ارفع ملف CSV.",
             })}
           </p>
-          <Textarea rows={5} dir="ltr" placeholder={"name@ocec.om, Culinary & Banqueting\nname2@ocec.om"} value={paste} onChange={(e) => setPaste(e.target.value)} />
+          <Textarea rows={5} dir="ltr" placeholder={"name@company.com, Culinary & Banqueting\nname2@company.com"} value={paste} onChange={(e) => setPaste(e.target.value)} />
           <div className="mt-3 flex flex-wrap gap-2">
             <Button disabled={busy || !paste.trim()} onClick={() => void addPeople(paste)}>
               {loc({ en: "Add to list", ar: "إضافة إلى القائمة" })}

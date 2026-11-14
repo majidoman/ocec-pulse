@@ -1,16 +1,17 @@
-import type { ReactNode, CSSProperties } from "react";
+import { useEffect, type ReactNode, type CSSProperties } from "react";
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { EnvBanner } from "@/components/env-banner";
 import { Rehydrate } from "@/components/rehydrate";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useApp } from "@/lib/store";
+import { useApp, useBrand } from "@/lib/store";
 import { useSettings } from "@/lib/settings-store";
 import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "OCEC Pulse";
+/** Neutral until settings load; LangShell then sets the client's product name. */
+const APP_NAME = "Pulse";
 
 export const Route = createRootRoute({
   head: () => ({
@@ -21,14 +22,14 @@ export const Route = createRootRoute({
       { name: "theme-color", content: "#142A32" },
       {
         name: "description",
-        content: "OCEC Pulse — confidential employee engagement census.",
+        content: "Confidential staff engagement survey.",
       },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/__grok/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
   component: RootDocument,
@@ -71,6 +72,10 @@ function RootDocument() {
 function LangShell({ children }: { children: ReactNode }) {
   const lang = useApp((s) => s.lang);
   const branding = useSettings((s) => s.branding);
+  const names = useBrand();
+  useEffect(() => {
+    document.title = names.app[lang];
+  }, [names, lang]);
   return (
     <div
       lang={lang}
