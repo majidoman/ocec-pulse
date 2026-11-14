@@ -16,6 +16,7 @@ import { questionsFor, useCensus } from "@/lib/census";
 import { checkToken, submitResponse, type SubmitResult, type TokenState } from "@/lib/pulse/api";
 import { formatIsoDate } from "@/lib/pulse/config";
 import { usePulse } from "@/lib/pulse/session";
+import { useSettings } from "@/lib/settings-store";
 import { useApp, useT } from "@/lib/store";
 
 export const Route = createFileRoute("/survey/")({
@@ -42,6 +43,7 @@ function SurveyPage() {
   const [sending, setSending] = useState(false);
   const [failure, setFailure] = useState<Reason | "network" | null>(null);
   const { dimensions, questions, departments, privacyNotice, cycleName, fieldClose, status, allowOpenLink, supportEmail } = useCensus();
+  const kFloor = useSettings((s) => s.anonymity.kFloor);
   const steps = [...dimensions.map((d) => d.id), "open", "demo"];
 
   useEffect(() => {
@@ -195,8 +197,6 @@ function SurveyPage() {
         <LangToggle />
       </header>
 
-      <Progress value={progress} className="mb-6" />
-
       {intro ? (
         <div className="flex flex-1 flex-col gap-6">
           <div>
@@ -206,7 +206,24 @@ function SurveyPage() {
           </div>
           <ul className="grid gap-2 text-sm text-ink">
             <li className="rounded-xl bg-paper px-4 py-3 shadow-[var(--shadow-border)]">{t("minutes")}</li>
-            <li className="rounded-xl bg-paper px-4 py-3 shadow-[var(--shadow-border)]">{t("kAnon")}</li>
+            <li className="rounded-xl bg-paper px-4 py-3 shadow-[var(--shadow-border)]">
+              {loc({
+                en: `Results only appear for groups of ${kFloor} or more people. Nobody, including management, can see one person's answers.`,
+                ar: `لا تظهر النتائج إلا لمجموعات من ${kFloor} أشخاص فأكثر، ولا يستطيع أحد، بما في ذلك الإدارة، رؤية إجابات شخص بعينه.`,
+              })}
+            </li>
+            <li className="rounded-xl bg-paper px-4 py-3 shadow-[var(--shadow-border)]">
+              {loc({
+                en: "Anonymous, not just confidential: your name, email and link are never saved with your answers. The link only stops a second response.",
+                ar: "مجهول الهوية، وليس سرياً فقط: لا يُحفظ اسمك ولا بريدك ولا رابطك مع إجاباتك. الرابط يمنع الإجابة مرتين فقط.",
+              })}
+            </li>
+            <li className="rounded-xl bg-paper px-4 py-3 shadow-[var(--shadow-border)]">
+              {loc({
+                en: "Written comments are stored apart from your ratings and read without names by HR and senior leaders. Department heads see only their own department's comments. Please don't write names.",
+                ar: "تُحفظ التعليقات المكتوبة منفصلة عن تقييماتك، ويقرؤها فريق الموارد البشرية والقيادة دون أسماء، ولا يرى رئيس القسم إلا تعليقات قسمه. لا تكتب أسماء من فضلك.",
+              })}
+            </li>
             <li className="rounded-xl bg-paper px-4 py-3 shadow-[var(--shadow-border)]">
               {loc({ en: "Your answers stay on this device until you press Submit", ar: "تبقى إجاباتك على هذا الجهاز حتى تضغط إرسال" })}
             </li>
@@ -231,10 +248,7 @@ function SurveyPage() {
       ) : (
         <div className="flex flex-1 flex-col gap-6">
           <div>
-            <p className="text-xs font-medium text-accent">
-              {t("dimensionOf")} {draft.step + 1} / {totalSteps}
-            </p>
-            <h1 className="mt-1 font-display text-2xl font-medium text-ink">
+            <h1 className="font-display text-2xl font-medium text-ink">
               {dimension
                 ? loc(dimension.name)
                 : stepId === "enps"
@@ -263,7 +277,8 @@ function SurveyPage() {
           {dimension
             ? dimQuestions.map((q) => (
                 <fieldset key={q.id} className="rounded-2xl bg-paper p-4 shadow-[var(--shadow-border)]">
-                  <legend className="mb-3 text-sm font-medium leading-relaxed text-ink">{loc(q.text)}</legend>
+                  <legend className="float-left mb-3 w-full text-sm font-medium leading-relaxed text-ink">{loc(q.text)}</legend>
+                  <div className="clear-both" />
                   {q.type === "enps" ? (
                     <Enps
                       value={typeof draft.answers[q.id] === "number" ? (draft.answers[q.id] as number) : undefined}
@@ -353,7 +368,8 @@ function SurveyPage() {
             </p>
           ) : null}
 
-          <div className="mt-auto flex gap-2 pt-2">
+          <Progress value={progress} className="mt-auto h-1.5" aria-label={loc({ en: "Progress", ar: "التقدّم" })} />
+          <div className="flex gap-2">
             <Button
               variant="outline"
               className="w-28"

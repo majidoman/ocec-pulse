@@ -19,6 +19,10 @@ Each release has a version, a date, what changed in plain words, and how to undo
   - Works only where the `TEST_ACCESS_KEY` setting exists; it is set on the test environment only. The live site refuses it even with the key (checked: 404).
   - Rate-limited and written to the audit log. Test accounts are named `tester-<role>@test-access.local`.
   - Undo: delete the `TEST_ACCESS_KEY` setting in Vercel (link stops working at once on the next deploy) or roll back.
+- **Survey screen (from the UI best-practice review).**
+  - The introduction now states the real confidentiality minimum from Settings (no longer a fixed "5"), explains that the survey is anonymous and not just confidential, and says who reads written comments.
+  - The progress bar moved from the top to just above the Back/Next buttons, as a plain bar with no "page x of 15" counter.
+  - Fix: question text no longer overlaps the top edge of its answer card.
 
 ## [1.1.0] — 2026-11-13 — commit d5881fc
 Security hardening after the audit.
