@@ -130,7 +130,7 @@ export function AdminGate({ children, adminOnly = false }: { children: ReactNode
         <p className="text-sm leading-relaxed text-muted">
           {loc({
             en: "You are signed in, but this account has not been given access to the census results. Ask People & Culture for an invitation link, then open it while signed in.",
-            ar: "أنت مسجّل الدخول، لكن هذا الحساب لم يُمنح صلاحية الاطلاع على نتائج الاستبيان. اطلب رابط دعوة من الأفراد والثقافة وافتحه وأنت مسجّل الدخول.",
+            ar: "أنت مسجّل الدخول، لكن هذا الحساب لم يُمنح صلاحية الاطلاع على نتائج الاستبيان. اطلب رابط دعوة من الموارد البشرية وافتحه وأنت مسجّل الدخول.",
           })}
         </p>
         <p className="text-sm text-ink">{me.email ?? ""}</p>

@@ -203,7 +203,7 @@ function InvitationsPage() {
       {data?.failures.length ? (
         <Card className="print:hidden">
           <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="text-sm font-semibold text-ink">{loc({ en: "Could not be delivered", ar: "تعذّر التسليم" })}</h2>
+            <h2 className="text-sm font-semibold text-ink">{loc({ en: "Could not be delivered", ar: "تعذّر الإرسال" })}</h2>
             <Button
               size="sm"
               variant="outline"

@@ -182,7 +182,7 @@ export const useSettings = create<SettingsState>()((set, get) => {
           ok: false as const,
           error: {
             en: `${missing.length} item(s) missing English or Arabic. Freeze blocked.`,
-            ar: `${missing.length} بند بلا إنجليزية أو عربية. أُوقف التجميد.`,
+            ar: `${missing.length} بند بلا إنجليزية أو عربية. أُلغي القفل.`,
           },
         };
       }
@@ -190,11 +190,11 @@ export const useSettings = create<SettingsState>()((set, get) => {
         instrumentStatus: "frozen",
         frozenAt: nowIso(),
         changelog: [
-          { id: `c-${Date.now()}`, at: nowIso(), summary: { en: "Questionnaire frozen for field.", ar: "تجميد الاستبيان للميدان." } },
+          { id: `c-${Date.now()}`, at: nowIso(), summary: { en: "Questions locked for the survey.", ar: "قُفلت أسئلة الاستبيان." } },
           ...st.changelog,
         ].slice(0, 50),
       }));
-      get().log("Froze questionnaire for field", "تجميد الاستبيان للميدان");
+      get().log("Locked the survey questions", "قفل أسئلة الاستبيان");
       return { ok: true as const };
     },
     cloneCycle: () =>

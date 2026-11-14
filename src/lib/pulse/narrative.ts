@@ -41,7 +41,7 @@ export function buildNarrative(r: Results, config: Pick<PulseConfig, "dimensions
     );
     if (prior.engagement !== null) {
       const d = r.engagement.index - prior.engagement;
-      out.push(`مقارنة بـ${config.benchmarks.priorYearLabel || "الدورة السابقة"} (${prior.engagement})، ${d >= 0 ? "ارتفع" : "انخفض"} المؤشر ${Math.abs(d).toFixed(1)} نقطة.`);
+      out.push(`مقارنة بـ${config.benchmarks.priorYearLabel || "الاستبيان السابق"} (${prior.engagement})، ${d >= 0 ? "ارتفع" : "انخفض"} المؤشر ${Math.abs(d).toFixed(1)} نقطة.`);
     }
     if (top.length) out.push(`أقوى الأبعاد: ${list(top)}. أضعفها: ${list(low)}.`);
     if (r.drivers?.length) {
@@ -51,7 +51,7 @@ export function buildNarrative(r: Results, config: Pick<PulseConfig, "dimensions
     if (shown.length >= 2) {
       const a = shown[0];
       const b = shown[shown.length - 1];
-      out.push(`بين الإدارات المعروضة، الأعلى ${dept(a.id)} (${a.index?.toFixed(0)}) والأدنى ${dept(b.id)} (${b.index?.toFixed(0)}).` + (hidden ? ` ${hidden} إدارة محجوبة لحماية المجهولية.` : ""));
+      out.push(`بين الإدارات المعروضة، الأعلى ${dept(a.id)} (${a.index?.toFixed(0)}) والأدنى ${dept(b.id)} (${b.index?.toFixed(0)}).` + (hidden ? ` ${hidden} إدارة محجوبة لحماية السرية.` : ""));
     }
     return out;
   }

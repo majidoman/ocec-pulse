@@ -33,6 +33,9 @@ Each release has a version, a date, what changed in plain words, and how to undo
 - **Change history.** New page under Settings listing every administrator action, newest first, with search. Settings saves are now recorded by the server with the section and field changed, and old → new for dates, numbers and on/off values. Repeated edits to the same field within 15 minutes are merged into one entry.
 - Uses the `read-excel-file` library, pinned to 9.3.14.
 - Settings → General: clearer labels. "Cycle" is now **Survey name** (with an example), "Census status" is **Survey status**, "Field dates" is **Survey open and close dates**.
+- **Survey dates and status, simplified.** Settings → General now has just **Start date** and **End date**. The status dropdown is gone: the status follows the dates automatically (not scheduled / scheduled / open until … / ended), using the same rule the server applies to accept answers. Closing early or reopening stays on the Danger zone page. The separate "Delivery calendar" page (kick-off, freeze, presentation dates) is removed from the menu.
+- **Clearer wording, Arabic and English.** Research jargon replaced throughout: الدورة → الاستبيان، بنك الأسئلة → قائمة الأسئلة، مجمّد للميدان → مقفل أثناء الاستبيان، تواريخ الميدان → تاريخا البدء والانتهاء، المجهولية → السرية، القوة المعتمدة → إجمالي عدد الموظفين، الأفراد والثقافة → الموارد البشرية; "Freeze for field" → "Lock the questions", "cycle" → "survey".
+- **Survey name everywhere.** "Voice 2026" is no longer built in. The home page, FAQ, survey and emails use the survey name from Settings → General (placeholder `{survey}`). New default: "Employee Survey 2026" / "استبيان الموظفين ٢٠٢٦".
 
 ## [1.1.0] — 2026-11-13 — commit d5881fc
 Security hardening after the audit.

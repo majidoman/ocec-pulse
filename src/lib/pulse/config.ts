@@ -154,7 +154,7 @@ export interface PublicConfig {
 
 export const ROLE_LABEL: Record<StaffRole, Localized> = {
   super: { en: "Super admin", ar: "مدير عام" },
-  pc: { en: "People & Culture", ar: "الأفراد والثقافة" },
+  pc: { en: "People & Culture", ar: "الموارد البشرية" },
   exec: { en: "Executive viewer", ar: "مشاهد تنفيذي" },
   head: { en: "Department head", ar: "رئيس إدارة" },
   viewer: { en: "Viewer", ar: "مشاهد" },
@@ -229,8 +229,8 @@ export function defaultConfig(): PulseConfig {
       fieldClose: "",
       presentation: "",
       note: {
-        en: "Field dates are confirmed at kick-off with People & Culture.",
-        ar: "تُؤكَّد تواريخ الميدان عند الانطلاق مع الأفراد والثقافة.",
+        en: "Start and end dates are agreed with HR before launch.",
+        ar: "يُحدَّد تاريخا البدء والانتهاء مع الموارد البشرية قبل الإطلاق.",
       },
     },
     anonymity: {
@@ -348,7 +348,7 @@ export function applyTokens(
 }
 
 export function formatIsoDate(iso: string, lang: Lang) {
-  if (!iso) return lang === "ar" ? "يُؤكَّد عند الانطلاق" : "to be confirmed";
+  if (!iso) return lang === "ar" ? "يُحدَّد لاحقاً" : "to be confirmed";
   const d = new Date(`${iso}T12:00:00`);
   if (Number.isNaN(d.getTime())) return iso;
   return new Intl.DateTimeFormat(lang === "ar" ? "ar-OM" : "en-GB", {
@@ -364,18 +364,20 @@ export function formatIsoDate(iso: string, lang: Lang) {
 //   {org}      short name   ("OCEC")
 //   {orgName}  full name    ("Oman Convention & Exhibition Centre")
 //   {app}      product name ("OCEC Pulse")
+//   {survey}   survey name  ("Staff Survey 2026"), from Settings → General
 // and filled in from settings when shown, so the same build serves any client.
 
 export interface BrandNames {
   org: Localized;
   orgName: Localized;
   app: Localized;
+  survey: Localized;
 }
 
 const pick = (v: Localized | undefined, lang: Lang) => (v?.[lang] ?? "").trim() || (v?.[lang === "ar" ? "en" : "ar"] ?? "").trim();
 
 export function brandNames(
-  general: { orgName?: Localized; orgShort?: Localized },
+  general: { orgName?: Localized; orgShort?: Localized; cycleName?: Localized },
   branding?: { appName?: Localized },
 ): BrandNames {
   const one = (lang: Lang) => {
@@ -384,7 +386,9 @@ export function brandNames(
     const org = short || (lang === "ar" ? "مؤسستك" : "your organisation");
     const orgName = full || org;
     const app = pick(branding?.appName, lang) || (short ? (lang === "ar" ? `نبض ${short}` : `${short} Pulse`) : lang === "ar" ? "نبض" : "Pulse");
-    return { org, orgName, app };
+    const surveyRaw = pick(general.cycleName, lang).replaceAll("{survey}", "");
+    const survey = surveyRaw || (lang === "ar" ? "استبيان الموظفين" : "Employee Survey");
+    return { org, orgName, app, survey };
   };
   const en = one("en");
   const ar = one("ar");
@@ -392,12 +396,14 @@ export function brandNames(
     org: { en: en.org, ar: ar.org },
     orgName: { en: en.orgName, ar: ar.orgName },
     app: { en: en.app, ar: ar.app },
+    survey: { en: en.survey, ar: ar.survey },
   };
 }
 
 export function brandText(text: string, names: BrandNames, lang: Lang): string {
   if (!text || !text.includes("{")) return text;
   return text
+    .replaceAll("{survey}", names.survey[lang])
     .replaceAll("{app}", names.app[lang])
     .replaceAll("{orgName}", names.orgName[lang])
     .replaceAll("{org}", names.org[lang]);

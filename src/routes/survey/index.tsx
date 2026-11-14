@@ -133,7 +133,7 @@ function SurveyPage() {
           : tokenState === "invalid"
             ? {
                 title: loc({ en: "This link is not valid", ar: "هذا الرابط غير صالح" }),
-                body: loc({ en: "Open the link from your invitation email again, or ask People & Culture for a new one.", ar: "افتح الرابط من رسالة الدعوة مجدداً، أو اطلب رابطاً جديداً من الأفراد والثقافة." }),
+                body: loc({ en: "Open the link from your invitation email again, or ask People & Culture for a new one.", ar: "افتح الرابط من رسالة الدعوة مجدداً، أو اطلب رابطاً جديداً من الموارد البشرية." }),
               }
             : !token && !allowOpenLink
               ? {

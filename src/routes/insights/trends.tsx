@@ -47,7 +47,7 @@ function TrendsPage() {
                   <p className="text-sm leading-relaxed text-muted">
                     {loc({
                       en: "No earlier cycle has been loaded, so there is no trend to draw. This cycle becomes the baseline. If {org} has results from an earlier survey, an administrator can enter them under Settings → Benchmarks & prior year.",
-                      ar: "لم تُحمَّل دورة سابقة، فلا اتجاه يُرسم. هذه الدورة تصبح خط الأساس. إن كانت لدى المركز نتائج استبيان سابق فيمكن للمدير إدخالها من الإعدادات ← المقارنات والسنة السابقة.",
+                      ar: "لم تُحمَّل نتائج سابقة، فلا اتجاه يُرسم. هذا الاستبيان يصبح نقطة الأساس. إن كانت لدى المركز نتائج استبيان سابق فيمكن للمدير إدخالها من الإعدادات ← المقارنات والسنة السابقة.",
                     })}
                   </p>
                   {canEditSettings(currentRole) ? (
@@ -58,7 +58,7 @@ function TrendsPage() {
                 </Card>
               )}
               <Card>
-                <h2 className="mb-3 text-sm font-semibold text-ink">{loc({ en: "This cycle by dimension", ar: "هذه الدورة حسب البُعد" })}</h2>
+                <h2 className="mb-3 text-sm font-semibold text-ink">{loc({ en: "This survey by topic", ar: "هذا الاستبيان حسب البُعد" })}</h2>
                 <ul className="flex flex-col">
                   {likertDimensions.map((d) => (
                     <li key={d.id} className="flex items-center justify-between border-b border-border py-2 last:border-0">

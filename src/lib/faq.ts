@@ -3,12 +3,12 @@ import type { Localized } from "./types";
 export const FAQS: { q: Localized; a: Localized }[] = [
   {
     q: {
-      ar: "ما هو {app} وصوت ٢٠٢٦؟",
-      en: "What is {app} and Voice 2026?",
+      ar: "ما هو {app} و{survey}؟",
+      en: "What is {app} and {survey}?",
     },
     a: {
-      ar: "{app} منصة مشاركة الموظفين في {orgName}. صوت ٢٠٢٦ هو استبيان سري لكل من يعمل في البيت — من المطابخ إلى الطابق التنفيذي — لمعرفة ما يقوّي المشاركة وما يعطّلها.",
-      en: "{app} is the employee-engagement platform for {orgName}. Voice 2026 is a confidential census of everyone who makes the house work — kitchens to the executive floor.",
+      ar: "{app} منصة مشاركة الموظفين في {orgName}. {survey} هو استبيان سري لكل من يعمل في البيت — من المطابخ إلى الطابق التنفيذي — لمعرفة ما يقوّي المشاركة وما يعطّلها.",
+      en: "{app} is the employee-engagement platform for {orgName}. {survey} is a confidential census of everyone who makes the house work — kitchens to the executive floor.",
     },
   },
   {
@@ -33,8 +33,8 @@ export const FAQS: { q: Localized; a: Localized }[] = [
   },
   {
     q: {
-      ar: "كم يستغرق صوت ٢٠٢٦؟",
-      en: "How long does Voice 2026 take?",
+      ar: "كم يستغرق {survey}؟",
+      en: "How long does {survey} take?",
     },
     a: {
       ar: "حوالي اثنتي عشرة دقيقة. بنود بمقياس من خمس درجات، وسؤال توصية واحد، وتعليقات اختيارية، وأسئلة اختيارية عن الدور.",
@@ -107,7 +107,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "What does the anonymity floor of five mean?",
     },
     a: {
-      ar: "إذا أجاب أقل من خمسة في إدارة أو مستوى أو نوع تعاقد، تبقى الخانة فارغة. لا متوسطات لمجموعات صغيرة يمكن أن تكشف شخصاً. المكتب التنفيذي و«الأفراد والثقافة» يخضعان للقاعدة نفسها.",
+      ar: "إذا أجاب أقل من خمسة في إدارة أو مستوى أو نوع تعاقد، تبقى الخانة فارغة. لا متوسطات لمجموعات صغيرة يمكن أن تكشف شخصاً. المكتب التنفيذي و«الموارد البشرية» يخضعان للقاعدة نفسها.",
       en: "If fewer than five people in a department, level or contract type have spoken, that cell stays blank. No small-group average that could identify someone.",
     },
   },
@@ -117,14 +117,14 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "Who sees the results?",
     },
     a: {
-      ar: "فريق الأفراد والثقافة، ورؤساء الإدارات لنتائج إداراتهم فوق حد السرية، والرئيس التنفيذي والقيادة للملخص التنفيذي. لا أحد يرى إجاباتك منفردة.",
+      ar: "فريق الموارد البشرية، ورؤساء الإدارات لنتائج إداراتهم فوق حد السرية، والرئيس التنفيذي والقيادة للملخص التنفيذي. لا أحد يرى إجاباتك منفردة.",
       en: "People & Culture, heads of department for their own cuts above the anonymity floor, and the CEO for the executive summary. Nobody sees your individual answers.",
     },
   },
   {
     q: {
-      ar: "متى يُغلق صوت ٢٠٢٦؟",
-      en: "When does Voice 2026 close?",
+      ar: "متى يُغلق {survey}؟",
+      en: "When does {survey} close?",
     },
     a: {
       ar: "تاريخ الإغلاق يظهر في الصفحة الرئيسية وفي رسالة الدعوة. بعد الإغلاق تُشارك إحاطة البيت وخطة التسعين يوماً.",
@@ -147,7 +147,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "Will I get reminders?",
     },
     a: {
-      ar: "إن وصلتك دعوة شخصية بالبريد فقد تصلك تذكيرات إلى أن تُرسل إجابتك. لا تذكير لمن أكمل الاستبيان. يمكن لفريق الأفراد والثقافة إيقاف التذكيرات.",
+      ar: "إن وصلتك دعوة شخصية بالبريد فقد تصلك تذكيرات إلى أن تُرسل إجابتك. لا تذكير لمن أكمل الاستبيان. يمكن لفريق الموارد البشرية إيقاف التذكيرات.",
       en: "If you were invited by a personal email link, you may get reminders until you submit. Completers are not reminded. People & Culture can switch reminders off.",
     },
   },
@@ -157,7 +157,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "I received an email invite. May I forward it?",
     },
     a: {
-      ar: "هذا رابط سري لجهازك. لا تُعد توجيهه مقروناً باسمك. الزميل الذي لم تصله دعوة يطلب من رئيسه أو من الأفراد والثقافة رابطاً خاصاً به.",
+      ar: "هذا رابط سري لجهازك. لا تُعد توجيهه مقروناً باسمك. الزميل الذي لم تصله دعوة يطلب من رئيسه أو من الموارد البشرية رابطاً خاصاً به.",
       en: "It is a confidential link. Do not forward it with your name attached. A colleague without an invite should ask their head of department or People & Culture for their own link.",
     },
   },
@@ -193,11 +193,11 @@ export const FAQS: { q: Localized; a: Localized }[] = [
   },
   {
     q: {
-      ar: "هل يمكن مقارنة صوت ٢٠٢٦ بالسنوات السابقة وبالقطاع؟",
-      en: "Can Voice 2026 be compared with prior years and the sector?",
+      ar: "هل يمكن مقارنة {survey} بالسنوات السابقة وبالقطاع؟",
+      en: "Can {survey} be compared with prior years and the sector?",
     },
     a: {
-      ar: "نعم، عندما تتوفر بيانات دورة سابقة أو مقارنات خارجية موثّقة المصدر. دون ذلك تكون هذه الدورة خط الأساس.",
+      ar: "نعم، عندما تتوفر بيانات استبيان سابق أو مقارنات خارجية موثّقة المصدر. دون ذلك يكون هذا الاستبيان نقطة الأساس.",
       en: "Yes, when results from an earlier cycle or sourced external benchmarks are available. Without them, this cycle is the baseline.",
     },
   },

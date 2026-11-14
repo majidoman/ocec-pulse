@@ -273,7 +273,7 @@ export const saveAdminConfig = createServerFn({ method: "POST" })
       await core.audit(
         core.actorOf(staff),
         `Changed anonymity floor: ${previous.anonymity.kFloor} → ${next.anonymity.kFloor}`,
-        `تغيير حد المجهولية: ${previous.anonymity.kFloor} ← ${next.anonymity.kFloor}`,
+        `تغيير حد السرية: ${previous.anonymity.kFloor} ← ${next.anonymity.kFloor}`,
       );
     }
     const { describeConfigChanges } = await import("./changes");
@@ -859,7 +859,7 @@ export const manageData = createServerFn({ method: "POST" })
         ? ["Deleted all responses", "حذف جميع الإجابات"]
         : data.action === "delete_invitees"
           ? ["Deleted the invitation list", "حذف قائمة الدعوات"]
-          : ["Deleted the cycle: responses, invitation list and settings", "حذف الدورة: الإجابات وقائمة الدعوات والإعدادات"];
+          : ["Deleted the survey data: responses, invitation list and settings", "حذف بيانات الاستبيان: الإجابات وقائمة الدعوات والإعدادات"];
     await core.audit(core.actorOf(staff), label[0], label[1]);
     return { ok: true };
   });

@@ -8,10 +8,7 @@ import type {
   ContractId,
 } from "./types";
 
-export const SURVEY_NAME: Localized = {
-  en: "{org} Voice 2026",
-  ar: "صوت {org} ٢٠٢٦",
-};
+export const SURVEY_NAME: Localized = { en: "Employee Survey 2026", ar: "استبيان الموظفين ٢٠٢٦" };
 
 export const SURVEY_CLOSE = "9 November 2026";
 export const SURVEY_CLOSE_AR = "٩ نوفمبر ٢٠٢٦";
@@ -195,7 +192,7 @@ export const DEPARTMENTS: Department[] = [
   { id: "culinary", name: { en: "Culinary & Banqueting", ar: "الطهي والمآدب" }, headcount: 72 },
   { id: "facilities", name: { en: "Facilities & Engineering", ar: "المرافق والهندسة" }, headcount: 38 },
   { id: "sales", name: { en: "Sales & Marketing", ar: "المبيعات والتسويق" }, headcount: 29 },
-  { id: "people", name: { en: "People & Culture", ar: "الأفراد والثقافة" }, headcount: 14 },
+  { id: "people", name: { en: "People & Culture", ar: "الموارد البشرية" }, headcount: 14 },
   { id: "finance", name: { en: "Finance & Administration", ar: "المالية والإدارة" }, headcount: 22 },
   { id: "guest", name: { en: "Guest Experience", ar: "تجربة الضيوف" }, headcount: 36 },
   { id: "sustainability", name: { en: "Sustainability & HSE", ar: "الاستدامة والصحة والسلامة" }, headcount: 18 },

@@ -12,7 +12,7 @@ type Json = unknown;
 const SECTION: Record<string, [string, string]> = {
   general: ["General", "عام"],
   branding: ["Branding", "الهوية"],
-  calendar: ["Delivery calendar", "تقويم التسليم"],
+  calendar: ["Survey dates", "تواريخ الاستبيان"],
   anonymity: ["Anonymity & privacy", "السرية والخصوصية"],
   email: ["Invitation email", "بريد الدعوة"],
   reminderCfg: ["Reminders", "التذكيرات"],
@@ -39,8 +39,8 @@ const FIELD: Record<string, [string, string]> = {
   logoDataUrl: ["logo", "الشعار"],
   primary: ["primary colour", "اللون الأساسي"],
   accent: ["accent colour", "لون التمييز"],
-  fieldOpen: ["open date", "تاريخ الفتح"],
-  fieldClose: ["close date", "تاريخ الإغلاق"],
+  fieldOpen: ["start date", "تاريخ البدء"],
+  fieldClose: ["end date", "تاريخ الانتهاء"],
   privacyNotice: ["privacy notice", "إشعار الخصوصية"],
   subjectEn: ["subject (EN)", "الموضوع (إنجليزي)"],
   subjectAr: ["subject (AR)", "الموضوع (عربي)"],
@@ -116,10 +116,22 @@ function describeList(a: Json[], b: Json[]) {
   const order = !added && !removed && !edited && !same([...before.keys()], [...after.keys()]);
   const en: string[] = [];
   const ar: string[] = [];
-  if (added) (en.push(`${added} added`), ar.push(`أُضيف ${added}`));
-  if (edited) (en.push(`${edited} edited`), ar.push(`عُدّل ${edited}`));
-  if (removed) (en.push(`${removed} removed`), ar.push(`حُذف ${removed}`));
-  if (order) (en.push("reordered"), ar.push("أُعيد الترتيب"));
+  if (added) {
+    en.push(`${added} added`);
+    ar.push(`أُضيف ${added}`);
+  }
+  if (edited) {
+    en.push(`${edited} edited`);
+    ar.push(`عُدّل ${edited}`);
+  }
+  if (removed) {
+    en.push(`${removed} removed`);
+    ar.push(`حُذف ${removed}`);
+  }
+  if (order) {
+    en.push("reordered");
+    ar.push("أُعيد الترتيب");
+  }
   return { en, ar };
 }
 

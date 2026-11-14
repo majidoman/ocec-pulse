@@ -27,7 +27,7 @@ function BenchSetPage() {
       })}
     >
       <Card className="grid gap-4 md:grid-cols-4">
-        <h2 className="text-sm font-semibold text-ink md:col-span-4">{loc({ en: "Previous cycle", ar: "الدورة السابقة" })}</h2>
+        <h2 className="text-sm font-semibold text-ink md:col-span-4">{loc({ en: "Previous survey", ar: "الاستبيان السابق" })}</h2>
         <TextField label={loc({ en: "Name (e.g. Survey 2025)", ar: "الاسم (مثل استبيان ٢٠٢٥)" })} value={b.priorYearLabel} onChange={(v) => patch({ priorYearLabel: v })} />
         <TextField label={t("kpiEngage")} type="number" value={b.prior.engagement ?? ""} onChange={(v) => patch({ prior: { ...b.prior, engagement: num(v) } })} />
         <TextField label={t("kpiEnps")} type="number" value={b.prior.enps ?? ""} onChange={(v) => patch({ prior: { ...b.prior, enps: num(v) } })} />
@@ -35,7 +35,7 @@ function BenchSetPage() {
         <p className="text-xs text-subtle md:col-span-4">
           {loc({
             en: "Favourable % by dimension in the previous cycle. Fill only the dimensions the earlier survey really measured.",
-            ar: "نسبة الإيجابية حسب البُعد في الدورة السابقة. املأ فقط الأبعاد التي قاسها الاستبيان السابق فعلاً.",
+            ar: "نسبة الإيجابية حسب البُعد في الاستبيان السابق. املأ فقط الأبعاد التي قاسها الاستبيان السابق فعلاً.",
           })}
         </p>
         {likertDimensions.map((d) => (
