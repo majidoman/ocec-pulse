@@ -6,6 +6,11 @@ Each release has a version, a date, what changed in plain words, and how to undo
 ## [Unreleased] — on the test site, waiting for approval
 - Nothing yet.
 
+## [1.2.2] — 2026-11-15 — released to live (fix)
+- **Invitations and reminders use the server's mailbox** (admin@bowsalaom.com on live) until a mailbox is entered in Settings → Invitations & email. Before, they refused with "Email sending is not set up yet" even though password-reset emails were working. The email settings page now says which mailbox will send.
+- Verified: invitations sent from the server mailbox (6 checks), full test 66/66.
+- Undo: promote 1.2.1 in Vercel. Backup: Neon branch `backup-pre-v1.2.2-2026-11-15`. No database change.
+
 ## [1.2.1] — 2026-11-15 — released to live
 Requested by the owner (no way back into the live site without the password).
 - **Forgot password?** link on the sign-in page. Enter the email; if it has an account, a link to choose a new password is emailed (works once, 60 minutes). The page answers the same way for unknown emails, so it cannot be used to find out who has access. Only a hash of the link is stored. After a reset the account is signed out everywhere and the change history records it. Limits: 3 requests per account and 10 per network address an hour.
