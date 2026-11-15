@@ -8,7 +8,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
     },
     a: {
       ar: "{app} منصة مشاركة الموظفين في {orgName}. {survey} هو استبيان سري لكل من يعمل في البيت — من المطابخ إلى الطابق التنفيذي — لمعرفة ما يقوّي المشاركة وما يعطّلها.",
-      en: "{app} is the employee-engagement platform for {orgName}. {survey} is a confidential census of everyone who makes the house work — kitchens to the executive floor.",
+      en: "{app} is the employee-engagement platform for {orgName}. {survey} is a confidential survey of everyone who makes the house work — kitchens to the executive floor.",
     },
   },
   {

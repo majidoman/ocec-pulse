@@ -321,10 +321,10 @@ export async function runDueReminders(
 ): Promise<{ sent: number; failed: number; remaining: number; skipped?: string }> {
   const config = await loadConfig();
   if (!config.reminderCfg.enabled) return { sent: 0, failed: 0, remaining: 0, skipped: "Reminders are switched off." };
-  if (config.general.status !== "open") return { sent: 0, failed: 0, remaining: 0, skipped: "The census is not open." };
+  if (config.general.status !== "open") return { sent: 0, failed: 0, remaining: 0, skipped: "The survey is not open." };
   const today = todayIn(config.general.timezone);
   if (config.calendar.fieldClose && today > config.calendar.fieldClose) {
-    return { sent: 0, failed: 0, remaining: 0, skipped: "The census window has ended." };
+    return { sent: 0, failed: 0, remaining: 0, skipped: "The survey window has ended." };
   }
   if (!opts.ignoreQuietHours && inQuietHours(config)) {
     return { sent: 0, failed: 0, remaining: 0, skipped: "Quiet hours — reminders wait until morning." };

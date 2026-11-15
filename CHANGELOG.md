@@ -3,6 +3,17 @@
 Every change that reaches the live site is listed here, newest first.
 Each release has a version, a date, what changed in plain words, and how to undo it.
 
+## [Survey design 0.3] — 2026-11-15 — branches `staging` and `package` — what staff see
+- **Opening screen:** one clear "Your answers are anonymous" panel (three facts, full notice one tap away) instead of six repeated boxes; time and closing date at the top; a 1–5 preview of the answer scale; the Start button stays in reach on phones.
+- **Question pages:** "Section 2 of 15" and progress at the top, staying visible while scrolling; Back/Next stay in reach; answer buttons show the full words ("Strongly disagree", not "S. disagree"); visible keyboard focus; a short fade between sections (off when the phone's reduce-motion setting is on).
+- **Arabic:** numbers in Arabic-Indic digits on the survey (١–٥، القسم ١ من ١٥), matching the dates.
+- **Screen readers:** each answer group is named by its question (was an internal code); the 0–10 question is announced as a choice.
+- **Thank-you page:** "Thank you. Your answers are in." with a check mark, one short paragraph and the closing date; no repeated text.
+- **Wording:** "census" replaced by "survey" in all English screens, emails and messages (41 places). Home page: OCEC's slogan and "k≥5" replaced by a plain sentence (the slogan was built in, so every client would have shown it); capitalised small labels set in normal case.
+- Not changed: colours, fonts, logo, results dashboard.
+- Verified: full test (66 checks), 10 checks for unanswered questions / language / fonts, screenshots on phone and desktop in English and Arabic.
+- Undo: roll back in Vercel. No database change. Saved texts in Settings (privacy notice, emails) keep their own wording until edited there.
+
 ## [Package 0.2] — 2026-11-15 — branches `package` and `staging` — modern web guidance (Chrome / MDN)
 Checked against Google Chrome's *Modern Web Guidance*. Its automatic legacy scan found nothing; these came from the guides on forms, accessibility, privacy and text scaling.
 - **Fonts are bundled with the app.** They were loaded from Google's servers, so every staff member's browser contacted Google when the survey opened, and an installation without internet showed fallback fonts. Now served by the app itself; no request leaves for any outside server.

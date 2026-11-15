@@ -245,7 +245,7 @@ export const acceptInvite = createServerFn({ method: "POST" })
     const { getSql } = await import("@/lib/db");
     const sql = await getSql();
     const me = await core.getMe(context.userId);
-    if (me.role) throw new core.BadRequestError("You already have access to this census.");
+    if (me.role) throw new core.BadRequestError("You already have access to this survey.");
     const claimed = await sql<{ email: string; name: string | null; role: StaffRole; department_id: string | null }>`
       update pulse_staff_invites set accepted_by = ${context.userId}, accepted_at = now()
       where code = ${data.code} and accepted_by is null
@@ -291,7 +291,7 @@ export const saveAdminConfig = createServerFn({ method: "POST" })
       next.general.closedAt = next.general.status === "closed" ? new Date().toISOString() : undefined;
       await core.audit(
         core.actorOf(staff),
-        `Changed census status: ${previous.general.status} → ${next.general.status}`,
+        `Changed survey status: ${previous.general.status} → ${next.general.status}`,
         `تغيير حالة الاستبيان: ${previous.general.status} ← ${next.general.status}`,
       );
     } else {
@@ -713,7 +713,7 @@ export const startCampaign = createServerFn({ method: "POST" })
     const { getSql } = await import("@/lib/db");
     const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
     const config = await core.loadConfig();
-    if (config.general.status !== "open") throw new core.BadRequestError("Open the census before sending invitations.");
+    if (config.general.status !== "open") throw new core.BadRequestError("Open the survey before sending invitations.");
     const problem = mail.mailReady(config, await mail.smtpPasswordSet());
     if (problem) throw new core.BadRequestError(problem);
     const sql = await getSql();

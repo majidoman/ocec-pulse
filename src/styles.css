@@ -105,3 +105,16 @@
     background: white !important;
   }
 }
+
+/* One quiet entrance when a survey section or screen appears; nothing for people who turn motion off. */
+@media (prefers-reduced-motion: no-preference) {
+  .step-in {
+    animation: step-in 200ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+}
+@keyframes step-in {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+}

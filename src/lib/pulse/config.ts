@@ -176,7 +176,7 @@ const defaultReminders: ReminderRule[] = [
     dayOffset: 3,
     enabled: true,
     sent: 0,
-    bodyEn: "A quiet note: the census is still open, still confidential, still about twelve minutes.",
+    bodyEn: "A quiet note: the survey is still open, still confidential, still about twelve minutes.",
     bodyAr: "ملاحظة هادئة: الاستبيان ما زال مفتوحاً وسرياً، وما زال نحو اثنتي عشرة دقيقة.",
   },
   {
@@ -194,7 +194,7 @@ const defaultReminders: ReminderRule[] = [
     dayOffset: 10,
     enabled: true,
     sent: 0,
-    bodyEn: "Last week of the census. Five minutes on a phone is enough to start.",
+    bodyEn: "Last week of the survey. Five minutes on a phone is enough to start.",
     bodyAr: "الأسبوع الأخير من الاستبيان. خمس دقائق على الهاتف تكفي للبدء.",
   },
 ];
@@ -240,7 +240,7 @@ export function defaultConfig(): PulseConfig {
       stripSelfId: true,
       noExternalTraining: true,
       privacyNotice: {
-        en: "This census is anonymous. We do not store your name, email, IP address or device fingerprint with your answers. Results are never shown for groups smaller than five people. If you received a personal link, it is used only to make sure each person answers once; it is not stored with your response.",
+        en: "This survey is anonymous. We do not store your name, email, IP address or device fingerprint with your answers. Results are never shown for groups smaller than five people. If you received a personal link, it is used only to make sure each person answers once; it is not stored with your response.",
         ar: "هذا الاستبيان مجهول الهوية. لا نحتفظ باسمك أو بريدك أو عنوان جهازك مع إجاباتك. لا تُعرض النتائج لمجموعات أقل من خمسة أشخاص. إن وصلك رابط شخصي فهو يُستخدم فقط لضمان إجابة واحدة لكل شخص ولا يُحفظ مع إجابتك.",
       },
     },
@@ -256,7 +256,7 @@ export function defaultConfig(): PulseConfig {
       subjectEn: "{{org_name}} — a confidential 12 minutes",
       subjectAr: "{{org_name}} — اثنتا عشرة دقيقة سرية",
       bodyEn:
-        "Hello,\n\nThis is your confidential link for the {{org_name}} employee census. It cannot be traced to your answers. The census closes {{close_date}}.\n\n{{survey_link}}",
+        "Hello,\n\nThis is your confidential link for the {{org_name}} employee survey. It cannot be traced to your answers. The survey closes {{close_date}}.\n\n{{survey_link}}",
       bodyAr:
         "مرحباً،\n\nهذا رابطك السري لاستبيان موظفي {{org_name}}. لا يمكن ربطه بإجاباتك. يُغلق الاستبيان في {{close_date}}.\n\n{{survey_link}}",
     },
@@ -357,6 +357,16 @@ export function formatIsoDate(iso: string, lang: Lang) {
     year: "numeric",
     timeZone: "Asia/Muscat",
   }).format(d);
+}
+
+/** Numbers in the reader's script: Arabic-Indic digits in Arabic (matching dates), Western digits in English. */
+export function formatNumber(n: number, lang: Lang) {
+  return new Intl.NumberFormat(lang === "ar" ? "ar-OM" : "en-GB").format(n);
+}
+
+/** A 0–1 share as a whole percentage, in the reader's script. */
+export function formatPercent(share: number, lang: Lang) {
+  return new Intl.NumberFormat(lang === "ar" ? "ar-OM" : "en-GB", { style: "percent", maximumFractionDigits: 0 }).format(share);
 }
 
 // ── White-label names ────────────────────────────────────────────────────────

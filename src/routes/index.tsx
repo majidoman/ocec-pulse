@@ -41,7 +41,7 @@ function Home() {
       <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 pb-16 pt-6 md:px-8 md:pt-12">
         <section className="grid items-end gap-10 lg:grid-cols-12">
           <div className="flex flex-col gap-5 lg:col-span-7">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-accent">{t("heroEyebrow")}</p>
+            <p className="text-sm font-medium text-accent">{t("heroEyebrow")}</p>
             <h1 className="font-display text-[2.35rem] font-medium leading-[1.12] tracking-tight text-ink md:text-6xl">
               {t("heroTitle")}
             </h1>
@@ -61,7 +61,7 @@ function Home() {
                   {rate}% {t("responseLive")}
                 </span>
               ) : null}
-              <span className="rounded-full bg-sand-2 px-2 py-0.5 text-[11px] uppercase text-ink">
+              <span className="rounded-full bg-sand-2 px-2 py-0.5 text-xs text-ink">
                 {status === "open" ? t("statusOpen") : status === "closed" || status === "archived" ? t("statusClosed") : loc({ en: "Opening soon", ar: "يُفتح قريباً" })}
               </span>
             </div>
@@ -79,7 +79,7 @@ function Home() {
                 </div>
                 <ArrowUpRight className="size-5 shrink-0 text-sand/70 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </div>
-              <span className="mt-4 text-xs uppercase tracking-[0.16em] text-sand/50">{loc({ en: "Start", ar: "ابدأ" })}</span>
+              <span className="mt-4 text-sm font-medium text-sand/70">{t("startCensus")}</span>
             </Link>
             <Link
               to="/insights"
@@ -92,7 +92,7 @@ function Home() {
                 </div>
                 <ArrowUpRight className="size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </div>
-              <span className="mt-4 text-xs uppercase tracking-[0.16em] text-subtle">{t("openInsights")}</span>
+              <span className="mt-4 text-sm font-medium text-subtle">{t("openInsights")}</span>
             </Link>
           </div>
         </section>
@@ -130,7 +130,7 @@ function Home() {
             <span>{t("footMail")}</span>
           </div>
           <p>
-            {t("tagline")} · {lang === "ar" ? "مسقط" : "Muscat"} · k≥{kFloor}
+            {loc({ en: `Results are shown only for groups of ${kFloor} or more people.`, ar: `تُعرض النتائج فقط لمجموعات من ${kFloor} أشخاص فأكثر.` })}
           </p>
         </footer>
       </main>

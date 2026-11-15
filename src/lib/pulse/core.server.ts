@@ -153,7 +153,7 @@ export async function requireStaff(userId: string, roles?: StaffRole[]): Promise
     name: string | null;
   }>`select role, department_id, active, email, name from pulse_staff where user_id = ${userId}`;
   const staff = rows[0];
-  if (!staff || !staff.active) throw new ForbiddenError("You do not have access to this census.");
+  if (!staff || !staff.active) throw new ForbiddenError("You do not have access to this survey.");
   if (roles && !roles.includes(staff.role)) throw new ForbiddenError("Your role cannot do this.");
   return {
     userId,
@@ -196,7 +196,7 @@ export async function claimOwnership(userId: string): Promise<void> {
     returning user_id
   `;
   if (!rows.length) throw new ForbiddenError("An administrator already exists. Ask them for an invitation.");
-  await audit(profile.email ?? userId, "Claimed ownership of the census", "تولّى ملكية الاستبيان");
+  await audit(profile.email ?? userId, "Claimed ownership of the survey", "تولّى ملكية الاستبيان");
 }
 
 // ── Audit ────────────────────────────────────────────────────────────────────
