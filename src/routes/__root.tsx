@@ -18,6 +18,8 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      // Follow the phone's / computer's text-size setting (layout is rem-based; no root font-size override).
+      { name: "text-scale", content: "scale" },
       { title: APP_NAME },
       { name: "theme-color", content: "#142A32" },
       {
@@ -76,6 +78,12 @@ function LangShell({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.title = names.app[lang];
   }, [names, lang]);
+  // Keep <html> in step with the chosen language, so screen readers, browser translation
+  // and spell-checking treat the whole page (including dialogs portalled to <body>) correctly.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }, [lang]);
   return (
     <div
       lang={lang}

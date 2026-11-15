@@ -3,6 +3,17 @@
 Every change that reaches the live site is listed here, newest first.
 Each release has a version, a date, what changed in plain words, and how to undo it.
 
+## [Package 0.2] — 2026-11-15 — branches `package` and `staging` — modern web guidance (Chrome / MDN)
+Checked against Google Chrome's *Modern Web Guidance*. Its automatic legacy scan found nothing; these came from the guides on forms, accessibility, privacy and text scaling.
+- **Fonts are bundled with the app.** They were loaded from Google's servers, so every staff member's browser contacted Google when the survey opened, and an installation without internet showed fallback fonts. Now served by the app itself; no request leaves for any outside server.
+- **Unanswered questions are pointed out.** Pressing Next with a required question unanswered now marks each one ("⚠ Not answered yet", red outline), moves the person to the first one, and links the message to the question for screen readers. Before, only a general message appeared at the bottom.
+- **Whole page follows the chosen language.** `<html lang/dir>` now switch to Arabic/RTL, so screen readers, browser translation and pop-up dialogs use the right language and direction.
+- **Follows the phone's text-size setting** (`text-scale` opt-in; layout already uses relative sizes).
+- **Installed copies send the same security headers as the Vercel site** (no framing, no referrer, no camera/microphone/location). Before, only Vercel added them.
+- Package: `.env.example` was missing from the zip (the installer would have failed); added a double-click `Install.cmd` for Windows.
+- Verified: full test (66 checks), 10 new checks for the items above, self-hosted build serving headers and fonts locally, first real install on Windows with Docker Desktop.
+- Undo: roll back in Vercel / reinstall the previous package. No database change.
+
 ## [Package 0.1] — 2026-11-14 — branch `package` — for installation testing
 Self-hosted installation package (does not change the Vercel test or live sites).
 - Plain Node server build (`npm run build:selfhost`) with no Grok layer; runs on any server with Docker.

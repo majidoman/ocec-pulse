@@ -15,6 +15,16 @@ import { isMigrationFile } from "./scripts/migration-plan.mjs";
 /** Building the client-installed package (Docker) instead of the Vercel deployment. */
 const selfHosted = process.env.SELF_HOSTED === "1";
 
+/** Mirrors the "headers" block in vercel.json. Keep the two in step. */
+const SECURITY_HEADERS = {
+  "X-Frame-Options": "DENY",
+  "Content-Security-Policy":
+    "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'",
+  "X-Content-Type-Options": "nosniff",
+  "Referrer-Policy": "no-referrer",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=()",
+};
+
 /** The files `src/lib/db.ts` globs — same directory, same non-recursive scope. */
 function hasGlobbedMigrations(root: string): boolean {
   try {
@@ -176,7 +186,8 @@ export default defineConfig(({ command, isPreview }) => ({
           nitro(
             selfHosted
               ? // Client-installed package: a plain Node server (.output/server/index.mjs), no Grok middleware.
-                { preset: "node-server" }
+                // The same security headers vercel.json sets on Vercel, so the package is not weaker.
+                { preset: "node-server", routeRules: { "/**": { headers: SECURITY_HEADERS } } }
               : {
                   preset: "vercel",
                   // Auto-registers server/middleware/* (the PWA install page +

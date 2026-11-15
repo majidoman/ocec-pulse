@@ -77,6 +77,12 @@ function SurveyPage() {
   async function goNext() {
     if (!currentComplete()) {
       setError(true);
+      // Take the person (and screen readers) straight to the first question still unanswered.
+      requestAnimationFrame(() => {
+        const first = document.querySelector<HTMLElement>('fieldset[data-missing="true"]');
+        first?.scrollIntoView({ block: "center", behavior: "smooth" });
+        first?.querySelector<HTMLElement>("input, button")?.focus({ preventScroll: true });
+      });
       return;
     }
     setError(false);
@@ -275,10 +281,22 @@ function SurveyPage() {
           </div>
 
           {dimension
-            ? dimQuestions.map((q) => (
-                <fieldset key={q.id} className="rounded-2xl bg-paper p-4 shadow-[var(--shadow-border)]">
+            ? dimQuestions.map((q) => {
+                const missing = error && q.required && typeof draft.answers[q.id] !== "number";
+                return (
+                <fieldset
+                  key={q.id}
+                  data-missing={missing ? "true" : undefined}
+                  aria-describedby={missing ? `${q.id}-missing` : undefined}
+                  className={`rounded-2xl bg-paper p-4 shadow-[var(--shadow-border)] ${missing ? "ring-2 ring-score-crit" : ""}`}
+                >
                   <legend className="float-left mb-3 w-full text-sm font-medium leading-relaxed text-ink">{loc(q.text)}</legend>
                   <div className="clear-both" />
+                  {missing ? (
+                    <p id={`${q.id}-missing`} className="-mt-1 mb-3 text-sm font-medium text-score-crit">
+                      {loc({ en: "⚠ Not answered yet", ar: "⚠ لم تتم الإجابة بعد" })}
+                    </p>
+                  ) : null}
                   {q.type === "enps" ? (
                     <Enps
                       value={typeof draft.answers[q.id] === "number" ? (draft.answers[q.id] as number) : undefined}
@@ -303,7 +321,8 @@ function SurveyPage() {
                     />
                   )}
                 </fieldset>
-              ))
+                );
+              })
             : null}
 
           {stepId === "open"
