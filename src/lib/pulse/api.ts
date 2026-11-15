@@ -803,7 +803,7 @@ export type AddInviteesResultView = {
 export interface InvitationOverview {
   stats: InviteeStats;
   campaigns: CampaignRow[];
-  mail: { passwordSet: boolean; problem: string | null };
+  mail: { passwordSet: boolean; problem: string | null; via: "settings" | "server" | null; from: string | null };
   surveyUrl: string;
   failures: { email: string; error: string }[];
   lastUpload: RosterUploadSummary | null;
@@ -846,7 +846,7 @@ export const getInvitationOverview = createServerFn({ method: "GET" })
         failed: Number(c.failed),
         createdAt: new Date(c.created_at).toISOString(),
       })),
-      mail: { passwordSet, problem: mail.mailReady(config, passwordSet) },
+      mail: { passwordSet, ...(await mail.mailRoute(config)) },
       surveyUrl: `${core.requestOrigin(config)}/survey`,
       failures: failures.map((f) => ({ email: f.email, error: f.send_error })),
     };
@@ -862,7 +862,7 @@ export const startCampaign = createServerFn({ method: "POST" })
     const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
     const config = await core.loadConfig();
     if (config.general.status !== "open") throw new core.BadRequestError("Open the survey before sending invitations.");
-    const problem = mail.mailReady(config, await mail.smtpPasswordSet());
+    const { problem } = await mail.mailRoute(config);
     if (problem) throw new core.BadRequestError(problem);
     const sql = await getSql();
     const count =

@@ -29,7 +29,13 @@ function EmailPage() {
   const me = usePulse((s) => s.me);
   const [testTo, setTestTo] = useState("");
   const [password, setPassword] = useState("");
-  const [status, setStatus] = useState<{ passwordSet: boolean; problem: string | null; surveyUrl: string } | null>(null);
+  const [status, setStatus] = useState<{
+    passwordSet: boolean;
+    problem: string | null;
+    via: "settings" | "server" | null;
+    from: string | null;
+    surveyUrl: string;
+  } | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
@@ -100,7 +106,15 @@ function EmailPage() {
             })}
           </p>
           <p className={`mt-2 text-sm ${status?.problem ? "text-score-crit" : "text-score-high"}`} role="status">
-            {status ? (status.problem ?? loc({ en: "Ready to send.", ar: "جاهز للإرسال." })) : ""}
+            {status
+              ? (status.problem ??
+                (status.via === "server"
+                  ? loc({
+                      en: `Ready to send, using the server's mailbox (${status.from}). Fill in the details below to send from your own address instead.`,
+                      ar: `جاهز للإرسال عبر صندوق بريد الخادم (${status.from}). املأ البيانات أدناه للإرسال من عنوانك الخاص بدلاً منه.`,
+                    })
+                  : loc({ en: "Ready to send.", ar: "جاهز للإرسال." })))
+              : ""}
           </p>
         </div>
         <Field label={loc({ en: "Send via", ar: "الإرسال عبر" })}>

@@ -67,10 +67,35 @@ export function mailReady(config: PulseConfig, hasPassword: boolean): string | n
   return null;
 }
 
+/**
+ * Which mailbox sends: the one in Settings → Invitations & email when complete, otherwise the
+ * server's own mailbox from environment variables (see envMailbox), otherwise none.
+ */
+export async function mailRoute(config: PulseConfig): Promise<{ via: "settings" | "server" | null; from: string | null; problem: string | null }> {
+  const settingsProblem = mailReady(config, await smtpPasswordSet());
+  if (settingsProblem === null) return { via: "settings", from: config.email.fromAddress.trim(), problem: null };
+  const env = envMailbox();
+  if (env) return { via: "server", from: env.from, problem: null };
+  return { via: null, from: null, problem: settingsProblem };
+}
+
 async function transport(config: PulseConfig) {
   const secret = await readSetting<SmtpSecret>("smtp_secret");
   const problem = mailReady(config, Boolean(secret?.passEnc));
-  if (problem) throw new BadRequestError(problem);
+  if (problem) {
+    const env = envMailbox();
+    if (!env) throw new BadRequestError(problem);
+    const nodemailer = await import("nodemailer");
+    return nodemailer.createTransport({
+      host: env.host,
+      port: env.port,
+      secure: env.secure,
+      auth: env.user ? { user: env.user, pass: env.pass } : undefined,
+      connectionTimeout: 10_000,
+      greetingTimeout: 10_000,
+      socketTimeout: 15_000,
+    });
+  }
   const pass = secret?.passEnc ? decryptSecret(secret.passEnc) : null;
   if (config.email.smtpUser.trim() && pass === null) {
     throw new BadRequestError("The saved SMTP password could not be read. Enter it again in Settings → Invitations & email.");
@@ -145,7 +170,9 @@ export async function sendMail(config: PulseConfig, mails: OutgoingMail[]): Prom
   if (!mails.length) return [];
   const tx = await transport(config);
   const e = config.email;
-  const from = e.fromName.trim() ? `"${e.fromName.replaceAll('"', "")}" <${e.fromAddress.trim()}>` : e.fromAddress.trim();
+  const route = await mailRoute(config);
+  const address = route.via === "server" && route.from ? route.from : e.fromAddress.trim();
+  const from = e.fromName.trim() ? `"${e.fromName.replaceAll('"', "")}" <${address}>` : address;
   const out: { to: string; ok: boolean; error?: string }[] = [];
   for (const m of mails) {
     try {
@@ -382,8 +409,7 @@ export async function runDueReminders(
   if (!opts.ignoreQuietHours && inQuietHours(config)) {
     return { sent: 0, failed: 0, remaining: 0, skipped: "Quiet hours — reminders wait until morning." };
   }
-  const hasPass = await smtpPasswordSet();
-  const problem = mailReady(config, hasPass);
+  const { problem } = await mailRoute(config);
   if (problem) return { sent: 0, failed: 0, remaining: 0, skipped: problem };
   const origin = requestOrigin(config);
   if (!origin) return { sent: 0, failed: 0, remaining: 0, skipped: "Public address is not set." };

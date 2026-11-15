@@ -1,0 +1,33 @@
+const { chromium } = require("playwright");
+const fs = require("fs");
+const { execSync } = require("child_process");
+const base = "http://localhost:8080"; const MAIL = process.argv[2];
+let failed = 0;
+const ok = (c, l, x = "") => { if (!c) failed++; console.log(`${c ? "PASS" : "FAIL"}  ${l}${x ? "  → " + x : ""}`); };
+const psql = (q) => execSync(`su postgres -c "psql -p 5433 -h 127.0.0.1 -d pulse -At"`, { input: q + ";\n" }).toString().trim();
+const api = (page, fn, data) => page.evaluate(async ([fn, data]) => { const m = await import("/src/lib/pulse/api.ts"); try { return { ok: true, value: await m[fn](data === undefined ? undefined : { data }) }; } catch (e) { return { ok: false, error: String(e && e.message) }; } }, [fn, data]);
+(async () => {
+  const b = await chromium.launch();
+  const page = await (await b.newContext()).newPage();
+  await page.goto(`${base}/api/test-access?key=local-test-key-0123456789abcdef&as=super&next=/settings/email`, { waitUntil: "networkidle" });
+  await page.goto(`${base}/settings/email`, { waitUntil: "networkidle" });
+  await page.waitForTimeout(1500);
+  ok(await page.getByText(/using the server's mailbox \(pulse@test\.local\)/).isVisible(), "email settings say the server mailbox will be used");
+  const cfg = (await api(page, "getAdminConfig")).value;
+  cfg.general.status = "open"; cfg.calendar.fieldOpen = "2026-01-01"; cfg.calendar.fieldClose = "2026-12-31";
+  const saved = await api(page, "saveAdminConfig", { config: cfg });
+  ok(saved.ok, "survey opened", saved.error || "");
+  const add = await api(page, "uploadRoster", { rows: [{ email: "staff1@test.local", departmentId: null }, { email: "staff2@test.local", departmentId: null }], allowUnmatched: true, batch: { id: "batch-0001", index: 0, count: 1, source: "test" } });
+  ok(add.ok, "staff list added", add.error || "");
+  const ov = await api(page, "getInvitationOverview");
+  ok(ov.ok && ov.value.mail.problem === null && ov.value.mail.via === "server", "invitations page: ready, via server mailbox", JSON.stringify(ov.value && ov.value.mail));
+  const camp = await api(page, "startCampaign", { name: "Test", audience: "all" });
+  ok(camp.ok, "send invitations accepted", camp.error || "");
+  for (let i = 0; i < 6; i++) { const r = await api(page, "sendCampaignBatch", { id: camp.value.id }); if (!r.ok || !r.value || r.value.remaining === 0) break; }
+  await page.waitForTimeout(1500);
+  const mails = fs.existsSync(MAIL) ? fs.readFileSync(MAIL, "utf8").trim().split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];
+  const inv = mails.filter((m) => /staff[12]@test\.local/.test(m.to));
+  ok(inv.length === 2 && inv.every((m) => /pulse@test\.local/.test(m.from)), "both invitations sent from the server mailbox", inv.map((m) => m.from).join(" | "));
+  await b.close();
+  console.log(failed ? `${failed} FAILED` : "ALL PASS"); process.exit(failed ? 1 : 0);
+})().catch((e) => { console.log("CRASH", e.message); process.exit(1); });
