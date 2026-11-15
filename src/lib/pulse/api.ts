@@ -498,9 +498,9 @@ export const inviteStaff = createServerFn({ method: "POST" })
         const res = await mail.sendMail(config, [
           mail.bilingual(
             data.email,
-            `${org.en} — access to the census results`,
+            `${org.en} — access to the survey results`,
             `${org.ar} — صلاحية الاطلاع على نتائج الاستبيان`,
-            `You have been invited to the ${org.en} census workspace.\n\nOpen this link, sign in or create an account, and your access is activated:\n\n${link}\n\nThe link works once.`,
+            `You have been invited to the ${org.en} survey workspace.\n\nOpen this link, sign in or create an account, and your access is activated:\n\n${link}\n\nThe link works once.`,
             `تمت دعوتك إلى مساحة استبيان ${org.ar}.\n\nافتح هذا الرابط وسجّل الدخول أو أنشئ حساباً ليُفعَّل وصولك:\n\n${link}\n\nيعمل الرابط مرة واحدة.`,
           ),
         ]);
