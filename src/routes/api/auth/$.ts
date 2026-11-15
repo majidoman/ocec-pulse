@@ -21,7 +21,32 @@ async function signUpAllowed(request: Request): Promise<boolean> {
   return rows.length > 0;
 }
 
+/**
+ * Password guessing is limited in the database, so the limit holds across serverless instances
+ * (Better Auth's own limiter keeps counts in each instance's memory): 30 attempts per hour from one
+ * address, and 20 per hour against one account from anywhere.
+ */
+async function signInThrottled(request: Request): Promise<boolean> {
+  const { rateLimit, RateLimitedError } = await import("@/lib/pulse/core.server");
+  try {
+    await rateLimit("sign-in", 30);
+    const body = (await request.clone().json().catch(() => null)) as { email?: unknown } | null;
+    const email = typeof body?.email === "string" ? body.email.trim().toLowerCase().slice(0, 254) : "";
+    if (email) await rateLimit(`sign-in:${email}`, 20, { perAddress: false });
+    return false;
+  } catch (e) {
+    if (e instanceof RateLimitedError) return true;
+    throw e;
+  }
+}
+
 async function guarded(request: Request): Promise<Response> {
+  if (request.method === "POST" && new URL(request.url).pathname.endsWith("/sign-in/email") && (await signInThrottled(request))) {
+    return Response.json(
+      { message: "Too many sign-in attempts. Wait an hour, then try again.", code: "TOO_MANY_ATTEMPTS" },
+      { status: 429 },
+    );
+  }
   if (request.method === "POST" && new URL(request.url).pathname.endsWith("/sign-up/email")) {
     let allowed = false;
     try {
