@@ -10,7 +10,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { authMiddleware } from "@/lib/auth/middleware";
 import type { StaffRole } from "@/lib/types";
-import type { PublicConfig, PulseConfig } from "./config";
+import { brandNames, brandText, type PublicConfig, type PulseConfig } from "./config";
 import type {
   AuditRow,
   CampaignRow,
@@ -20,6 +20,7 @@ import type {
   Results,
   StaffInviteRow,
   StaffRow,
+  RosterUploadSummary,
 } from "./results-types";
 
 const ROLES = ["super", "pc", "exec", "head", "viewer"] as const;
@@ -202,9 +203,37 @@ export const getMe = createServerFn({ method: "GET" })
 
 export const claimOwner = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
+  .validator((d: unknown) => z.object({ code: z.string().max(200).optional() }).optional().parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const core = await import("./core.server");
+    // Installed copies set SETUP_CODE: only the person holding it can become the owner.
+    if (!(await core.setupCodeMatches(data?.code))) throw new core.ForbiddenError("The setup code is not correct.");
+    await core.claimOwnership(context.userId);
+    return { ok: true };
+  });
+
+export interface SetupState {
+  /** No administrator yet: the first-run wizard starts from the account step. */
+  needsOwner: boolean;
+  /** The installer set a setup code that must be entered to claim ownership. */
+  requiresCode: boolean;
+  /** The owner pressed Finish in the wizard. */
+  completed: boolean;
+}
+
+export const getSetupState = createServerFn({ method: "GET" }).handler(async (): Promise<SetupState> => {
+  const core = await import("./core.server");
+  const done = await core.readSetting<{ at: string }>("setup_completed");
+  return { needsOwner: (await core.staffCount()) === 0, requiresCode: core.setupCodeRequired(), completed: !!done };
+});
+
+export const completeSetup = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
   .handler(async ({ context }): Promise<{ ok: true }> => {
     const core = await import("./core.server");
-    await core.claimOwnership(context.userId);
+    const staff = await core.requireStaff(context.userId, ["super"]);
+    await core.writeSetting("setup_completed", { at: new Date().toISOString(), by: core.actorOf(staff) });
+    await core.audit(core.actorOf(staff), "Finished the setup wizard", "أنهى معالج الإعداد");
     return { ok: true };
   });
 
@@ -216,7 +245,7 @@ export const acceptInvite = createServerFn({ method: "POST" })
     const { getSql } = await import("@/lib/db");
     const sql = await getSql();
     const me = await core.getMe(context.userId);
-    if (me.role) throw new core.BadRequestError("You already have access to this census.");
+    if (me.role) throw new core.BadRequestError("You already have access to this survey.");
     const claimed = await sql<{ email: string; name: string | null; role: StaffRole; department_id: string | null }>`
       update pulse_staff_invites set accepted_by = ${context.userId}, accepted_at = now()
       where code = ${data.code} and accepted_by is null
@@ -246,6 +275,154 @@ export const getAdminConfig = createServerFn({ method: "GET" })
     return core.loadConfig();
   });
 
+// ── Questionnaire import (Excel) ────────────────────────────────────────────
+// The browser reads the workbook (questionnaire-import.ts) and sends the parsed sections and
+// questions. The server re-checks the shape, refuses while answers exist or the questions are
+// locked, keeps the current set as a backup, and logs the change.
+
+const loc300 = z.object({ en: z.string().max(300), ar: z.string().max(300) });
+const importSchema = z.object({
+  fileName: z.string().max(200),
+  surveyName: z.object({ en: z.string().min(1).max(120), ar: z.string().min(1).max(120) }).nullable(),
+  dimensions: z
+    .array(
+      z.object({
+        id: z.string().regex(/^[a-z0-9-]{1,40}$/),
+        name: loc300,
+        short: loc300,
+        blurb: loc300,
+        visible: z.boolean(),
+        archived: z.boolean(),
+        order: z.number().int().min(0).max(100),
+        kind: z.enum(["likert", "enps"]),
+      }),
+    )
+    .min(1)
+    .max(20),
+  questions: z
+    .array(
+      z.object({
+        id: z.string().regex(/^[A-Za-z0-9_-]{1,12}$/),
+        dimension: z.string().max(40),
+        type: z.enum(["likert", "enps", "text"]),
+        text: loc300,
+        required: z.boolean(),
+        reverse: z.boolean().optional(),
+        visible: z.boolean(),
+        order: z.number().int().min(0).max(500),
+      }),
+    )
+    .min(1)
+    .max(120),
+});
+
+interface QuestionnaireBackup {
+  at: string;
+  by: string;
+  replacedBy: string;
+  cycleName: PulseConfig["general"]["cycleName"];
+  dimensions: PulseConfig["dimensions"];
+  questions: PulseConfig["questions"];
+}
+
+async function questionnaireGuard(core: typeof import("./core.server")) {
+  const { responseCount } = await import("./results.server");
+  const answers = await responseCount();
+  if (answers > 0) {
+    throw new core.BadRequestError(
+      `This survey already has ${answers} answer(s). Replacing the questions now would break the results. Delete the answers first (Settings → Danger zone), or wait for the next survey.`,
+    );
+  }
+  const config = await core.loadConfig();
+  if (config.instrumentStatus === "frozen") {
+    throw new core.BadRequestError("The questions are locked. Press \"Unlock to edit\" on the Survey builder page first.");
+  }
+  return config;
+}
+
+export const getQuestionnaireImportState = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const core = await import("./core.server");
+    await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    const { responseCount } = await import("./results.server");
+    const config = await core.loadConfig();
+    const backup = await core.readSetting<QuestionnaireBackup>("questionnaire_backup");
+    return {
+      answers: await responseCount(),
+      locked: config.instrumentStatus === "frozen",
+      backup: backup ? { at: backup.at, by: backup.by, replacedBy: backup.replacedBy, questions: backup.questions.length } : null,
+    };
+  });
+
+export const importQuestionnaire = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) => importSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const core = await import("./core.server");
+    const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    // Cross-checks the schema cannot express.
+    const dimIds = new Set(data.dimensions.map((d) => d.id));
+    const qIds = new Set(data.questions.map((q) => q.id.toUpperCase()));
+    if (dimIds.size !== data.dimensions.length || qIds.size !== data.questions.length) throw new core.BadRequestError("Duplicate section or question IDs.");
+    for (const q of data.questions) {
+      if (q.type === "text" ? q.dimension !== "open" : !dimIds.has(q.dimension)) throw new core.BadRequestError(`Question ${q.id} points to an unknown section.`);
+      const dim = data.dimensions.find((d) => d.id === q.dimension);
+      if (dim && (dim.kind === "enps") !== (q.type === "enps")) throw new core.BadRequestError(`Question ${q.id} does not match its section type.`);
+    }
+    if (data.questions.filter((q) => q.type === "enps").length > 1) throw new core.BadRequestError("Only one 0–10 question is allowed.");
+    if (!data.questions.some((q) => q.type === "likert")) throw new core.BadRequestError("At least one 1–5 question is needed.");
+
+    const config = await questionnaireGuard(core);
+    const actor = core.actorOf(staff);
+    const backup: QuestionnaireBackup = {
+      at: new Date().toISOString(),
+      by: actor,
+      replacedBy: data.fileName,
+      cycleName: config.general.cycleName,
+      dimensions: config.dimensions,
+      questions: config.questions,
+    };
+    await core.writeSetting("questionnaire_backup", backup);
+    config.dimensions = data.dimensions;
+    config.questions = data.questions.map((q) => ({ ...q, reverse: q.type === "likert" ? q.reverse : undefined }));
+    if (data.surveyName) config.general.cycleName = data.surveyName;
+    await core.saveConfig(config);
+    const nScale = data.questions.length;
+    await core.audit(
+      actor,
+      `Imported the survey questions from "${data.fileName}": ${data.dimensions.length} sections, ${nScale} questions. The previous questions were kept as a backup.`,
+      `استيراد أسئلة الاستبيان من "${data.fileName}": ${data.dimensions.length} أقسام، ${nScale} سؤالاً. حُفظت الأسئلة السابقة نسخة احتياطية.`,
+    );
+    return { ok: true as const };
+  });
+
+export const restoreQuestionnaireBackup = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const core = await import("./core.server");
+    const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    const backup = await core.readSetting<QuestionnaireBackup>("questionnaire_backup");
+    if (!backup) throw new core.BadRequestError("There is no earlier set of questions to go back to.");
+    const config = await questionnaireGuard(core);
+    const actor = core.actorOf(staff);
+    // Swap, so the restore itself can be undone.
+    await core.writeSetting("questionnaire_backup", {
+      at: new Date().toISOString(),
+      by: actor,
+      replacedBy: "restore",
+      cycleName: config.general.cycleName,
+      dimensions: config.dimensions,
+      questions: config.questions,
+    } satisfies QuestionnaireBackup);
+    config.dimensions = backup.dimensions;
+    config.questions = backup.questions;
+    config.general.cycleName = backup.cycleName;
+    await core.saveConfig(config);
+    await core.audit(actor, "Went back to the previous set of survey questions.", "الرجوع إلى مجموعة أسئلة الاستبيان السابقة.");
+    return { ok: true as const };
+  });
+
 export const saveAdminConfig = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((d: unknown) => z.object({ config: z.record(z.string(), z.unknown()) }).parse(d))
@@ -262,8 +439,8 @@ export const saveAdminConfig = createServerFn({ method: "POST" })
       next.general.closedAt = next.general.status === "closed" ? new Date().toISOString() : undefined;
       await core.audit(
         core.actorOf(staff),
-        `Changed census status: ${previous.general.status} → ${next.general.status}`,
-        `تغيير حالة التعداد: ${previous.general.status} ← ${next.general.status}`,
+        `Changed survey status: ${previous.general.status} → ${next.general.status}`,
+        `تغيير حالة الاستبيان: ${previous.general.status} ← ${next.general.status}`,
       );
     } else {
       next.general.closedAt = previous.general.closedAt;
@@ -272,10 +449,16 @@ export const saveAdminConfig = createServerFn({ method: "POST" })
       await core.audit(
         core.actorOf(staff),
         `Changed anonymity floor: ${previous.anonymity.kFloor} → ${next.anonymity.kFloor}`,
-        `تغيير حد المجهولية: ${previous.anonymity.kFloor} ← ${next.anonymity.kFloor}`,
+        `تغيير حد السرية: ${previous.anonymity.kFloor} ← ${next.anonymity.kFloor}`,
       );
     }
+    const { describeConfigChanges } = await import("./changes");
+    const change = describeConfigChanges(
+      previous as unknown as Record<string, unknown>,
+      next as unknown as Record<string, unknown>,
+    );
     await core.saveConfig(next);
+    if (change) await core.auditCoalesced(core.actorOf(staff), change.en.slice(0, 1000), change.ar.slice(0, 1000));
     return { ok: true, closedAt: next.general.closedAt ?? null };
   });
 
@@ -291,13 +474,14 @@ export const logAudit = createServerFn({ method: "POST" })
 
 export const listAudit = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
-  .handler(async ({ context }): Promise<AuditRow[]> => {
+  .validator((d: unknown) => z.object({ limit: z.number().int().min(1).max(1000).optional() }).optional().parse(d))
+  .handler(async ({ data, context }): Promise<AuditRow[]> => {
     const core = await import("./core.server");
     const { getSql } = await import("@/lib/db");
     await core.requireStaff(context.userId, core.ADMIN_ROLES);
     const sql = await getSql();
     const rows = await sql<{ id: number; at: string | Date; actor: string; action_en: string; action_ar: string }>`
-      select id, at, actor, action_en, action_ar from pulse_audit order by id desc limit 60
+      select id, at, actor, action_en, action_ar from pulse_audit order by at desc, id desc limit ${data?.limit ?? 60}
     `;
     return rows.map((r) => ({
       id: Number(r.id),
@@ -356,10 +540,11 @@ export const exportData = createServerFn({ method: "POST" })
       return { filename: "pulse-departments.csv", csv: toCsv(rows) };
     }
     if (data.kind === "items") {
+      const names = brandNames(config.general, config.branding);
       const rows: unknown[][] = [["question_id", "dimension", "question_en", "question_ar", "favourable_pct", "answers"]];
       for (const it of r.items) {
         const q = config.questions.find((x) => x.id === it.id);
-        rows.push([it.id, it.dimension, q?.text.en ?? "", q?.text.ar ?? "", it.favorable, it.n]);
+        rows.push([it.id, it.dimension, brandText(q?.text.en ?? "", names, "en"), brandText(q?.text.ar ?? "", names, "ar"), it.favorable, it.n]);
       }
       return { filename: "pulse-items.csv", csv: toCsv(rows) };
     }
@@ -367,7 +552,7 @@ export const exportData = createServerFn({ method: "POST" })
     for (const c of r.comments ?? []) {
       const q = config.questions.find((x) => x.id === c.question);
       const dept = c.department ? (config.departments.find((x) => x.id === c.department)?.name.en ?? c.department) : "";
-      rows.push([c.question, q?.text.en ?? "", dept, c.body]);
+      rows.push([c.question, brandText(q?.text.en ?? "", brandNames(config.general, config.branding), "en"), dept, c.body]);
     }
     return { filename: "pulse-comments.csv", csv: toCsv(rows) };
   });
@@ -457,14 +642,14 @@ export const inviteStaff = createServerFn({ method: "POST" })
     if (data.sendEmail) {
       try {
         const mail = await import("./mail.server");
-        const org = config.general.orgName;
+        const org = brandNames(config.general, config.branding).orgName;
         const res = await mail.sendMail(config, [
           mail.bilingual(
             data.email,
-            `${org.en} — access to the census results`,
-            `${org.ar} — صلاحية الاطلاع على نتائج التعداد`,
-            `You have been invited to the ${org.en} census workspace.\n\nOpen this link, sign in or create an account, and your access is activated:\n\n${link}\n\nThe link works once.`,
-            `تمت دعوتك إلى مساحة تعداد ${org.ar}.\n\nافتح هذا الرابط وسجّل الدخول أو أنشئ حساباً ليُفعَّل وصولك:\n\n${link}\n\nيعمل الرابط مرة واحدة.`,
+            `${org.en} — access to the survey results`,
+            `${org.ar} — صلاحية الاطلاع على نتائج الاستبيان`,
+            `You have been invited to the ${org.en} survey workspace.\n\nOpen this link, sign in or create an account, and your access is activated:\n\n${link}\n\nThe link works once.`,
+            `تمت دعوتك إلى مساحة استبيان ${org.ar}.\n\nافتح هذا الرابط وسجّل الدخول أو أنشئ حساباً ليُفعَّل وصولك:\n\n${link}\n\nيعمل الرابط مرة واحدة.`,
           ),
         ]);
         emailed = Boolean(res[0]?.ok);
@@ -547,17 +732,73 @@ export const uploadRoster = createServerFn({ method: "POST" })
         rows: z
           .array(z.object({ email: z.string().max(300), departmentId: z.string().max(120).nullable().optional() }))
           .max(5000),
+        allowUnmatched: z.boolean().optional(),
+        /** Large lists arrive in parts; the last part records one dated summary and one audit entry. */
+        batch: z
+          .object({
+            id: z.string().min(8).max(64),
+            index: z.number().int().min(0),
+            count: z.number().int().min(1).max(100),
+            source: z.string().max(120),
+          })
+          .optional(),
       })
       .parse(d),
   )
-  .handler(async ({ data, context }): Promise<{ added: number; skipped: number; invalid: number }> => {
+  .handler(async ({ data, context }): Promise<AddInviteesResultView> => {
     const core = await import("./core.server");
     const mail = await import("./mail.server");
     const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
-    const res = await mail.addInvitees(data.rows, await core.loadConfig());
-    await core.audit(core.actorOf(staff), `Added ${res.added} people to the invitation list`, `إضافة ${res.added} إلى قائمة الدعوات`);
-    return res;
+    const res = await mail.addInvitees(data.rows, await core.loadConfig(), { allowUnmatched: data.allowUnmatched });
+    if (res.blocked) {
+      throw new core.BadRequestError(
+        `Department not recognised: ${res.unmatchedNames.join(", ")}. Fix the names in the file, or choose to add these people without a department.`,
+      );
+    }
+    const batch = data.batch ?? { id: core.newId(), index: 0, count: 1, source: "pasted list" };
+    type Running = RosterUploadSummary & { id: string };
+    const prev = await core.readSetting<Running>("roster_upload_running");
+    const run: Running =
+      prev && prev.id === batch.id && batch.index > 0
+        ? prev
+        : { id: batch.id, at: "", by: core.actorOf(staff), source: batch.source, rows: 0, added: 0, skipped: 0, invalid: 0, noDepartment: 0, unmatched: 0 };
+    run.rows += data.rows.length;
+    run.added += res.added;
+    run.skipped += res.skipped;
+    run.invalid += res.invalid;
+    run.noDepartment += res.noDepartment;
+    run.unmatched += res.unmatched;
+    let summary: RosterUploadSummary | null = null;
+    if (batch.index >= batch.count - 1) {
+      const { id: _id, ...rest } = run;
+      summary = { ...rest, at: new Date().toISOString() };
+      await core.writeSetting("roster_last_upload", summary);
+      await core.writeSetting("roster_upload_running", null);
+      await core.audit(
+        core.actorOf(staff),
+        `Uploaded staff list (${summary.source}): ${summary.added} added, ${summary.skipped} already listed, ${summary.invalid} invalid${
+          summary.noDepartment + summary.unmatched ? `, ${summary.noDepartment + summary.unmatched} without department` : ""
+        }`,
+        `رفع قائمة الموظفين (${summary.source}): أُضيف ${summary.added}، موجود مسبقاً ${summary.skipped}، غير صالح ${summary.invalid}${
+          summary.noDepartment + summary.unmatched ? `، بلا إدارة ${summary.noDepartment + summary.unmatched}` : ""
+        }`,
+      );
+    } else {
+      await core.writeSetting("roster_upload_running", run);
+    }
+    return { ...res, summary };
   });
+
+export type AddInviteesResultView = {
+  added: number;
+  skipped: number;
+  invalid: number;
+  noDepartment: number;
+  unmatched: number;
+  unmatchedNames: string[];
+  blocked: boolean;
+  summary: RosterUploadSummary | null;
+};
 
 export interface InvitationOverview {
   stats: InviteeStats;
@@ -565,6 +806,7 @@ export interface InvitationOverview {
   mail: { passwordSet: boolean; problem: string | null };
   surveyUrl: string;
   failures: { email: string; error: string }[];
+  lastUpload: RosterUploadSummary | null;
 }
 
 export const getInvitationOverview = createServerFn({ method: "GET" })
@@ -590,7 +832,9 @@ export const getInvitationOverview = createServerFn({ method: "GET" })
       select email, send_error from pulse_invitees where send_error is not null order by email limit 50
     `;
     const passwordSet = await mail.smtpPasswordSet();
+    const lastUpload = await core.readSetting<RosterUploadSummary>("roster_last_upload");
     return {
+      lastUpload,
       stats: await mail.inviteeStats(config),
       campaigns: campaigns.map((c) => ({
         id: c.id,
@@ -617,7 +861,7 @@ export const startCampaign = createServerFn({ method: "POST" })
     const { getSql } = await import("@/lib/db");
     const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
     const config = await core.loadConfig();
-    if (config.general.status !== "open") throw new core.BadRequestError("Open the census before sending invitations.");
+    if (config.general.status !== "open") throw new core.BadRequestError("Open the survey before sending invitations.");
     const problem = mail.mailReady(config, await mail.smtpPasswordSet());
     if (problem) throw new core.BadRequestError(problem);
     const sql = await getSql();
@@ -692,16 +936,18 @@ export const sendTestEmail = createServerFn({ method: "POST" })
     const vars = (lang: "en" | "ar") => ({
       survey_link: link,
       close_date: formatIsoDate(config.calendar.fieldClose, lang),
-      org_name: config.general.orgName[lang],
+      org_name: brandNames(config.general, config.branding).orgName[lang],
     });
+    const names = brandNames(config.general, config.branding);
+    const fill = (text: string, lang: "en" | "ar") => brandText(applyTokens(text, vars(lang)), names, lang);
     try {
       const res = await mail.sendMail(config, [
         mail.bilingual(
           data.to,
-          `[TEST] ${applyTokens(config.email.subjectEn, vars("en"))}`,
-          applyTokens(config.email.subjectAr, vars("ar")),
-          applyTokens(config.email.bodyEn, vars("en")),
-          applyTokens(config.email.bodyAr, vars("ar")),
+          `[TEST] ${fill(config.email.subjectEn, "en")}`,
+          fill(config.email.subjectAr, "ar"),
+          fill(config.email.bodyEn, "en"),
+          fill(config.email.bodyAr, "ar"),
         ),
       ]);
       return res[0]?.ok ? { ok: true } : { ok: false, error: res[0]?.error ?? "send failed" };
@@ -789,7 +1035,7 @@ export const manageData = createServerFn({ method: "POST" })
         ? ["Deleted all responses", "حذف جميع الإجابات"]
         : data.action === "delete_invitees"
           ? ["Deleted the invitation list", "حذف قائمة الدعوات"]
-          : ["Deleted the cycle: responses, invitation list and settings", "حذف الدورة: الإجابات وقائمة الدعوات والإعدادات"];
+          : ["Deleted the survey data: responses, invitation list and settings", "حذف بيانات الاستبيان: الإجابات وقائمة الدعوات والإعدادات"];
     await core.audit(core.actorOf(staff), label[0], label[1]);
     return { ok: true };
   });
@@ -814,8 +1060,8 @@ export const generateAiBriefing = createServerFn({ method: "POST" })
     // Aggregates only, already filtered by the anonymity floor. No comments, no rows.
     const dimName = (id: string) => config.dimensions.find((d) => d.id === id)?.name.en ?? id;
     const stats = {
-      organisation: config.general.orgName.en,
-      cycle: config.general.cycleName.en,
+      organisation: brandNames(config.general, config.branding).orgName.en,
+      cycle: brandText(config.general.cycleName.en, brandNames(config.general, config.branding), "en"),
       respondents: r.total,
       headcount: r.headcount,
       responseRatePct: r.rate,

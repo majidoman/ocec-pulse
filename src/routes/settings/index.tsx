@@ -5,16 +5,51 @@ import { Switch } from "@/components/ui/switch";
 import { Field, TextField } from "@/components/settings-field";
 import { useCensus } from "@/lib/census";
 import { useSettings } from "@/lib/settings-store";
+import { formatIsoDate } from "@/lib/pulse/config";
 import { useT } from "@/lib/store";
-import type { CensusStatus } from "@/lib/types";
+
+function todayIn(tz: string): string {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone: tz }).format(new Date());
+  } catch {
+    return new Date().toISOString().slice(0, 10);
+  }
+}
 
 export const Route = createFileRoute("/settings/")({ component: GeneralPage });
 
 function GeneralPage() {
-  const { t, loc } = useT();
+  const { t, loc, lang } = useT();
   const g = useSettings((s) => s.general);
   const patch = useSettings((s) => s.patchGeneral);
-  const { rate, completed, headcount, fieldOpen, fieldClose } = useCensus();
+  const { rate, completed, headcount } = useCensus();
+  const cal = useSettings((s) => s.calendar);
+  const patchCalendar = useSettings((s) => s.patchCalendar);
+  const timezone = g.timezone || "Asia/Muscat";
+  const today = todayIn(timezone);
+
+  /** Dates drive the status: both set = open (answers accepted only inside them), cleared = back to draft. */
+  function setDates(open: string, close: string) {
+    patchCalendar({ fieldOpen: open, fieldClose: close });
+    const valid = !!open && !!close && close >= open;
+    if (valid && g.status === "draft") patch({ status: "open" });
+    if ((!open || !close) && g.status === "open") patch({ status: "draft" });
+  }
+
+  // Mirrors the server rule: answers are accepted when the status is open and today is inside whichever dates are set.
+  const stateInfo: { label: { en: string; ar: string }; tone: string } = (() => {
+    const o = cal.fieldOpen;
+    const c = cal.fieldClose;
+    const d = (iso: string) => formatIsoDate(iso, lang);
+    if (o && c && c < o) return { label: { en: "the end date is before the start date", ar: "تاريخ الانتهاء قبل تاريخ البدء" }, tone: "text-score-crit" };
+    if (g.status === "closed" || g.status === "archived") return { label: { en: "closed", ar: "مغلق" }, tone: "text-muted" };
+    if (g.status === "draft") return { label: { en: "not scheduled — enter the start and end dates", ar: "غير مجدول — أدخل تاريخ البدء وتاريخ الانتهاء" }, tone: "text-muted" };
+    if (o && today < o) return { label: { en: `scheduled, opens on ${d(o)}`, ar: `مجدول، يُفتح في ${d(o)}` }, tone: "text-ink" };
+    if (c && today > c) return { label: { en: `ended on ${d(c)}`, ar: `انتهى في ${d(c)}` }, tone: "text-muted" };
+    return c
+      ? { label: { en: `open until ${d(c)}`, ar: `مفتوح حتى ${d(c)}` }, tone: "text-score-good font-medium" }
+      : { label: { en: "open, with no end date set", ar: "مفتوح، دون تاريخ انتهاء" }, tone: "text-score-good font-medium" };
+  })();
 
   return (
     <PageFrame title={t("setGeneral")} hint={t("settingsHint")}>
@@ -31,28 +66,28 @@ function GeneralPage() {
         </p>
       </Card>
       <Card className="grid gap-4 md:grid-cols-2">
-        <Field
-          label={loc({ en: "Census status", ar: "حالة التعداد" })}
-          hint={loc({
-            en: "Answers are accepted only while the status is Open and today is inside the field dates.",
-            ar: "تُقبل الإجابات فقط حين تكون الحالة «مفتوح» واليوم ضمن تواريخ الميدان.",
-          })}
-        >
-          <select className="h-11 rounded-md border border-border bg-paper px-3 text-sm" value={g.status} onChange={(e) => patch({ status: e.target.value as CensusStatus })}>
-            <option value="draft">{t("statusDraft")}</option>
-            <option value="open">{t("statusOpen")}</option>
-            <option value="closed">{t("statusClosed")}</option>
-            <option value="archived">{t("statusArchived")}</option>
-          </select>
-        </Field>
-        <Field
-          label={loc({ en: "Field dates", ar: "تواريخ الميدان" })}
-          hint={loc({ en: "Set under Delivery calendar.", ar: "تُضبط من تقويم التنفيذ." })}
-        >
-          <Link to="/settings/calendar" className="flex h-11 items-center rounded-md border border-border bg-paper px-3 text-sm text-ink">
-            {fieldOpen || "—"} → {fieldClose || "—"}
-          </Link>
-        </Field>
+        <TextField
+          label={loc({ en: "Start date", ar: "تاريخ البدء" })}
+          type="date"
+          value={cal.fieldOpen}
+          onChange={(v) => setDates(v, cal.fieldClose)}
+        />
+        <TextField
+          label={loc({ en: "End date", ar: "تاريخ الانتهاء" })}
+          type="date"
+          value={cal.fieldClose}
+          onChange={(v) => setDates(cal.fieldOpen, v)}
+        />
+        <div className="md:col-span-2 rounded-md bg-sand-2 px-3 py-2 text-sm" role="status">
+          <span className="font-medium text-ink">{loc({ en: "Status: ", ar: "الحالة: " })}</span>
+          <span className={stateInfo.tone}>{loc(stateInfo.label)}</span>
+          <span className="block text-xs text-subtle">
+            {loc({
+              en: "Staff can answer only between the start and end dates. To close early or reopen, use the Danger zone page.",
+              ar: "يستطيع الموظفون الإجابة بين تاريخ البدء وتاريخ الانتهاء فقط. للإغلاق المبكر أو إعادة الفتح استخدم صفحة منطقة الخطر.",
+            })}
+          </span>
+        </div>
         <label className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-sm md:col-span-2">
           <span>
             {loc({ en: "Allow the shared link and QR code", ar: "السماح بالرابط المشترك ورمز QR" })}
@@ -67,8 +102,26 @@ function GeneralPage() {
         </label>
         <TextField label="Organisation (EN)" value={g.orgName.en} onChange={(v) => patch({ orgName: { ...g.orgName, en: v } })} />
         <TextField label="المؤسسة (AR)" value={g.orgName.ar} onChange={(v) => patch({ orgName: { ...g.orgName, ar: v } })} />
-        <TextField label="Cycle (EN)" value={g.cycleName.en} onChange={(v) => patch({ cycleName: { ...g.cycleName, en: v } })} />
-        <TextField label="الدورة (AR)" value={g.cycleName.ar} onChange={(v) => patch({ cycleName: { ...g.cycleName, ar: v } })} />
+        <TextField
+          label="Short name (EN)"
+          value={g.orgShort.en}
+          hint={loc({
+            en: "Used inside questions and sentences, e.g. Acme. Blank = the full name.",
+            ar: "يُستخدم داخل الأسئلة والجمل. فارغ = الاسم الكامل.",
+          })}
+          onChange={(v) => patch({ orgShort: { ...g.orgShort, en: v } })}
+        />
+        <TextField label="الاسم المختصر (AR)" value={g.orgShort.ar} onChange={(v) => patch({ orgShort: { ...g.orgShort, ar: v } })} />
+        <TextField
+          label="Survey name (EN)"
+          value={g.cycleName.en}
+          hint={loc({
+            en: "Shown to staff at the top of the survey and in emails, e.g. Staff Survey 2026.",
+            ar: "يظهر للموظفين أعلى الاستبيان وفي الرسائل، مثل: استبيان الموظفين 2026.",
+          })}
+          onChange={(v) => patch({ cycleName: { ...g.cycleName, en: v } })}
+        />
+        <TextField label="اسم الاستبيان (AR)" value={g.cycleName.ar} onChange={(v) => patch({ cycleName: { ...g.cycleName, ar: v } })} />
         <TextField
           label={loc({ en: "Public address of this app", ar: "العنوان العام للتطبيق" })}
           value={g.publicUrl}
@@ -78,7 +131,7 @@ function GeneralPage() {
           })}
           onChange={(v) => patch({ publicUrl: v.trim() })}
         />
-        <Field label="Timezone">
+        <Field label={loc({ en: "Time zone", ar: "المنطقة الزمنية" })}>
           <select className="h-11 rounded-md border border-border bg-paper px-3 text-sm" value={g.timezone} onChange={(e) => patch({ timezone: e.target.value })}>
             <option value="Asia/Muscat">Asia/Muscat</option>
             <option value="Asia/Dubai">Asia/Dubai</option>

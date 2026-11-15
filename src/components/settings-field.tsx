@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,16 +7,25 @@ export function Field({
   label,
   hint,
   children,
+  htmlFor,
+  hintId,
 }: {
   label: string;
   hint?: string;
   children: ReactNode;
+  /** id of the control, so the label is announced by screen readers and clicking it focuses the field. */
+  htmlFor?: string;
+  hintId?: string;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label>{label}</Label>
+      <Label htmlFor={htmlFor}>{label}</Label>
       {children}
-      {hint ? <p className="text-xs text-subtle">{hint}</p> : null}
+      {hint ? (
+        <p id={hintId} className="text-xs text-subtle">
+          {hint}
+        </p>
+      ) : null}
     </div>
   );
 }
@@ -36,9 +45,17 @@ export function TextField({
   type?: string;
   disabled?: boolean;
 }) {
+  const id = useId();
   return (
-    <Field label={label} hint={hint}>
-      <Input type={type} value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)} />
+    <Field label={label} hint={hint} htmlFor={id} hintId={`${id}-hint`}>
+      <Input
+        id={id}
+        type={type}
+        value={value}
+        disabled={disabled}
+        aria-describedby={hint ? `${id}-hint` : undefined}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </Field>
   );
 }
@@ -58,9 +75,18 @@ export function AreaField({
   dir?: "ltr" | "rtl";
   disabled?: boolean;
 }) {
+  const id = useId();
   return (
-    <Field label={label} hint={hint}>
-      <Textarea dir={dir} value={value} disabled={disabled} rows={4} onChange={(e) => onChange(e.target.value)} />
+    <Field label={label} hint={hint} htmlFor={id} hintId={`${id}-hint`}>
+      <Textarea
+        id={id}
+        dir={dir}
+        value={value}
+        disabled={disabled}
+        rows={4}
+        aria-describedby={hint ? `${id}-hint` : undefined}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </Field>
   );
 }

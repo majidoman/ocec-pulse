@@ -1,33 +1,37 @@
-import type { ReactNode, CSSProperties } from "react";
+import { useEffect, type ReactNode, type CSSProperties } from "react";
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
+import { EnvBanner } from "@/components/env-banner";
 import { Rehydrate } from "@/components/rehydrate";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useApp } from "@/lib/store";
+import { useApp, useBrand } from "@/lib/store";
 import { useSettings } from "@/lib/settings-store";
 import { Toaster } from "sonner";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "OCEC Pulse";
+/** Neutral until settings load; LangShell then sets the client's product name. */
+const APP_NAME = "Pulse";
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      // Follow the phone's / computer's text-size setting (layout is rem-based; no root font-size override).
+      { name: "text-scale", content: "scale" },
       { title: APP_NAME },
       { name: "theme-color", content: "#142A32" },
       {
         name: "description",
-        content: "OCEC Pulse — confidential employee engagement census.",
+        content: "Confidential staff engagement survey.",
       },
     ],
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/__grok/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
     ],
   }),
   component: RootDocument,
@@ -41,6 +45,7 @@ function RootDocument() {
       </head>
       <body>
         <PreviewHostBridge />
+        <EnvBanner />
         <AuthProvider>
           <Rehydrate />
           <TooltipProvider delayDuration={200}>
@@ -69,6 +74,16 @@ function RootDocument() {
 function LangShell({ children }: { children: ReactNode }) {
   const lang = useApp((s) => s.lang);
   const branding = useSettings((s) => s.branding);
+  const names = useBrand();
+  useEffect(() => {
+    document.title = names.app[lang];
+  }, [names, lang]);
+  // Keep <html> in step with the chosen language, so screen readers, browser translation
+  // and spell-checking treat the whole page (including dialogs portalled to <body>) correctly.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+  }, [lang]);
   return (
     <div
       lang={lang}

@@ -1,0 +1,83 @@
+# SEC-002: staff invitation usable only by the invited email address, and only for 30 days
+diff --git a/src/lib/pulse/api.ts b/src/lib/pulse/api.ts
+index 8b3b0e5..b74dc25 100644
+--- a/src/lib/pulse/api.ts
++++ b/src/lib/pulse/api.ts
+@@ -246,9 +246,22 @@ export const acceptInvite = createServerFn({ method: "POST" })
+     const sql = await getSql();
+     const me = await core.getMe(context.userId);
+     if (me.role) throw new core.BadRequestError("You already have access to this survey.");
++    // The link is only usable by the person it was sent to, and only for 30 days, so a forwarded
++    // or leaked invitation cannot hand someone else access to the results.
++    const myEmail = (me.email ?? "").trim().toLowerCase();
++    const pending = await sql<{ email: string; fresh: boolean }>`
++      select email, created_at > now() - interval '30 days' as fresh
++      from pulse_staff_invites where code = ${data.code} and accepted_by is null
++    `;
++    if (!pending.length) throw new core.BadRequestError("This invitation link is not valid or was already used.");
++    if (!pending[0].fresh) throw new core.BadRequestError("This invitation has expired. Ask your administrator for a new one.");
++    if (!myEmail || pending[0].email.trim().toLowerCase() !== myEmail) {
++      throw new core.ForbiddenError("This invitation was sent to a different email address. Sign in with that address, or ask for a new invitation.");
++    }
+     const claimed = await sql<{ email: string; name: string | null; role: StaffRole; department_id: string | null }>`
+       update pulse_staff_invites set accepted_by = ${context.userId}, accepted_at = now()
+       where code = ${data.code} and accepted_by is null
++        and created_at > now() - interval '30 days' and lower(trim(email)) = ${myEmail}
+       returning email, name, role, department_id
+     `;
+     if (!claimed.length) throw new core.BadRequestError("This invitation link is not valid or was already used.");
+# SEC-001: rateLimit() can count per account (one bucket for all addresses)
+diff --git a/src/lib/pulse/core.server.ts b/src/lib/pulse/core.server.ts
+index b92afbf..25b1c48 100644
+--- a/src/lib/pulse/core.server.ts
++++ b/src/lib/pulse/core.server.ts
+@@ -288,8 +288,9 @@ function callerAddress(): string | null {
+  * RateLimitedError past `limit`. Only a salted one-way hash of the address is kept, per hour,
+  * and it is never linked to a response, an invitation or an account.
+  */
+-export async function rateLimit(kind: string, limit: number): Promise<void> {
+-  const address = callerAddress();
++export async function rateLimit(kind: string, limit: number, opts: { perAddress?: boolean } = {}): Promise<void> {
++  // perAddress (default): one bucket per caller address. false: one bucket for everyone (e.g. per account).
++  const address = (opts.perAddress ?? true) ? callerAddress() : "*";
+   if (!address) return;
+   const sql = await getSql();
+   const hour = new Date();
+# SEC-001: persistent sign-in throttling — 30/hour per address, 20/hour per account
+diff --git a/src/routes/api/auth/$.ts b/src/routes/api/auth/$.ts
+index 6025263..96a5803 100644
+--- a/src/routes/api/auth/$.ts
++++ b/src/routes/api/auth/$.ts
+@@ -21,7 +21,32 @@ async function signUpAllowed(request: Request): Promise<boolean> {
+   return rows.length > 0;
+ }
+ 
++/**
++ * Password guessing is limited in the database, so the limit holds across serverless instances
++ * (Better Auth's own limiter keeps counts in each instance's memory): 30 attempts per hour from one
++ * address, and 20 per hour against one account from anywhere.
++ */
++async function signInThrottled(request: Request): Promise<boolean> {
++  const { rateLimit, RateLimitedError } = await import("@/lib/pulse/core.server");
++  try {
++    await rateLimit("sign-in", 30);
++    const body = (await request.clone().json().catch(() => null)) as { email?: unknown } | null;
++    const email = typeof body?.email === "string" ? body.email.trim().toLowerCase().slice(0, 254) : "";
++    if (email) await rateLimit(`sign-in:${email}`, 20, { perAddress: false });
++    return false;
++  } catch (e) {
++    if (e instanceof RateLimitedError) return true;
++    throw e;
++  }
++}
++
+ async function guarded(request: Request): Promise<Response> {
++  if (request.method === "POST" && new URL(request.url).pathname.endsWith("/sign-in/email") && (await signInThrottled(request))) {
++    return Response.json(
++      { message: "Too many sign-in attempts. Wait an hour, then try again.", code: "TOO_MANY_ATTEMPTS" },
++      { status: 429 },
++    );
++  }
+   if (request.method === "POST" && new URL(request.url).pathname.endsWith("/sign-up/email")) {
+     let allowed = false;
+     try {

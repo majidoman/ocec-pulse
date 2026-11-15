@@ -153,7 +153,7 @@ export async function requireStaff(userId: string, roles?: StaffRole[]): Promise
     name: string | null;
   }>`select role, department_id, active, email, name from pulse_staff where user_id = ${userId}`;
   const staff = rows[0];
-  if (!staff || !staff.active) throw new ForbiddenError("You do not have access to this census.");
+  if (!staff || !staff.active) throw new ForbiddenError("You do not have access to this survey.");
   if (roles && !roles.includes(staff.role)) throw new ForbiddenError("Your role cannot do this.");
   return {
     userId,
@@ -165,6 +165,23 @@ export async function requireStaff(userId: string, roles?: StaffRole[]): Promise
 }
 
 export const ADMIN_ROLES: StaffRole[] = ["super", "pc"];
+
+// ── First-run setup code ─────────────────────────────────────────────────────
+// An installed copy sets SETUP_CODE (see .env). Until an owner exists, anyone who can reach the
+// address could otherwise claim it; with a code, only the installer can.
+
+export function setupCodeRequired(): boolean {
+  return (process.env.SETUP_CODE ?? "").trim().length > 0;
+}
+
+export async function setupCodeMatches(given: string | undefined): Promise<boolean> {
+  const expected = (process.env.SETUP_CODE ?? "").trim();
+  if (!expected) return true;
+  const { timingSafeEqual } = await import("node:crypto");
+  const a = createHash("sha256").update(expected).digest();
+  const b = createHash("sha256").update((given ?? "").trim()).digest();
+  return timingSafeEqual(a, b);
+}
 
 /** The first signed-in user becomes the owner. Fails once any administrator exists. */
 export async function claimOwnership(userId: string): Promise<void> {
@@ -179,7 +196,7 @@ export async function claimOwnership(userId: string): Promise<void> {
     returning user_id
   `;
   if (!rows.length) throw new ForbiddenError("An administrator already exists. Ask them for an invitation.");
-  await audit(profile.email ?? userId, "Claimed ownership of the census", "تولّى ملكية التعداد");
+  await audit(profile.email ?? userId, "Claimed ownership of the survey", "تولّى ملكية الاستبيان");
 }
 
 // ── Audit ────────────────────────────────────────────────────────────────────
@@ -187,6 +204,25 @@ export async function claimOwnership(userId: string): Promise<void> {
 export async function audit(actor: string, en: string, ar: string): Promise<void> {
   const sql = await getSql();
   await sql`insert into pulse_audit (actor, action_en, action_ar) values (${actor}, ${en}, ${ar})`;
+}
+
+/**
+ * Like audit(), but if the same person's most recent entry has the same text and is under
+ * `minutes` old, its time is moved forward instead of adding a duplicate line (settings save
+ * as you type).
+ */
+export async function auditCoalesced(actor: string, en: string, ar: string, minutes = 15): Promise<void> {
+  const sql = await getSql();
+  const last = await sql<{ id: number; actor: string; action_en: string; recent: boolean }>`
+    select id, actor, action_en, (at > now() - make_interval(mins => ${minutes})) as recent
+    from pulse_audit order by id desc limit 1
+  `;
+  const row = last[0];
+  if (row && row.actor === actor && row.action_en === en && row.recent) {
+    await sql`update pulse_audit set at = now() where id = ${row.id}`;
+    return;
+  }
+  await audit(actor, en, ar);
 }
 
 export function actorOf(ctx: StaffContext): string {
@@ -237,8 +273,14 @@ function callerAddress(): string | null {
   const request = getRequest();
   if (!request) return null;
   const h = request.headers;
-  const raw = h.get("x-vercel-forwarded-for") ?? h.get("x-real-ip") ?? h.get("x-forwarded-for");
-  return raw ? raw.split(",")[0].trim() || null : null;
+  // Vercel's own header and X-Real-IP are set by the platform/proxy. In X-Forwarded-For the visitor can
+  // prepend fake entries, so trust only the last one (added by the proxy in front of the app).
+  const trusted = h.get("x-vercel-forwarded-for") ?? h.get("x-real-ip");
+  if (trusted) return trusted.split(",")[0].trim() || null;
+  const xff = h.get("x-forwarded-for");
+  if (!xff) return null;
+  const parts = xff.split(",").map((p) => p.trim()).filter(Boolean);
+  return parts[parts.length - 1] ?? null;
 }
 
 /**

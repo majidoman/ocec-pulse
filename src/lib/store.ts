@@ -3,6 +3,8 @@ import { persist } from "zustand/middleware";
 import type { ContractId, DepartmentId, Lang, LevelId, Localized, SurveyDraft, TenureId } from "./types";
 import type { CopyKey } from "./i18n";
 import { tx } from "./i18n";
+import { brandNames, brandText } from "./pulse/config";
+import { useSettings } from "./settings-store";
 
 const emptyDraft = (): SurveyDraft => ({
   answers: {},
@@ -58,11 +60,19 @@ export const useApp = create<AppState>()(
   ),
 );
 
+/** Client name, short name and product name from settings (see brandNames). */
+export function useBrand() {
+  const general = useSettings((s) => s.general);
+  const branding = useSettings((s) => s.branding);
+  return brandNames(general, branding);
+}
+
 export function useT() {
   const lang = useApp((s) => s.lang);
+  const names = useBrand();
   return {
     lang,
-    t: (key: CopyKey) => tx(lang, key),
-    loc: (value: Localized) => value[lang],
+    t: (key: CopyKey) => brandText(tx(lang, key), names, lang),
+    loc: (value: Localized) => brandText(value[lang], names, lang),
   };
 }

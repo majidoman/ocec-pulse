@@ -29,7 +29,7 @@ function ComparePage() {
                 <p className="text-sm leading-relaxed text-muted">
                   {loc({
                     en: "No earlier cycle has been loaded, so there is nothing to compare with yet. This cycle is the baseline for next year.",
-                    ar: "لم تُحمَّل دورة سابقة، فلا مقارنة بعد. هذه الدورة خط الأساس للعام القادم.",
+                    ar: "لم تُحمَّل نتائج سابقة، فلا مقارنة بعد. هذا الاستبيان نقطة الأساس للعام القادم.",
                   })}
                 </p>
                 {canEditSettings(currentRole) ? (

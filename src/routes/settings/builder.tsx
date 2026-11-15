@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp, Eye, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 import { PageFrame } from "@/components/page-frame";
+import { QuestionnaireImport } from "@/components/questionnaire-import";
 import { Likert, Enps } from "@/components/likert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -52,7 +53,7 @@ function BuilderPage() {
     const blob = new Blob([JSON.stringify({ dimensions, questions }, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "ocec-voice-questionnaire.json";
+    a.download = "questionnaire.json";
     a.click();
   }
 
@@ -91,6 +92,8 @@ function BuilderPage() {
         {ordered.filter((d) => d.visible).length} {t("dimensionOf")} · {questions.filter((q) => q.visible).length}{" "}
         {t("questions")} · {status === "frozen" ? t("frozen") : t("draftBank")}
       </p>
+
+      <QuestionnaireImport />
 
       {preview && dim ? (
         <Card className="mx-auto max-w-md">

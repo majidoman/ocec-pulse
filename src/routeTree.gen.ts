@@ -15,6 +15,9 @@ import { Route as InsightsRouteRouteImport } from './routes/insights/route'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
+import { Route as SetupRouteImport } from './routes/setup'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
+import { Route as ApiTestAccessRouteImport } from './routes/api/test-access'
 import { Route as InsightsIndexRouteImport } from './routes/insights/index'
 import { Route as InsightsActionsRouteImport } from './routes/insights/actions'
 import { Route as InsightsAiRouteImport } from './routes/insights/ai'
@@ -38,6 +41,7 @@ import { Route as SettingsCalendarRouteImport } from './routes/settings/calendar
 import { Route as SettingsDangerRouteImport } from './routes/settings/danger'
 import { Route as SettingsDepartmentsRouteImport } from './routes/settings/departments'
 import { Route as SettingsEmailRouteImport } from './routes/settings/email'
+import { Route as SettingsHistoryRouteImport } from './routes/settings/history'
 import { Route as SettingsIntegrationsRouteImport } from './routes/settings/integrations'
 import { Route as SettingsRemindersRouteImport } from './routes/settings/reminders'
 import { Route as SettingsUsersRouteImport } from './routes/settings/users'
@@ -74,6 +78,21 @@ const LoginRoute = LoginRouteImport.update({
 const SettingsRouteRoute = SettingsRouteRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTestAccessRoute = ApiTestAccessRouteImport.update({
+  id: '/api/test-access',
+  path: '/api/test-access',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InsightsIndexRoute = InsightsIndexRouteImport.update({
@@ -191,6 +210,11 @@ const SettingsEmailRoute = SettingsEmailRouteImport.update({
   path: '/email',
   getParentRoute: () => SettingsRouteRoute,
 } as any)
+const SettingsHistoryRoute = SettingsHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => SettingsRouteRoute,
+} as any)
 const SettingsIntegrationsRoute = SettingsIntegrationsRouteImport.update({
   id: '/integrations',
   path: '/integrations',
@@ -234,6 +258,9 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/setup': typeof SetupRoute
+  '/api/health': typeof ApiHealthRoute
+  '/api/test-access': typeof ApiTestAccessRoute
   '/insights/actions': typeof InsightsActionsRoute
   '/insights/ai': typeof InsightsAiRoute
   '/insights/benchmarks': typeof InsightsBenchmarksRoute
@@ -255,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/settings/danger': typeof SettingsDangerRoute
   '/settings/departments': typeof SettingsDepartmentsRoute
   '/settings/email': typeof SettingsEmailRoute
+  '/settings/history': typeof SettingsHistoryRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/reminders': typeof SettingsRemindersRoute
   '/settings/users': typeof SettingsUsersRoute
@@ -270,6 +298,9 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/setup': typeof SetupRoute
+  '/api/health': typeof ApiHealthRoute
+  '/api/test-access': typeof ApiTestAccessRoute
   '/insights/actions': typeof InsightsActionsRoute
   '/insights/ai': typeof InsightsAiRoute
   '/insights/benchmarks': typeof InsightsBenchmarksRoute
@@ -291,6 +322,7 @@ export interface FileRoutesByTo {
   '/settings/danger': typeof SettingsDangerRoute
   '/settings/departments': typeof SettingsDepartmentsRoute
   '/settings/email': typeof SettingsEmailRoute
+  '/settings/history': typeof SettingsHistoryRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/reminders': typeof SettingsRemindersRoute
   '/settings/users': typeof SettingsUsersRoute
@@ -309,6 +341,9 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/setup': typeof SetupRoute
+  '/api/health': typeof ApiHealthRoute
+  '/api/test-access': typeof ApiTestAccessRoute
   '/insights/actions': typeof InsightsActionsRoute
   '/insights/ai': typeof InsightsAiRoute
   '/insights/benchmarks': typeof InsightsBenchmarksRoute
@@ -330,6 +365,7 @@ export interface FileRoutesById {
   '/settings/danger': typeof SettingsDangerRoute
   '/settings/departments': typeof SettingsDepartmentsRoute
   '/settings/email': typeof SettingsEmailRoute
+  '/settings/history': typeof SettingsHistoryRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/reminders': typeof SettingsRemindersRoute
   '/settings/users': typeof SettingsUsersRoute
@@ -349,6 +385,9 @@ export interface FileRouteTypes {
     | '/faq'
     | '/join'
     | '/login'
+    | '/setup'
+    | '/api/health'
+    | '/api/test-access'
     | '/insights/actions'
     | '/insights/ai'
     | '/insights/benchmarks'
@@ -370,6 +409,7 @@ export interface FileRouteTypes {
     | '/settings/danger'
     | '/settings/departments'
     | '/settings/email'
+    | '/settings/history'
     | '/settings/integrations'
     | '/settings/reminders'
     | '/settings/users'
@@ -385,6 +425,9 @@ export interface FileRouteTypes {
     | '/faq'
     | '/join'
     | '/login'
+    | '/setup'
+    | '/api/health'
+    | '/api/test-access'
     | '/insights/actions'
     | '/insights/ai'
     | '/insights/benchmarks'
@@ -406,6 +449,7 @@ export interface FileRouteTypes {
     | '/settings/danger'
     | '/settings/departments'
     | '/settings/email'
+    | '/settings/history'
     | '/settings/integrations'
     | '/settings/reminders'
     | '/settings/users'
@@ -423,6 +467,9 @@ export interface FileRouteTypes {
     | '/faq'
     | '/join'
     | '/login'
+    | '/setup'
+    | '/api/health'
+    | '/api/test-access'
     | '/insights/actions'
     | '/insights/ai'
     | '/insights/benchmarks'
@@ -444,6 +491,7 @@ export interface FileRouteTypes {
     | '/settings/danger'
     | '/settings/departments'
     | '/settings/email'
+    | '/settings/history'
     | '/settings/integrations'
     | '/settings/reminders'
     | '/settings/users'
@@ -462,6 +510,9 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
+  SetupRoute: typeof SetupRoute
+  ApiHealthRoute: typeof ApiHealthRoute
+  ApiTestAccessRoute: typeof ApiTestAccessRoute
   SurveyCompleteRoute: typeof SurveyCompleteRoute
   SurveyIndexRoute: typeof SurveyIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -510,6 +561,27 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/test-access': {
+      id: '/api/test-access'
+      path: '/api/test-access'
+      fullPath: '/api/test-access'
+      preLoaderRoute: typeof ApiTestAccessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/insights/': {
@@ -673,6 +745,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsEmailRouteImport
       parentRoute: typeof SettingsRouteRoute
     }
+    '/settings/history': {
+      id: '/settings/history'
+      path: '/history'
+      fullPath: '/settings/history'
+      preLoaderRoute: typeof SettingsHistoryRouteImport
+      parentRoute: typeof SettingsRouteRoute
+    }
     '/settings/integrations': {
       id: '/settings/integrations'
       path: '/integrations'
@@ -772,6 +851,7 @@ interface SettingsRouteRouteChildren {
   SettingsDangerRoute: typeof SettingsDangerRoute
   SettingsDepartmentsRoute: typeof SettingsDepartmentsRoute
   SettingsEmailRoute: typeof SettingsEmailRoute
+  SettingsHistoryRoute: typeof SettingsHistoryRoute
   SettingsIntegrationsRoute: typeof SettingsIntegrationsRoute
   SettingsRemindersRoute: typeof SettingsRemindersRoute
   SettingsUsersRoute: typeof SettingsUsersRoute
@@ -787,6 +867,7 @@ const SettingsRouteRouteChildren: SettingsRouteRouteChildren = {
   SettingsDangerRoute: SettingsDangerRoute,
   SettingsDepartmentsRoute: SettingsDepartmentsRoute,
   SettingsEmailRoute: SettingsEmailRoute,
+  SettingsHistoryRoute: SettingsHistoryRoute,
   SettingsIntegrationsRoute: SettingsIntegrationsRoute,
   SettingsRemindersRoute: SettingsRemindersRoute,
   SettingsUsersRoute: SettingsUsersRoute,
@@ -804,6 +885,9 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,
+  SetupRoute: SetupRoute,
+  ApiHealthRoute: ApiHealthRoute,
+  ApiTestAccessRoute: ApiTestAccessRoute,
   SurveyCompleteRoute: SurveyCompleteRoute,
   SurveyIndexRoute: SurveyIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

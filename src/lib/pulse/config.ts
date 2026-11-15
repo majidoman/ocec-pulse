@@ -24,7 +24,10 @@ import type {
 import { DEPARTMENTS, DIMENSIONS, QUESTIONS, SURVEY_NAME } from "../questionnaire";
 
 export interface GeneralSettings {
+  /** Full legal name, e.g. "Oman Convention & Exhibition Centre". Shown as {orgName}. */
   orgName: Localized;
+  /** Short name used inside sentences and questions, e.g. "OCEC". Shown as {org}. */
+  orgShort: Localized;
   cycleName: Localized;
   timezone: string;
   defaultLang: Lang;
@@ -40,6 +43,8 @@ export interface GeneralSettings {
 }
 
 export interface BrandingSettings {
+  /** Product name in the header and browser tab, e.g. "OCEC Pulse". Blank = "<short name> Pulse". Shown as {app}. */
+  appName: Localized;
   logoDataUrl: string;
   primary: string;
   accent: string;
@@ -137,7 +142,7 @@ export interface PulseConfig {
 export interface PublicConfig {
   general: Pick<
     GeneralSettings,
-    "orgName" | "cycleName" | "defaultLang" | "supportEmail" | "supportPhone" | "status" | "allowOpenLink"
+    "orgName" | "orgShort" | "cycleName" | "defaultLang" | "supportEmail" | "supportPhone" | "status" | "allowOpenLink"
   >;
   branding: BrandingSettings;
   calendar: Pick<CalendarSettings, "fieldOpen" | "fieldClose" | "note">;
@@ -149,7 +154,7 @@ export interface PublicConfig {
 
 export const ROLE_LABEL: Record<StaffRole, Localized> = {
   super: { en: "Super admin", ar: "مدير عام" },
-  pc: { en: "People & Culture", ar: "الأفراد والثقافة" },
+  pc: { en: "People & Culture", ar: "الموارد البشرية" },
   exec: { en: "Executive viewer", ar: "مشاهد تنفيذي" },
   head: { en: "Department head", ar: "رئيس إدارة" },
   viewer: { en: "Viewer", ar: "مشاهد" },
@@ -171,8 +176,8 @@ const defaultReminders: ReminderRule[] = [
     dayOffset: 3,
     enabled: true,
     sent: 0,
-    bodyEn: "A quiet note: the census is still open, still confidential, still about twelve minutes.",
-    bodyAr: "ملاحظة هادئة: التعداد ما زال مفتوحاً وسرياً، وما زال نحو اثنتي عشرة دقيقة.",
+    bodyEn: "A quiet note: the survey is still open, still confidential, still about twelve minutes.",
+    bodyAr: "ملاحظة هادئة: الاستبيان ما زال مفتوحاً وسرياً، وما زال نحو اثنتي عشرة دقيقة.",
   },
   {
     id: "d7",
@@ -189,8 +194,8 @@ const defaultReminders: ReminderRule[] = [
     dayOffset: 10,
     enabled: true,
     sent: 0,
-    bodyEn: "Last week of the census. Five minutes on a phone is enough to start.",
-    bodyAr: "الأسبوع الأخير من التعداد. خمس دقائق على الهاتف تكفي للبدء.",
+    bodyEn: "Last week of the survey. Five minutes on a phone is enough to start.",
+    bodyAr: "الأسبوع الأخير من الاستبيان. خمس دقائق على الهاتف تكفي للبدء.",
   },
 ];
 
@@ -200,7 +205,8 @@ export function defaultConfig(): PulseConfig {
   return {
     version: CONFIG_VERSION,
     general: {
-      orgName: { en: "Oman Convention & Exhibition Centre", ar: "مركز عُمان للمؤتمرات والمعارض" },
+      orgName: { en: "", ar: "" },
+      orgShort: { en: "", ar: "" },
       cycleName: SURVEY_NAME,
       timezone: "Asia/Muscat",
       defaultLang: "en",
@@ -211,6 +217,7 @@ export function defaultConfig(): PulseConfig {
       publicUrl: "",
     },
     branding: {
+      appName: { en: "", ar: "" },
       logoDataUrl: "",
       primary: "#142A32",
       accent: "#2C6A6A",
@@ -222,8 +229,8 @@ export function defaultConfig(): PulseConfig {
       fieldClose: "",
       presentation: "",
       note: {
-        en: "Field dates are confirmed at kick-off with People & Culture.",
-        ar: "تُؤكَّد تواريخ الميدان عند الانطلاق مع الأفراد والثقافة.",
+        en: "Start and end dates are agreed with HR before launch.",
+        ar: "يُحدَّد تاريخا البدء والانتهاء مع الموارد البشرية قبل الإطلاق.",
       },
     },
     anonymity: {
@@ -233,8 +240,8 @@ export function defaultConfig(): PulseConfig {
       stripSelfId: true,
       noExternalTraining: true,
       privacyNotice: {
-        en: "This census is anonymous. We do not store your name, email, IP address or device fingerprint with your answers. Results are never shown for groups smaller than five people. If you received a personal link, it is used only to make sure each person answers once; it is not stored with your response.",
-        ar: "هذا التعداد مجهول الهوية. لا نحتفظ باسمك أو بريدك أو عنوان جهازك مع إجاباتك. لا تُعرض النتائج لمجموعات أقل من خمسة أشخاص. إن وصلك رابط شخصي فهو يُستخدم فقط لضمان إجابة واحدة لكل شخص ولا يُحفظ مع إجابتك.",
+        en: "This survey is anonymous. We do not store your name, email, IP address or device fingerprint with your answers. Results are never shown for groups smaller than five people. If you received a personal link, it is used only to make sure each person answers once; it is not stored with your response.",
+        ar: "هذا الاستبيان مجهول الهوية. لا نحتفظ باسمك أو بريدك أو عنوان جهازك مع إجاباتك. لا تُعرض النتائج لمجموعات أقل من خمسة أشخاص. إن وصلك رابط شخصي فهو يُستخدم فقط لضمان إجابة واحدة لكل شخص ولا يُحفظ مع إجابتك.",
       },
     },
     email: {
@@ -249,9 +256,9 @@ export function defaultConfig(): PulseConfig {
       subjectEn: "{{org_name}} — a confidential 12 minutes",
       subjectAr: "{{org_name}} — اثنتا عشرة دقيقة سرية",
       bodyEn:
-        "Hello,\n\nThis is your confidential link for the {{org_name}} employee census. It cannot be traced to your answers. The census closes {{close_date}}.\n\n{{survey_link}}",
+        "Hello,\n\nThis is your confidential link for the {{org_name}} employee survey. It cannot be traced to your answers. The survey closes {{close_date}}.\n\n{{survey_link}}",
       bodyAr:
-        "مرحباً،\n\nهذا رابطك السري لتعداد موظفي {{org_name}}. لا يمكن ربطه بإجاباتك. يُغلق التعداد في {{close_date}}.\n\n{{survey_link}}",
+        "مرحباً،\n\nهذا رابطك السري لاستبيان موظفي {{org_name}}. لا يمكن ربطه بإجاباتك. يُغلق الاستبيان في {{close_date}}.\n\n{{survey_link}}",
     },
     reminderCfg: { enabled: true, quietStart: "21:00", quietEnd: "07:00", rules: defaultReminders },
     integrations: { webhook: "" },
@@ -303,6 +310,7 @@ export function toPublicConfig(c: PulseConfig): PublicConfig {
   return {
     general: {
       orgName: c.general.orgName,
+      orgShort: c.general.orgShort,
       cycleName: c.general.cycleName,
       defaultLang: c.general.defaultLang,
       supportEmail: c.general.supportEmail,
@@ -340,7 +348,7 @@ export function applyTokens(
 }
 
 export function formatIsoDate(iso: string, lang: Lang) {
-  if (!iso) return lang === "ar" ? "يُؤكَّد عند الانطلاق" : "to be confirmed";
+  if (!iso) return lang === "ar" ? "يُحدَّد لاحقاً" : "to be confirmed";
   const d = new Date(`${iso}T12:00:00`);
   if (Number.isNaN(d.getTime())) return iso;
   return new Intl.DateTimeFormat(lang === "ar" ? "ar-OM" : "en-GB", {
@@ -349,4 +357,68 @@ export function formatIsoDate(iso: string, lang: Lang) {
     year: "numeric",
     timeZone: "Asia/Muscat",
   }).format(d);
+}
+
+/** Numbers in the reader's script: Arabic-Indic digits in Arabic (matching dates), Western digits in English. */
+export function formatNumber(n: number, lang: Lang) {
+  return new Intl.NumberFormat(lang === "ar" ? "ar-OM" : "en-GB").format(n);
+}
+
+/** A 0–1 share as a whole percentage, in the reader's script. */
+export function formatPercent(share: number, lang: Lang) {
+  return new Intl.NumberFormat(lang === "ar" ? "ar-OM" : "en-GB", { style: "percent", maximumFractionDigits: 0 }).format(share);
+}
+
+// ── White-label names ────────────────────────────────────────────────────────
+// Every client-specific name in copy, questions and emails is written as a placeholder:
+//   {org}      short name   ("OCEC")
+//   {orgName}  full name    ("Oman Convention & Exhibition Centre")
+//   {app}      product name ("OCEC Pulse")
+//   {survey}   survey name  ("Staff Survey 2026"), from Settings → General
+// and filled in from settings when shown, so the same build serves any client.
+
+export interface BrandNames {
+  org: Localized;
+  orgName: Localized;
+  app: Localized;
+  survey: Localized;
+}
+
+const pick = (v: Localized | undefined, lang: Lang) => (v?.[lang] ?? "").trim() || (v?.[lang === "ar" ? "en" : "ar"] ?? "").trim();
+
+export function brandNames(
+  general: { orgName?: Localized; orgShort?: Localized; cycleName?: Localized },
+  branding?: { appName?: Localized },
+): BrandNames {
+  const one = (lang: Lang) => {
+    const full = pick(general.orgName, lang);
+    const short = pick(general.orgShort, lang) || full;
+    const org = short || (lang === "ar" ? "مؤسستك" : "your organisation");
+    const orgName = full || org;
+    const app = pick(branding?.appName, lang) || (short ? (lang === "ar" ? `نبض ${short}` : `${short} Pulse`) : lang === "ar" ? "نبض" : "Pulse");
+    const surveyRaw = pick(general.cycleName, lang).replaceAll("{survey}", "");
+    const survey = surveyRaw || (lang === "ar" ? "استبيان الموظفين" : "Employee Survey");
+    return { org, orgName, app, survey };
+  };
+  const en = one("en");
+  const ar = one("ar");
+  return {
+    org: { en: en.org, ar: ar.org },
+    orgName: { en: en.orgName, ar: ar.orgName },
+    app: { en: en.app, ar: ar.app },
+    survey: { en: en.survey, ar: ar.survey },
+  };
+}
+
+export function brandText(text: string, names: BrandNames, lang: Lang): string {
+  if (!text || !text.includes("{")) return text;
+  return text
+    .replaceAll("{survey}", names.survey[lang])
+    .replaceAll("{app}", names.app[lang])
+    .replaceAll("{orgName}", names.orgName[lang])
+    .replaceAll("{org}", names.org[lang]);
+}
+
+export function brandLocalized(value: Localized, names: BrandNames): Localized {
+  return { en: brandText(value.en, names, "en"), ar: brandText(value.ar, names, "ar") };
 }

@@ -95,7 +95,7 @@ function EmailPage() {
           <h2 className="text-sm font-semibold text-ink">{loc({ en: "Sending account", ar: "حساب الإرسال" })}</h2>
           <p className="mt-1 text-sm text-muted">
             {loc({
-              en: "Invitations are sent through a mailbox you control. Use an address staff will recognise, and ask OCEC IT to allow it so messages do not land in junk.",
+              en: "Invitations are sent through a mailbox you control. Use an address staff will recognise, and ask the client's IT team to allow it so messages do not land in junk.",
               ar: "تُرسل الدعوات عبر صندوق بريد تتحكم به. استخدم عنواناً يعرفه الموظفون، واطلب من تقنية المعلومات السماح به كي لا تذهب الرسائل إلى البريد غير المرغوب.",
             })}
           </p>

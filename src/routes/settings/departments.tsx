@@ -22,7 +22,7 @@ function DeptsPage() {
       title={loc({ en: "Departments", ar: "الإدارات" })}
       hint={loc({
         en: "The departments people can choose in the survey, and the headcount used for response rates. Confirm these numbers with People & Culture before launch.",
-        ar: "الإدارات التي يختارها الموظف في الاستبيان، والأعداد المستخدمة لنسب الاستجابة. أكّد هذه الأرقام مع الأفراد والثقافة قبل الإطلاق.",
+        ar: "الإدارات التي يختارها الموظف في الاستبيان، والأعداد المستخدمة لنسب الاستجابة. أكّد هذه الأرقام مع الموارد البشرية قبل الإطلاق.",
       })}
     >
       <Card>

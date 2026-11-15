@@ -1,0 +1,8 @@
+# Optional HTTPS front door (docker compose --profile https up -d).
+# PUBLIC_HOST is a domain name (real certificate from Let's Encrypt, needs ports 80/443 open to the internet)
+# or an internal name/IP with TLS_MODE=internal (self-signed: each browser shows a one-time warning).
+{$PUBLIC_HOST} {
+	tls {$TLS_MODE}
+	encode gzip
+	reverse_proxy app:3000
+}

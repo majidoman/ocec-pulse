@@ -29,6 +29,13 @@ function BrandPage() {
           />
           {b.logoDataUrl ? <img src={b.logoDataUrl} alt="" className="mt-2 h-12 w-auto" /> : null}
         </label>
+        <TextField
+          label="Product name (EN)"
+          value={b.appName.en}
+          hint="Shown in the header and browser tab, e.g. Acme Pulse. Blank = short name + Pulse."
+          onChange={(v) => patch({ appName: { ...b.appName, en: v } })}
+        />
+        <TextField label="اسم المنتج (AR)" value={b.appName.ar} onChange={(v) => patch({ appName: { ...b.appName, ar: v } })} />
         <TextField label="Primary" value={b.primary} onChange={(v) => patch({ primary: v })} />
         <TextField label="Accent" value={b.accent} onChange={(v) => patch({ accent: v })} />
       </Card>

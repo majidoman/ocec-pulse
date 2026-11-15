@@ -4,12 +4,12 @@ import {
   Bell,
   Brain,
   Building2,
-  CalendarDays,
   CircleHelp,
   FileText,
   Flame,
   GitCompare,
   Globe,
+  History,
   LayoutDashboard,
   LineChart,
   Link2,
@@ -70,7 +70,7 @@ export const SETTINGS_NAV = [
   { to: "/settings/branding", key: "setBrand" as CopyKey, icon: Globe, exact: false },
   { to: "/settings/integrations", key: "setIntegrations" as CopyKey, icon: Link2, exact: false },
   { to: "/settings/benchmarks", key: "setBench" as CopyKey, icon: Scale, exact: false },
-  { to: "/settings/calendar", key: "setCal" as CopyKey, icon: CalendarDays, exact: false },
+  { to: "/settings/history", key: "setHistory" as CopyKey, icon: History, exact: false },
   { to: "/settings/danger", key: "setDanger" as CopyKey, icon: TriangleAlert, exact: false },
 ] as const;
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AppName } from "@/components/app-name";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
@@ -36,7 +37,9 @@ function Join() {
       <header className="mb-10 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2.5 text-ink">
           <Mark className="size-9" />
-          <span className="text-sm font-semibold">OCEC Pulse</span>
+          <span className="text-sm font-semibold">
+          <AppName />
+        </span>
         </Link>
         <LangToggle />
       </header>
@@ -66,8 +69,8 @@ function Join() {
           <>
             <p className="text-sm leading-relaxed text-muted">
               {loc({
-                en: "Activate access to the census results for this account. The link works once.",
-                ar: "فعّل صلاحية الاطلاع على نتائج التعداد لهذا الحساب. يعمل الرابط مرة واحدة.",
+                en: "Activate access to the survey results for this account. The link works once.",
+                ar: "فعّل صلاحية الاطلاع على نتائج الاستبيان لهذا الحساب. يعمل الرابط مرة واحدة.",
               })}
             </p>
             <UserButton />

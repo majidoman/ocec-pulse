@@ -1,0 +1,80 @@
+# Pulse survey — self-hosted package.  Start:  docker compose up -d --build
+# Settings come from .env (create it with install.ps1 / install.sh, or copy .env.example).
+name: pulse
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pulse
+      POSTGRES_USER: pulse
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulse -d pulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    # No ports published: the database is reachable only by the app and jobs containers.
+
+  app:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    image: pulse-app:local
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://pulse:${DB_PASSWORD}@db:5432/pulse
+      BETTER_AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET in .env}
+      BETTER_AUTH_URL: ${PUBLIC_URL:?set PUBLIC_URL in .env}
+      SETUP_CODE: ${SETUP_CODE:-}
+      CRON_SECRET: ${CRON_SECRET:?set CRON_SECRET in .env}
+      TZ: ${TZ:-Asia/Muscat}
+    ports:
+      - "${APP_PORT:-8080}:3000"
+
+  jobs:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    # tr strips Windows line endings in case the file was edited on Windows.
+    entrypoint: ["/bin/sh", "-c", "tr -d '\\r' < /jobs.sh > /tmp/jobs.sh && exec sh /tmp/jobs.sh"]
+    environment:
+      PGHOST: db
+      PGUSER: pulse
+      PGDATABASE: pulse
+      PGPASSWORD: ${DB_PASSWORD}
+      CRON_SECRET: ${CRON_SECRET}
+      BACKUP_CRON: ${BACKUP_CRON:-30 1 * * *}
+      REMINDER_CRON: ${REMINDER_CRON:-0 9 * * *}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+      TZ: ${TZ:-Asia/Muscat}
+    volumes:
+      - ./deploy/jobs.sh:/jobs.sh:ro
+      - ./backups:/backups
+
+  https:
+    image: caddy:2-alpine
+    profiles: ["https"]
+    restart: unless-stopped
+    depends_on: [app]
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:-localhost}
+      TLS_MODE: ${TLS_MODE:-internal}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+
+volumes:
+  db-data:
+  caddy-data:
