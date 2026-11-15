@@ -18,6 +18,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as ApiCaptchaRouteImport } from './routes/api/captcha'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiTestAccessRouteImport } from './routes/api/test-access'
 import { Route as InsightsIndexRouteImport } from './routes/insights/index'
@@ -95,6 +96,11 @@ const SettingsRouteRoute = SettingsRouteRouteImport.update({
 const SetupRoute = SetupRouteImport.update({
   id: '/setup',
   path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCaptchaRoute = ApiCaptchaRouteImport.update({
+  id: '/api/captcha',
+  path: '/api/captcha',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
@@ -273,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/api/captcha': typeof ApiCaptchaRoute
   '/api/health': typeof ApiHealthRoute
   '/api/test-access': typeof ApiTestAccessRoute
   '/insights/actions': typeof InsightsActionsRoute
@@ -315,6 +322,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/api/captcha': typeof ApiCaptchaRoute
   '/api/health': typeof ApiHealthRoute
   '/api/test-access': typeof ApiTestAccessRoute
   '/insights/actions': typeof InsightsActionsRoute
@@ -360,6 +368,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/api/captcha': typeof ApiCaptchaRoute
   '/api/health': typeof ApiHealthRoute
   '/api/test-access': typeof ApiTestAccessRoute
   '/insights/actions': typeof InsightsActionsRoute
@@ -406,6 +415,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/setup'
+    | '/api/captcha'
     | '/api/health'
     | '/api/test-access'
     | '/insights/actions'
@@ -448,6 +458,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/setup'
+    | '/api/captcha'
     | '/api/health'
     | '/api/test-access'
     | '/insights/actions'
@@ -492,6 +503,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/setup'
+    | '/api/captcha'
     | '/api/health'
     | '/api/test-access'
     | '/insights/actions'
@@ -537,6 +549,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
+  ApiCaptchaRoute: typeof ApiCaptchaRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiTestAccessRoute: typeof ApiTestAccessRoute
   SurveyCompleteRoute: typeof SurveyCompleteRoute
@@ -608,6 +621,13 @@ declare module '@tanstack/react-router' {
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/captcha': {
+      id: '/api/captcha'
+      path: '/api/captcha'
+      fullPath: '/api/captcha'
+      preLoaderRoute: typeof ApiCaptchaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/health': {
@@ -928,6 +948,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
+  ApiCaptchaRoute: ApiCaptchaRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiTestAccessRoute: ApiTestAccessRoute,
   SurveyCompleteRoute: SurveyCompleteRoute,

@@ -16,7 +16,7 @@ import { z } from "zod";
 const TOKEN_MINUTES = 60;
 const MIN_LENGTH = 10;
 
-export type ResetRequestResult = { ok: true } | { ok: false; reason: "mail_not_set_up" | "rate_limited" };
+export type ResetRequestResult = { ok: true } | { ok: false; reason: "mail_not_set_up" | "rate_limited" | "captcha" };
 export type ResetResult = { ok: true } | { ok: false; reason: "invalid_or_expired" | "too_short" | "rate_limited" };
 
 function appBaseUrl() {
@@ -24,11 +24,16 @@ function appBaseUrl() {
 }
 
 export const requestPasswordReset = createServerFn({ method: "POST" })
-  .validator((d: unknown) => z.object({ email: z.string().trim().toLowerCase().email().max(254) }).parse(d))
+  .validator((d: unknown) => z
+      .object({ email: z.string().trim().toLowerCase().email().max(254), captcha: z.string().max(6000).optional() })
+      .parse(d),
+  )
   .handler(async ({ data }): Promise<ResetRequestResult> => {
     const core = await import("./core.server");
     const mail = await import("./mail.server");
     const { createHash, randomBytes } = await import("node:crypto");
+    const { verifyCaptcha } = await import("./captcha.server");
+    if (!(await verifyCaptcha(data.captcha))) return { ok: false, reason: "captcha" };
     try {
       await core.rateLimit("pw-reset", 10);
       await core.rateLimit(`pw-reset:${data.email}`, 3, { perAddress: false });

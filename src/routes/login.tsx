@@ -3,6 +3,8 @@ import { AppName } from "@/components/app-name";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
+import { Captcha } from "@/components/captcha";
+import { captchaForSubmit, CAPTCHA_MISSING, authErrorText, captchaFetch } from "@/lib/pulse/captcha-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,6 +37,8 @@ function Login() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
   // Google / X sign-in runs through Grok's own service, so it only works on Grok hosts.
   const [federated, setFederated] = useState(false);
   useEffect(() => {
@@ -58,14 +62,23 @@ function Login() {
       setError(loc({ en: "Use at least 10 characters for the password.", ar: "استخدم عشرة أحرف على الأقل لكلمة المرور." }));
       return;
     }
+    const cap = await captchaForSubmit(captcha);
+    if (!cap) {
+      setError(loc(CAPTCHA_MISSING));
+      return;
+    }
     setBusy(true);
     try {
       const res =
         mode === "in"
-          ? await authClient.signIn.email({ email: email.trim(), password })
-          : await authClient.signUp.email({ email: email.trim(), password, name: name.trim() || email.trim() });
+          ? await authClient.signIn.email({ email: email.trim(), password }, captchaFetch(cap))
+          : await authClient.signUp.email({ email: email.trim(), password, name: name.trim() || email.trim() }, captchaFetch(cap));
       if (res.error) {
-        setError(res.error.message ?? loc({ en: "That did not work. Check the email and password.", ar: "لم ينجح ذلك. تحقق من البريد وكلمة المرور." }));
+        setError(authErrorText(res.error, loc, { en: "That did not work. Check the email and password.", ar: "لم ينجح ذلك. تحقق من البريد وكلمة المرور." }));
+        if (res.error.code === "CAPTCHA_REQUIRED") {
+          setCaptcha(null);
+          setCaptchaKey((k) => k + 1);
+        }
         return;
       }
       usePulse.getState().reset();
@@ -135,6 +148,7 @@ function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+              <Captcha key={captchaKey} onChange={setCaptcha} />
               {error ? <p className="text-sm text-score-crit" role="alert">{error}</p> : null}
               <Button type="submit" disabled={busy}>
                 {mode === "in" ? loc({ en: "Sign in", ar: "دخول" }) : loc({ en: "Create account", ar: "إنشاء الحساب" })}

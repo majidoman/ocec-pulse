@@ -8,6 +8,10 @@ import { auth } from "@/lib/auth/server";
 async function signUpAllowed(request: Request): Promise<boolean> {
   const { staffCount } = await import("@/lib/pulse/core.server");
   if ((await staffCount()) === 0) return true;
+  // The account must be created with the exact email the invitation was sent to.
+  const body = (await request.clone().json().catch(() => null)) as { email?: unknown } | null;
+  const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
+  if (!email) return false;
   const match = /(?:^|;\s*)pulse_invite=([^;]+)/.exec(request.headers.get("cookie") ?? "");
   if (!match) return false;
   const code = decodeURIComponent(match[1]);
@@ -17,6 +21,7 @@ async function signUpAllowed(request: Request): Promise<boolean> {
   const rows = await sql<{ ok: number }>`
     select 1 as ok from pulse_staff_invites
     where code = ${code} and accepted_by is null and created_at > now() - interval '30 days'
+      and lower(trim(email)) = ${email}
   `;
   return rows.length > 0;
 }
@@ -40,14 +45,28 @@ async function signInThrottled(request: Request): Promise<boolean> {
   }
 }
 
+/** Sign-in and account creation need a solved "I'm not a robot" check (see captcha.server). */
+async function captchaPassed(request: Request): Promise<boolean> {
+  const { verifyCaptcha, CAPTCHA_HEADER } = await import("@/lib/pulse/captcha.server");
+  return verifyCaptcha(request.headers.get(CAPTCHA_HEADER));
+}
+
 async function guarded(request: Request): Promise<Response> {
-  if (request.method === "POST" && new URL(request.url).pathname.endsWith("/sign-in/email") && (await signInThrottled(request))) {
+  const path = new URL(request.url).pathname;
+  const protectedPath = path.endsWith("/sign-in/email") || path.endsWith("/sign-up/email");
+  if (request.method === "POST" && protectedPath && !(await captchaPassed(request))) {
+    return Response.json(
+      { message: "Tick the “I'm not a robot” box, then try again.", code: "CAPTCHA_REQUIRED" },
+      { status: 400 },
+    );
+  }
+  if (request.method === "POST" && path.endsWith("/sign-in/email") && (await signInThrottled(request))) {
     return Response.json(
       { message: "Too many sign-in attempts. Wait an hour, then try again.", code: "TOO_MANY_ATTEMPTS" },
       { status: 429 },
     );
   }
-  if (request.method === "POST" && new URL(request.url).pathname.endsWith("/sign-up/email")) {
+  if (request.method === "POST" && path.endsWith("/sign-up/email")) {
     let allowed = false;
     try {
       allowed = await signUpAllowed(request);

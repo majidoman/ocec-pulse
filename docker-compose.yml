@@ -33,6 +33,7 @@ services:
       BETTER_AUTH_SECRET: ${AUTH_SECRET:?set AUTH_SECRET in .env}
       BETTER_AUTH_URL: ${PUBLIC_URL:?set PUBLIC_URL in .env}
       SETUP_CODE: ${SETUP_CODE:-}
+      PULSE_CAPTCHA: ${PULSE_CAPTCHA:-on}
       CRON_SECRET: ${CRON_SECRET:?set CRON_SECRET in .env}
       TZ: ${TZ:-Asia/Muscat}
     ports:

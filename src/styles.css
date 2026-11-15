@@ -118,3 +118,21 @@
     translate: 0 6px;
   }
 }
+
+/* "I'm not a robot" box (ALTCHA) in the app's colours. */
+.pulse-captcha {
+  display: block;
+  --altcha-max-width: 100%;
+  --altcha-border-width: 1px;
+  --altcha-border-radius: 0.5rem;
+  --altcha-border-color: var(--color-border-strong);
+  --altcha-color-base: var(--color-paper);
+  --altcha-color-base-content: var(--color-fg);
+  --altcha-color-primary: var(--color-accent);
+  --altcha-color-success: var(--color-score-high);
+  --altcha-color-success-content: var(--color-paper);
+  --altcha-checkbox-border-color: var(--color-border-strong);
+  --altcha-color-error: var(--color-score-crit);
+  --altcha-checkbox-border-radius: 0.25rem;
+  --altcha-shadow: none;
+}
