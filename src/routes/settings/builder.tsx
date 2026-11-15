@@ -1,16 +1,16 @@
 import { useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Eye, Smartphone } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { ArrowDown, ArrowUp, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { PageFrame } from "@/components/page-frame";
 import { QuestionnaireImport } from "@/components/questionnaire-import";
-import { Likert, Enps } from "@/components/likert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { questionsFor } from "@/lib/census";
+import { openSurveyPreview } from "@/lib/pulse/preview";
 import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 import type { Dimension, Question, QuestionType } from "@/lib/types";
@@ -33,7 +33,6 @@ function BuilderPage() {
   const changelog = useSettings((s) => s.changelog);
   const locked = status === "frozen";
   const [active, setActive] = useState(dimensions[0]?.id ?? "");
-  const [preview, setPreview] = useState(false);
   const dim = dimensions.find((d) => d.id === active);
   const items = dim ? questionsFor(dim, questions) : [];
   const ordered = useMemo(() => [...dimensions].sort((a, b) => a.order - b.order), [dimensions]);
@@ -63,8 +62,8 @@ function BuilderPage() {
       hint={locked ? t("lockedHint") : t("settingsHint")}
       actions={
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" variant="outline" onClick={() => setPreview((p) => !p)}>
-            <Eye className="size-4" /> {t("previewEmployee")}
+          <Button size="sm" variant="outline" onClick={() => void openSurveyPreview()}>
+            <ExternalLink className="size-4" /> {loc({ en: "Preview in a new tab", ar: "معاينة في تبويب جديد" })}
           </Button>
           <Button size="sm" variant="outline" onClick={downloadBank}>
             {t("exportJson")}
@@ -95,26 +94,6 @@ function BuilderPage() {
 
       <QuestionnaireImport />
 
-      {preview && dim ? (
-        <Card className="mx-auto max-w-md">
-          <div className="mb-3 flex items-center gap-2 text-xs text-subtle">
-            <Smartphone className="size-4" /> {t("previewEmployee")}
-          </div>
-          <h2 className="font-display text-xl text-ink">{loc(dim.name)}</h2>
-          <p className="mt-1 text-sm text-muted">{loc(dim.blurb)}</p>
-          <div className="mt-4 flex flex-col gap-4">
-            {items.map((q) => (
-              <fieldset key={q.id}>
-                <legend className="mb-2 text-sm font-medium">{loc(q.text)}</legend>
-                {q.type === "enps" ? <Enps value={9} onChange={() => undefined} /> : <Likert name={q.id} value={4} onChange={() => undefined} />}
-              </fieldset>
-            ))}
-          </div>
-          <Link to="/survey" className="mt-4 inline-flex h-11 items-center text-sm font-medium text-accent">
-            {t("takeSurvey")}
-          </Link>
-        </Card>
-      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-12">
         <Card className="lg:col-span-4">
@@ -177,6 +156,49 @@ function BuilderPage() {
               <div className="flex items-center justify-between gap-3">
                 <span className="text-sm">{lang === "ar" ? "ظاهر" : "Visible"}</span>
                 <Switch checked={dim.visible} disabled={locked} onCheckedChange={(v) => patchDimension(dim.id, { visible: v })} />
+              </div>
+              {dim.kind === "likert" ? (
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span className="text-sm">{loc({ en: "Show questions as", ar: "عرض الأسئلة" })}</span>
+                  <div className="inline-flex rounded-lg border border-border p-0.5" role="radiogroup" aria-label={loc({ en: "Show questions as", ar: "عرض الأسئلة" })}>
+                    {(
+                      [
+                        ["cards", { en: "Cards", ar: "بطاقات" }],
+                        ["matrix", { en: "Grid (1–5)", ar: "مصفوفة (١–٥)" }],
+                      ] as const
+                    ).map(([id, label]) => {
+                      const on = (dim.display ?? "cards") === id;
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          onClick={() => patchDimension(dim.id, { display: id })}
+                          className={`rounded-md px-3 py-1.5 text-sm ${on ? "bg-ink text-sand" : "text-muted hover:bg-sand-2"}`}
+                        >
+                          {loc(label)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="text-sm">
+                  {loc({
+                    en: `Required answers: ${items.filter((q) => q.required).length} of ${items.length}`,
+                    ar: `الإجابات الإجبارية: ${items.filter((q) => q.required).length} من ${items.length}`,
+                  })}
+                </span>
+                <span className="flex gap-2">
+                  <Button size="sm" variant="outline" disabled={locked} onClick={() => items.forEach((q) => patchQuestion(q.id, { required: true }))}>
+                    {loc({ en: "Make all required", ar: "اجعل الكل إجبارياً" })}
+                  </Button>
+                  <Button size="sm" variant="outline" disabled={locked} onClick={() => items.forEach((q) => patchQuestion(q.id, { required: false }))}>
+                    {loc({ en: "Make all optional", ar: "اجعل الكل اختيارياً" })}
+                  </Button>
+                </span>
               </div>
             </Card>
           ) : null}

@@ -50,6 +50,15 @@ export interface BrandingSettings {
   accent: string;
 }
 
+/** Colour themes for the pages employees see (survey, landing, thank-you). */
+export type ThemeId = "brand" | "desert" | "ocean" | "palm" | "slate" | "night" | "contrast";
+
+export interface PresentationSettings {
+  theme: ThemeId;
+  /** "section": one section per page (best for long surveys); "single": everything on one page. */
+  pageMode: "section" | "single";
+}
+
 export interface CalendarSettings {
   kickoff: string;
   freeze: string;
@@ -123,6 +132,7 @@ export interface PulseConfig {
   version: number;
   general: GeneralSettings;
   branding: BrandingSettings;
+  presentation: PresentationSettings;
   calendar: CalendarSettings;
   anonymity: AnonymitySettings;
   email: EmailSettings;
@@ -145,6 +155,7 @@ export interface PublicConfig {
     "orgName" | "orgShort" | "cycleName" | "defaultLang" | "supportEmail" | "supportPhone" | "status" | "allowOpenLink"
   >;
   branding: BrandingSettings;
+  presentation: PresentationSettings;
   calendar: Pick<CalendarSettings, "fieldOpen" | "fieldClose" | "note">;
   anonymity: Pick<AnonymitySettings, "kFloor" | "privacyNotice">;
   departments: Pick<Department, "id" | "name">[];
@@ -222,6 +233,7 @@ export function defaultConfig(): PulseConfig {
       primary: "#142A32",
       accent: "#2C6A6A",
     },
+    presentation: { theme: "brand", pageMode: "section" },
     calendar: {
       kickoff: "",
       freeze: "",
@@ -288,6 +300,7 @@ export function normalizeConfig(raw: unknown): PulseConfig {
     version: CONFIG_VERSION,
     general: { ...base.general, ...(r.general ?? {}) },
     branding: { ...base.branding, ...(r.branding ?? {}) },
+    presentation: { ...base.presentation, ...(r.presentation ?? {}) },
     calendar: { ...base.calendar, ...(r.calendar ?? {}) },
     anonymity: { ...base.anonymity, ...(r.anonymity ?? {}) },
     email: { ...base.email, ...(r.email ?? {}) },
@@ -319,6 +332,7 @@ export function toPublicConfig(c: PulseConfig): PublicConfig {
       allowOpenLink: c.general.allowOpenLink,
     },
     branding: c.branding,
+    presentation: c.presentation,
     calendar: {
       fieldOpen: c.calendar.fieldOpen,
       fieldClose: c.calendar.fieldClose,

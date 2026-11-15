@@ -37,6 +37,7 @@ import { Route as InsightsReportsRouteImport } from './routes/insights/reports'
 import { Route as InsightsTrendsRouteImport } from './routes/insights/trends'
 import { Route as SettingsIndexRouteImport } from './routes/settings/index'
 import { Route as SettingsAnonymityRouteImport } from './routes/settings/anonymity'
+import { Route as SettingsAppearanceRouteImport } from './routes/settings/appearance'
 import { Route as SettingsBenchmarksRouteImport } from './routes/settings/benchmarks'
 import { Route as SettingsBrandingRouteImport } from './routes/settings/branding'
 import { Route as SettingsBuilderRouteImport } from './routes/settings/builder'
@@ -193,6 +194,11 @@ const SettingsAnonymityRoute = SettingsAnonymityRouteImport.update({
   path: '/anonymity',
   getParentRoute: () => SettingsRouteRoute,
 } as any)
+const SettingsAppearanceRoute = SettingsAppearanceRouteImport.update({
+  id: '/appearance',
+  path: '/appearance',
+  getParentRoute: () => SettingsRouteRoute,
+} as any)
 const SettingsBenchmarksRoute = SettingsBenchmarksRouteImport.update({
   id: '/benchmarks',
   path: '/benchmarks',
@@ -296,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/insights/reports': typeof InsightsReportsRoute
   '/insights/trends': typeof InsightsTrendsRoute
   '/settings/anonymity': typeof SettingsAnonymityRoute
+  '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/benchmarks': typeof SettingsBenchmarksRoute
   '/settings/branding': typeof SettingsBrandingRoute
   '/settings/builder': typeof SettingsBuilderRoute
@@ -339,6 +346,7 @@ export interface FileRoutesByTo {
   '/insights/reports': typeof InsightsReportsRoute
   '/insights/trends': typeof InsightsTrendsRoute
   '/settings/anonymity': typeof SettingsAnonymityRoute
+  '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/benchmarks': typeof SettingsBenchmarksRoute
   '/settings/branding': typeof SettingsBrandingRoute
   '/settings/builder': typeof SettingsBuilderRoute
@@ -385,6 +393,7 @@ export interface FileRoutesById {
   '/insights/reports': typeof InsightsReportsRoute
   '/insights/trends': typeof InsightsTrendsRoute
   '/settings/anonymity': typeof SettingsAnonymityRoute
+  '/settings/appearance': typeof SettingsAppearanceRoute
   '/settings/benchmarks': typeof SettingsBenchmarksRoute
   '/settings/branding': typeof SettingsBrandingRoute
   '/settings/builder': typeof SettingsBuilderRoute
@@ -432,6 +441,7 @@ export interface FileRouteTypes {
     | '/insights/reports'
     | '/insights/trends'
     | '/settings/anonymity'
+    | '/settings/appearance'
     | '/settings/benchmarks'
     | '/settings/branding'
     | '/settings/builder'
@@ -475,6 +485,7 @@ export interface FileRouteTypes {
     | '/insights/reports'
     | '/insights/trends'
     | '/settings/anonymity'
+    | '/settings/appearance'
     | '/settings/benchmarks'
     | '/settings/branding'
     | '/settings/builder'
@@ -520,6 +531,7 @@ export interface FileRouteTypes {
     | '/insights/reports'
     | '/insights/trends'
     | '/settings/anonymity'
+    | '/settings/appearance'
     | '/settings/benchmarks'
     | '/settings/branding'
     | '/settings/builder'
@@ -756,6 +768,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsAnonymityRouteImport
       parentRoute: typeof SettingsRouteRoute
     }
+    '/settings/appearance': {
+      id: '/settings/appearance'
+      path: '/appearance'
+      fullPath: '/settings/appearance'
+      preLoaderRoute: typeof SettingsAppearanceRouteImport
+      parentRoute: typeof SettingsRouteRoute
+    }
     '/settings/benchmarks': {
       id: '/settings/benchmarks'
       path: '/benchmarks'
@@ -904,6 +923,7 @@ const InsightsRouteRouteWithChildren = InsightsRouteRoute._addFileChildren(
 
 interface SettingsRouteRouteChildren {
   SettingsAnonymityRoute: typeof SettingsAnonymityRoute
+  SettingsAppearanceRoute: typeof SettingsAppearanceRoute
   SettingsBenchmarksRoute: typeof SettingsBenchmarksRoute
   SettingsBrandingRoute: typeof SettingsBrandingRoute
   SettingsBuilderRoute: typeof SettingsBuilderRoute
@@ -920,6 +940,7 @@ interface SettingsRouteRouteChildren {
 
 const SettingsRouteRouteChildren: SettingsRouteRouteChildren = {
   SettingsAnonymityRoute: SettingsAnonymityRoute,
+  SettingsAppearanceRoute: SettingsAppearanceRoute,
   SettingsBenchmarksRoute: SettingsBenchmarksRoute,
   SettingsBrandingRoute: SettingsBrandingRoute,
   SettingsBuilderRoute: SettingsBuilderRoute,

@@ -12,6 +12,7 @@ type Json = unknown;
 const SECTION: Record<string, [string, string]> = {
   general: ["General", "عام"],
   branding: ["Branding", "الهوية"],
+  presentation: ["Look & layout", "الشكل والتخطيط"],
   calendar: ["Survey dates", "تواريخ الاستبيان"],
   anonymity: ["Anonymity & privacy", "السرية والخصوصية"],
   email: ["Invitation email", "بريد الدعوة"],
@@ -27,6 +28,8 @@ const SECTION: Record<string, [string, string]> = {
 
 const FIELD: Record<string, [string, string]> = {
   orgName: ["organisation name", "اسم الجهة"],
+  theme: ["theme", "الثيم"],
+  pageMode: ["page layout", "تخطيط الصفحات"],
   orgShort: ["short name", "الاسم المختصر"],
   cycleName: ["survey name", "اسم الاستبيان"],
   timezone: ["time zone", "المنطقة الزمنية"],

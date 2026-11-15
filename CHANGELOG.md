@@ -4,7 +4,14 @@ Every change that reaches the live site is listed here, newest first.
 Each release has a version, a date, what changed in plain words, and how to undo it.
 
 ## [Unreleased] — on the test site, waiting for approval
-- Nothing yet.
+### Survey experience (phase 1)
+- **Look & layout** settings page (Settings → Look & layout): 7 colour themes for the pages employees see (Brand colours, Desert, Ocean, Palm, Corporate, Night, High contrast). Every theme passes the WCAG AA contrast check (`scripts/theme-contrast.mjs`). Dashboards keep the standard look.
+- **Preview in a new tab** from the Survey builder and Look & layout: the real survey with a "Preview — answers are not sent" banner, works while the survey is still a draft, only for signed-in staff; can preview any theme or page layout before choosing it.
+- **Question grid:** any section can show its agree questions as a 1–5 grid (Survey builder → "Show questions as", or all sections at once in Look & layout). Phones always get cards. Long grids repeat the scale every 7 rows.
+- **Page layout:** one section per page (default, best for long surveys) or everything on one page with a single Submit button and an "x of y answered" progress bar.
+- **Unanswered questions:** Next or Submit stops at the first unanswered required question, goes back to an earlier page if that is where it is, highlights it and says how many are left. Optional questions are labelled "(Optional)".
+- **Required answers:** each question already had a Required switch; the builder now also has "Make all required / Make all optional" per section and shows how many are required.
+- Verified: 29 checks (`phase1` test: themes, preview, grid on desktop and cards on phone, jump back to the page with the gap, one-page mode, Arabic), full test 65/65.
 
 ## [1.4.0] — 2026-11-15 — released to live ("go ahead")
 - **Invitation link finishes the account in one step:** the link opens "Finish your account" with the invited email filled in and locked (and the name, if the invitation had one). The person only chooses a password, repeats it, and lands on the results with access active. If the email already has an account, the page asks for that password only (with "Forgot password?"). If they are already signed in with the invited email, access is activated automatically.

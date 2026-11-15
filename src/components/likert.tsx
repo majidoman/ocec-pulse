@@ -76,3 +76,100 @@ export function Enps({ label, value, onChange }: { label?: string; value?: numbe
     </div>
   );
 }
+
+/**
+ * A section's agree questions as one grid: a row per question, a column per point of the 1–5 scale.
+ * Native radio buttons, so each row is one keyboard group (arrow keys move within the row) and screen
+ * readers announce the question with each choice. Used on wide screens only; phones get cards.
+ */
+export function LikertMatrix({
+  caption,
+  items,
+  values,
+  missing,
+  onChange,
+}: {
+  caption: string;
+  items: { id: string; label: string; optional?: boolean }[];
+  values: Record<string, number | string>;
+  missing: Set<string>;
+  onChange: (id: string, v: number) => void;
+}) {
+  const { loc, lang } = useT();
+  return (
+    <div className="overflow-hidden rounded-2xl bg-paper shadow-[var(--shadow-border)]">
+      <table className="w-full table-fixed border-collapse text-sm">
+        <caption className="sr-only">{caption}</caption>
+        <colgroup>
+          <col className="w-[40%]" />
+          {LIKERT.map((opt) => (
+            <col key={opt.value} className="w-[12%]" />
+          ))}
+        </colgroup>
+        <thead>
+          <tr className="border-b border-border">
+            <th scope="col" className="px-4 py-3 text-start text-xs font-medium text-muted">
+              <span className="sr-only">{loc({ en: "Statement", ar: "العبارة" })}</span>
+            </th>
+            {LIKERT.map((opt) => (
+              <th key={opt.value} scope="col" className="px-1 py-3 text-center align-bottom text-xs font-medium leading-tight text-muted">
+                <span className="block text-sm font-semibold tabular-nums text-ink">{formatNumber(opt.value, lang)}</span>
+                {loc(opt.label)}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {items.map((q, i) => {
+            const isMissing = missing.has(q.id);
+            const v = values[q.id];
+            // Long grids repeat the scale every 7 rows so the columns stay readable without scrolling back up.
+            const repeat =
+              i > 0 && i % 7 === 0 ? (
+                <tr key={`h-${q.id}`} aria-hidden className="border-b border-border bg-sand-2/60">
+                  <td />
+                  {LIKERT.map((opt) => (
+                    <td key={opt.value} className="px-1 py-1.5 text-center text-[11px] leading-tight text-muted">
+                      <span className="block text-xs font-semibold tabular-nums text-ink">{formatNumber(opt.value, lang)}</span>
+                      {loc(opt.label)}
+                    </td>
+                  ))}
+                </tr>
+              ) : null;
+            return [
+              repeat,
+              <tr
+                key={q.id}
+                data-missing={isMissing ? "true" : undefined}
+                className={cn(i % 2 ? "bg-sand-2/40" : "", isMissing ? "outline outline-2 -outline-offset-2 outline-score-crit" : "", "border-b border-border last:border-0")}
+              >
+                <th scope="row" id={`row-${q.id}`} className="px-4 py-3 text-start font-medium leading-relaxed text-ink">
+                  {q.label}
+                  {q.optional ? <span className="ms-2 text-xs font-normal text-muted">({loc({ en: "Optional", ar: "اختياري" })})</span> : null}
+                  {isMissing ? (
+                    <span className="mt-1 block text-xs font-medium text-score-crit">{loc({ en: "⚠ Not answered yet", ar: "⚠ لم تتم الإجابة بعد" })}</span>
+                  ) : null}
+                </th>
+                {LIKERT.map((opt) => (
+                  <td key={opt.value} className="px-1 py-2 text-center">
+                    <label className="inline-flex size-11 cursor-pointer items-center justify-center rounded-full hover:bg-sand-2">
+                      <input
+                        type="radio"
+                        name={`m-${q.id}`}
+                        value={opt.value}
+                        checked={v === opt.value}
+                        onChange={() => onChange(q.id, opt.value)}
+                        aria-label={`${q.label}: ${formatNumber(opt.value, lang)} — ${loc(opt.label)}`}
+                        className="size-5 cursor-pointer accent-[var(--color-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                      />
+                    </label>
+                  </td>
+                ))}
+              </tr>,
+            ];
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}

@@ -27,6 +27,8 @@ export interface Dimension {
   archived: boolean;
   order: number;
   kind: "likert" | "enps";
+  /** How the section's agree questions are shown: one card each, or a grid (rows = questions, columns = 1–5). */
+  display?: "cards" | "matrix";
 }
 
 export interface Question {
