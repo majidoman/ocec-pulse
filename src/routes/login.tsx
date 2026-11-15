@@ -16,19 +16,22 @@ function safeNext(v: unknown): string {
 }
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (s: Record<string, unknown>): { next?: string } =>
-    typeof s.next === "string" ? { next: s.next } : {},
+  validateSearch: (s: Record<string, unknown>): { next?: string; mode?: "up"; email?: string } => ({
+    ...(typeof s.next === "string" ? { next: s.next } : {}),
+    ...(s.mode === "up" ? { mode: "up" as const } : {}),
+    ...(typeof s.email === "string" && s.email.length <= 254 ? { email: s.email } : {}),
+  }),
   component: Login,
 });
 
 function Login() {
   const { loc } = useT();
-  const { next } = Route.useSearch();
-  const dest = safeNext(next);
+  const search = Route.useSearch();
+  const dest = safeNext(search.next);
   const { user, isPending } = useCurrentUserState();
-  const [mode, setMode] = useState<"in" | "up">("in");
+  const [mode, setMode] = useState<"in" | "up">(search.mode === "up" ? "up" : "in");
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(search.email ?? "");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -64,8 +64,8 @@ No text in the source tried to give instructions to an automated reviewer.
 
 | ID | Fix | Patch |
 |---|---|---|
-| SEC-001 | Sign-in attempts counted in the database: 30 per hour per address, 20 per hour per account; the 21st gets "Too many sign-in attempts. Wait an hour, then try again." Trade-off: someone can deliberately lock one account for up to an hour; the owner can still use another address. | `security_remediation.patch` (`$.ts`, `core.server.ts`) |
-| SEC-002 | Invitation accepted only by the invited email address, within 30 days; clear messages for "different email" and "expired". | `security_remediation.patch` (`api.ts`) |
+| SEC-001 | Sign-in attempts counted in the database: 30 per hour per address, 20 per hour per account; the 21st gets "Too many sign-in attempts. Wait an hour, then try again." Trade-off: someone can deliberately lock one account for up to an hour; the owner can still use another address. | **Applied and live in 1.3.0 (15 Nov 2026).** |
+| SEC-002 | Invitation accepted only by the invited email address, within 30 days; clear messages for "different email" and "expired". | **Applied and live in 1.3.0 (15 Nov 2026).** |
 | SEC-003 to SEC-012 | Not patched (Medium and below). Fixes described above; available on request. | none |
 
 There is no credential patch (`security_remediation.local.patch`), because no credentials are in the code.

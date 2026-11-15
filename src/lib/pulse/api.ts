@@ -237,6 +237,29 @@ export const completeSetup = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** What a staff invitation link is for, so the join page can prefill the right email. No sign-in needed. */
+export const getInviteInfo = createServerFn({ method: "POST" })
+  .validator((d: unknown) => z.object({ code: z.string().min(8).max(100) }).parse(d))
+  .handler(async ({ data }): Promise<{ status: "ok" | "used" | "expired" | "invalid"; email?: string; role?: StaffRole }> => {
+    const core = await import("./core.server");
+    const { getSql } = await import("@/lib/db");
+    try {
+      await core.rateLimit("invite-info", 60);
+    } catch {
+      return { status: "invalid" };
+    }
+    const sql = await getSql();
+    const rows = await sql<{ email: string; role: StaffRole; used: boolean; fresh: boolean }>`
+      select email, role, accepted_by is not null as used, created_at > now() - interval '30 days' as fresh
+      from pulse_staff_invites where code = ${data.code}
+    `;
+    if (!rows.length) return { status: "invalid" };
+    const r = rows[0];
+    if (r.used) return { status: "used" };
+    if (!r.fresh) return { status: "expired" };
+    return { status: "ok", email: r.email.trim().toLowerCase(), role: r.role };
+  });
+
 export const acceptInvite = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((d: unknown) => z.object({ code: z.string().min(8).max(100) }).parse(d))
@@ -246,9 +269,22 @@ export const acceptInvite = createServerFn({ method: "POST" })
     const sql = await getSql();
     const me = await core.getMe(context.userId);
     if (me.role) throw new core.BadRequestError("You already have access to this survey.");
+    // The link is only usable by the person it was sent to, and only for 30 days, so a forwarded
+    // or leaked invitation cannot hand someone else access to the results.
+    const myEmail = (me.email ?? "").trim().toLowerCase();
+    const pending = await sql<{ email: string; fresh: boolean }>`
+      select email, created_at > now() - interval '30 days' as fresh
+      from pulse_staff_invites where code = ${data.code} and accepted_by is null
+    `;
+    if (!pending.length) throw new core.BadRequestError("This invitation link is not valid or was already used.");
+    if (!pending[0].fresh) throw new core.BadRequestError("This invitation has expired. Ask your administrator for a new one.");
+    if (!myEmail || pending[0].email.trim().toLowerCase() !== myEmail) {
+      throw new core.ForbiddenError("This invitation was sent to a different email address. Sign in with that address, or ask for a new invitation.");
+    }
     const claimed = await sql<{ email: string; name: string | null; role: StaffRole; department_id: string | null }>`
       update pulse_staff_invites set accepted_by = ${context.userId}, accepted_at = now()
       where code = ${data.code} and accepted_by is null
+        and created_at > now() - interval '30 days' and lower(trim(email)) = ${myEmail}
       returning email, name, role, department_id
     `;
     if (!claimed.length) throw new core.BadRequestError("This invitation link is not valid or was already used.");
@@ -648,8 +684,8 @@ export const inviteStaff = createServerFn({ method: "POST" })
             data.email,
             `${org.en} — access to the survey results`,
             `${org.ar} — صلاحية الاطلاع على نتائج الاستبيان`,
-            `You have been invited to the ${org.en} survey workspace.\n\nOpen this link, sign in or create an account, and your access is activated:\n\n${link}\n\nThe link works once.`,
-            `تمت دعوتك إلى مساحة استبيان ${org.ar}.\n\nافتح هذا الرابط وسجّل الدخول أو أنشئ حساباً ليُفعَّل وصولك:\n\n${link}\n\nيعمل الرابط مرة واحدة.`,
+            `You have been invited to the ${org.en} survey workspace.\n\nOpen this link and create your account with this email address (${data.email.trim().toLowerCase()}). If you already have an account, sign in instead. Your access is activated straight after:\n\n${link}\n\nThe link works once, for 30 days.`,
+            `تمت دعوتك إلى مساحة استبيان ${org.ar}.\n\nافتح هذا الرابط وأنشئ حسابك بهذا البريد نفسه (${data.email.trim().toLowerCase()}). إن كان لديك حساب فسجّل الدخول بدلاً من ذلك. تُفعَّل صلاحيتك مباشرة بعدها:\n\n${link}\n\nيعمل الرابط مرة واحدة خلال ٣٠ يوماً.`,
           ),
         ]);
         emailed = Boolean(res[0]?.ok);

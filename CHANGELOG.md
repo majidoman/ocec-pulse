@@ -6,6 +6,14 @@ Each release has a version, a date, what changed in plain words, and how to undo
 ## [Unreleased] — on the test site, waiting for approval
 - Nothing yet.
 
+## [1.3.0] — 2026-11-15 — released to live ("apply the fix")
+- **Security fix SEC-001:** password guessing is limited in the database (30 attempts an hour from one address, 20 an hour against one account), so the limit holds on Vercel.
+- **Security fix SEC-002:** a staff invitation works only for the email it was sent to, and only for 30 days.
+- **Staff invitation page rebuilt:** shows who the invitation is for and the role; "Create my account" opens the sign-up form with the email already filled in; "I already have an account — sign in"; clear messages for a used, expired or invalid link, and for being signed in with a different account (with Sign out).
+- **Invitation email** now says to create the account with the same email address, and that the link lasts 30 days.
+- Verified: security checks 8/8, staff-invitation flow 11/11 (new person creates account and gets the viewer role), invitations from the server mailbox 6/6, full test 66/66.
+- Undo: promote 1.2.2 in Vercel. Backup: Neon branch `backup-pre-v1.3.0-2026-11-15`. No database change.
+
 ## [1.2.2] — 2026-11-15 — released to live (fix)
 - **Invitations and reminders use the server's mailbox** (admin@bowsalaom.com on live) until a mailbox is entered in Settings → Invitations & email. Before, they refused with "Email sending is not set up yet" even though password-reset emails were working. The email settings page now says which mailbox will send.
 - Verified: invitations sent from the server mailbox (6 checks), full test 66/66.
