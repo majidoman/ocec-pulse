@@ -11,9 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as FaqRouteImport } from './routes/faq'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as InsightsRouteRouteImport } from './routes/insights/route'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as SetupRouteImport } from './routes/setup'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
@@ -60,6 +62,11 @@ const FaqRoute = FaqRouteImport.update({
   path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const InsightsRouteRoute = InsightsRouteRouteImport.update({
   id: '/insights',
   path: '/insights',
@@ -73,6 +80,11 @@ const JoinRoute = JoinRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRouteRoute = SettingsRouteRouteImport.update({
@@ -256,8 +268,10 @@ export interface FileRoutesByFullPath {
   '/insights': typeof InsightsRouteRouteWithChildren
   '/settings': typeof SettingsRouteRouteWithChildren
   '/faq': typeof FaqRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/api/health': typeof ApiHealthRoute
   '/api/test-access': typeof ApiTestAccessRoute
@@ -296,8 +310,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/faq': typeof FaqRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/api/health': typeof ApiHealthRoute
   '/api/test-access': typeof ApiTestAccessRoute
@@ -339,8 +355,10 @@ export interface FileRoutesById {
   '/insights': typeof InsightsRouteRouteWithChildren
   '/settings': typeof SettingsRouteRouteWithChildren
   '/faq': typeof FaqRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/join': typeof JoinRoute
   '/login': typeof LoginRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
   '/api/health': typeof ApiHealthRoute
   '/api/test-access': typeof ApiTestAccessRoute
@@ -383,8 +401,10 @@ export interface FileRouteTypes {
     | '/insights'
     | '/settings'
     | '/faq'
+    | '/forgot-password'
     | '/join'
     | '/login'
+    | '/reset-password'
     | '/setup'
     | '/api/health'
     | '/api/test-access'
@@ -423,8 +443,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/faq'
+    | '/forgot-password'
     | '/join'
     | '/login'
+    | '/reset-password'
     | '/setup'
     | '/api/health'
     | '/api/test-access'
@@ -465,8 +487,10 @@ export interface FileRouteTypes {
     | '/insights'
     | '/settings'
     | '/faq'
+    | '/forgot-password'
     | '/join'
     | '/login'
+    | '/reset-password'
     | '/setup'
     | '/api/health'
     | '/api/test-access'
@@ -508,8 +532,10 @@ export interface RootRouteChildren {
   InsightsRouteRoute: typeof InsightsRouteRouteWithChildren
   SettingsRouteRoute: typeof SettingsRouteRouteWithChildren
   FaqRoute: typeof FaqRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   JoinRoute: typeof JoinRoute
   LoginRoute: typeof LoginRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiTestAccessRoute: typeof ApiTestAccessRoute
@@ -535,6 +561,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/insights': {
       id: '/insights'
       path: '/insights'
@@ -554,6 +587,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -883,8 +923,10 @@ const rootRouteChildren: RootRouteChildren = {
   InsightsRouteRoute: InsightsRouteRouteWithChildren,
   SettingsRouteRoute: SettingsRouteRouteWithChildren,
   FaqRoute: FaqRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   JoinRoute: JoinRoute,
   LoginRoute: LoginRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiTestAccessRoute: ApiTestAccessRoute,

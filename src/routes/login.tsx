@@ -87,7 +87,7 @@ function Login() {
       </header>
       <main className="flex flex-1 flex-col justify-center gap-6 pb-16">
         <div>
-          <p className="text-xs font-medium uppercase tracking-[0.16em] text-accent">
+          <p className="text-sm font-medium text-accent">
             {loc({ en: "Staff access", ar: "دخول الفريق" })}
           </p>
           <h1 className="mt-2 font-display text-3xl font-medium tracking-tight text-ink">
@@ -114,7 +114,14 @@ function Login() {
                 <Input id="email" type="email" required autoComplete="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="flex flex-col gap-1.5">
-                <Label htmlFor="password">{loc({ en: "Password", ar: "كلمة المرور" })}</Label>
+                <div className="flex items-baseline justify-between gap-3">
+                  <Label htmlFor="password">{loc({ en: "Password", ar: "كلمة المرور" })}</Label>
+                  {mode === "in" ? (
+                    <Link to="/forgot-password" className="text-xs font-medium text-accent underline-offset-4 hover:underline">
+                      {loc({ en: "Forgot password?", ar: "نسيت كلمة المرور؟" })}
+                    </Link>
+                  ) : null}
+                </div>
                 <Input
                   id="password"
                   type="password"
