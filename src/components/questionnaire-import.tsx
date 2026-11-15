@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, RotateCcw, Upload } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Library, RotateCcw, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +10,16 @@ import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 
 type ImportState = Awaited<ReturnType<typeof getQuestionnaireImportState>>;
+
+/** One ready-made questionnaire shipped in public/templates/library (index.json, built by templates/questionnaires/build.py). */
+interface LibraryItem {
+  file: string;
+  name: { en: string; ar: string };
+  purpose: { en: string; ar: string };
+  minutes: string;
+  questions: number;
+  sections: number;
+}
 
 /** Upload a questionnaire workbook, check it, and replace the survey questions (with a backup). */
 export function QuestionnaireImport() {
@@ -27,9 +37,27 @@ export function QuestionnaireImport() {
     getQuestionnaireImportState()
       .then(setState)
       .catch(() => setState(null));
+  const [library, setLibrary] = useState<LibraryItem[]>([]);
   useEffect(() => {
     void refresh();
+    fetch("/templates/library/index.json")
+      .then((r) => (r.ok ? r.json() : []))
+      .then((items: LibraryItem[]) => setLibrary(Array.isArray(items) ? items : []))
+      .catch(() => setLibrary([]));
   }, []);
+
+  /** Loads a ready-made questionnaire through the same check as an uploaded file. */
+  async function pick(item: LibraryItem) {
+    try {
+      const res = await fetch(`/templates/library/${item.file}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const blob = await res.blob();
+      await read(new File([blob], item.file, { type: blob.type }));
+      requestAnimationFrame(() => document.getElementById("questionnaire-check")?.scrollIntoView({ block: "nearest", behavior: "smooth" }));
+    } catch {
+      toast.error(loc({ en: "This questionnaire could not be loaded.", ar: "تعذّر تحميل هذا الاستبيان." }));
+    }
+  }
 
   async function reloadSettings() {
     const config = await getAdminConfig();
@@ -153,8 +181,46 @@ export function QuestionnaireImport() {
         </p>
       ) : null}
 
+      {library.length ? (
+        <details className="group mt-4 border-t border-border pt-3">
+          <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
+            <Library className="size-4 text-accent" aria-hidden />
+            {loc({ en: `Ready-made questionnaires (${n(library.length)})`, ar: `استبيانات جاهزة (${n(library.length)})` })}
+            <span className="text-xs font-normal text-muted group-open:hidden">{loc({ en: "Show", ar: "عرض" })}</span>
+          </summary>
+          <ul className="mt-3 grid gap-2 md:grid-cols-2">
+            {library.map((item) => (
+              <li key={item.file} className="flex flex-col gap-2 rounded-lg border border-border p-3">
+                <div>
+                  <p className="text-sm font-medium text-ink">{loc(item.name)}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted">{loc(item.purpose)}</p>
+                </div>
+                <div className="mt-auto flex items-center justify-between gap-2">
+                  <span className="text-xs text-muted">
+                    {loc({
+                      en: `${n(item.questions)} questions · about ${item.minutes} min`,
+                      ar: `${n(item.questions)} سؤالاً · حوالي ${item.minutes} دقيقة`,
+                    })}
+                  </span>
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="ghost" asChild>
+                      <a href={`/templates/library/${item.file}`} download aria-label={loc({ en: `Download ${item.name.en}`, ar: `تنزيل ${item.name.ar}` })}>
+                        <Download className="size-4" aria-hidden />
+                      </a>
+                    </Button>
+                    <Button size="sm" variant="outline" disabled={busy} onClick={() => void pick(item)}>
+                      {loc({ en: "Check and use", ar: "فحص واستخدام" })}
+                    </Button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+
       {result ? (
-        <div className="mt-4 border-t border-border pt-4" aria-live="polite">
+        <div id="questionnaire-check" className="mt-4 border-t border-border pt-4" aria-live="polite">
           <p className="text-sm font-medium text-ink">
             <bdi dir="ltr">{file}</bdi>
           </p>

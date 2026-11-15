@@ -1,0 +1,156 @@
+[
+ {
+  "file": "00-current-employee-survey.xlsx",
+  "name": {
+   "en": "Employee Survey 2026",
+   "ar": "استبيان الموظفين ٢٠٢٦"
+  },
+  "purpose": {
+   "en": "The full employee survey that ships with the system: 12 topics with 47 agree questions, plus eNPS and 3 comment questions.",
+   "ar": "الاستبيان الشامل المرفق بالنظام: ١٢ محوراً و٤٧ سؤال موافقة، إضافة إلى مؤشر التوصية و٣ أسئلة تعليق."
+  },
+  "minutes": "12–15",
+  "questions": 51,
+  "sections": 13
+ },
+ {
+  "file": "01-engagement-pulse.xlsx",
+  "name": {
+   "en": "Quarterly Engagement Pulse",
+   "ar": "نبض المشاركة الربعي"
+  },
+  "purpose": {
+   "en": "A short check-in between full surveys: engagement, direction, manager support, growth and intent to stay.",
+   "ar": "قياس قصير بين الاستبيانات الشاملة: المشاركة والتوجه ودعم المدير والنمو والرغبة في البقاء."
+  },
+  "minutes": "5–7",
+  "questions": 15,
+  "sections": 6
+ },
+ {
+  "file": "02-onboarding-experience.xlsx",
+  "name": {
+   "en": "New Joiner Experience (first 90 days)",
+   "ar": "تجربة الموظف الجديد (أول ٩٠ يوماً)"
+  },
+  "purpose": {
+   "en": "How well recruitment, the first day, induction and early support prepared new staff.",
+   "ar": "مدى نجاح التوظيف واليوم الأول والتعريف والدعم المبكر في تهيئة الموظفين الجدد."
+  },
+  "minutes": "5–7",
+  "questions": 16,
+  "sections": 6
+ },
+ {
+  "file": "03-exit-survey.xlsx",
+  "name": {
+   "en": "Exit Survey",
+   "ar": "استبيان المغادرة"
+  },
+  "purpose": {
+   "en": "Why people leave and what would have kept them, to reduce avoidable turnover.",
+   "ar": "أسباب مغادرة الموظفين وما كان سيبقيهم، للحد من الدوران الوظيفي الذي يمكن تجنبه."
+  },
+  "minutes": "6–8",
+  "questions": 17,
+  "sections": 6
+ },
+ {
+  "file": "04-wellbeing-workload-safety.xlsx",
+  "name": {
+   "en": "Wellbeing, Workload & Safety",
+   "ar": "الرفاه وعبء العمل والسلامة"
+  },
+  "purpose": {
+   "en": "Early warning on burnout, workload, speaking up and physical safety, especially after busy periods.",
+   "ar": "إنذار مبكر بشأن الإرهاق وعبء العمل وحرية التعبير والسلامة الجسدية، خاصة بعد فترات الذروة."
+  },
+  "minutes": "6–8",
+  "questions": 17,
+  "sections": 5
+ },
+ {
+  "file": "05-manager-effectiveness.xlsx",
+  "name": {
+   "en": "Manager Effectiveness (upward feedback)",
+   "ar": "فعالية المدير (تقييم الموظفين لمديرهم)"
+  },
+  "purpose": {
+   "en": "Confidential feedback from staff about their direct manager, for development plans, not for performance ratings.",
+   "ar": "تغذية راجعة سرية من الموظفين عن مديرهم المباشر، لخطط التطوير لا لتقييم الأداء."
+  },
+  "minutes": "5–7",
+  "questions": 16,
+  "sections": 6
+ },
+ {
+  "file": "06-overall-satisfaction.xlsx",
+  "name": {
+   "en": "Overall Employee Satisfaction",
+   "ar": "الرضا العام للموظفين"
+  },
+  "purpose": {
+   "en": "A broad annual measure of satisfaction across leadership, managers, fairness, growth, wellbeing and belonging.",
+   "ar": "قياس سنوي شامل للرضا يغطي القيادة والمديرين والعدالة والنمو والرفاه والانتماء."
+  },
+  "minutes": "12–15",
+  "questions": 51,
+  "sections": 13
+ },
+ {
+  "file": "07-leadership-trust.xlsx",
+  "name": {
+   "en": "Leadership and Trust",
+   "ar": "القيادة والثقة"
+  },
+  "purpose": {
+   "en": "The full survey with a deeper focus on leadership credibility and trust.",
+   "ar": "الاستبيان الشامل مع تركيز أعمق على مصداقية القيادة والثقة بها."
+  },
+  "minutes": "12–15",
+  "questions": 51,
+  "sections": 13
+ },
+ {
+  "file": "08-career-growth.xlsx",
+  "name": {
+   "en": "Career Growth and Development",
+   "ar": "النمو والتطوير المهني"
+  },
+  "purpose": {
+   "en": "The full survey with a deeper focus on learning, career paths and development.",
+   "ar": "الاستبيان الشامل مع تركيز أعمق على التعلم والمسارات المهنية والتطوير."
+  },
+  "minutes": "12–15",
+  "questions": 51,
+  "sections": 13
+ },
+ {
+  "file": "09-wellbeing-environment.xlsx",
+  "name": {
+   "en": "Wellbeing and Work Environment",
+   "ar": "الرفاه وبيئة العمل"
+  },
+  "purpose": {
+   "en": "The full survey with a deeper focus on wellbeing, workload and the work environment.",
+   "ar": "الاستبيان الشامل مع تركيز أعمق على الرفاه وعبء العمل وبيئة العمل."
+  },
+  "minutes": "12–15",
+  "questions": 51,
+  "sections": 13
+ },
+ {
+  "file": "10-recognition-inclusion.xlsx",
+  "name": {
+   "en": "Recognition, Collaboration & Inclusion",
+   "ar": "التقدير والتعاون والشمولية"
+  },
+  "purpose": {
+   "en": "The full survey with a deeper focus on recognition, collaboration and inclusion.",
+   "ar": "الاستبيان الشامل مع تركيز أعمق على التقدير والتعاون والشمولية."
+  },
+  "minutes": "12–15",
+  "questions": 51,
+  "sections": 13
+ }
+]

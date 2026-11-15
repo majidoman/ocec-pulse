@@ -7,7 +7,8 @@ from openpyxl.worksheet.datavalidation import DataValidation
 sys.path.insert(0, os.path.dirname(__file__))
 from templates import TEMPLATES  # noqa: E402
 
-OUT = sys.argv[1]
+HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = sys.argv[1] if len(sys.argv) > 1 else os.path.join(HERE, "..", "..", "public", "templates", "library")
 os.makedirs(OUT, exist_ok=True)
 
 INK, ACCENT, SAND, SAND2, LINE = "142A32", "2C6A6A", "F6F2EA", "ECE5D8", "D9D1C3"
@@ -144,8 +145,8 @@ def to_rows(trows):
     return out
 
 
-# 00 — the current survey, exported from the system
-cur = json.load(open(os.path.join(os.path.dirname(__file__), "current.json")))
+# 00 — the current survey, exported from the system (current-survey.json)
+cur = json.load(open(os.path.join(HERE, "current-survey.json")))
 dims = {d["id"]: d for d in cur["dimensions"]}
 rows = []
 for q in sorted(cur["questions"], key=lambda q: q["order"]):
@@ -156,15 +157,33 @@ for q in sorted(cur["questions"], key=lambda q: q["order"]):
     else:
         rows.append((q["id"], d["name"]["en"], d["name"]["ar"], d["blurb"]["en"], d["blurb"]["ar"], q["text"]["en"], q["text"]["ar"], t,
                      "Yes" if q["required"] else "No", "Yes" if q.get("reverse") else "No"))
-current_meta = dict(name=(cur["name"]["en"], cur["name"]["ar"]),
-                    purpose=("The full employee survey currently set up in the system (12 topics with 47 agree questions, plus eNPS and 3 comment questions).",
-                             "الاستبيان الشامل المُعدّ حالياً في النظام (١٢ محوراً و٤٧ سؤال موافقة، إضافة إلى مؤشر التوصية و٣ أسئلة تعليق)."),
-                    when=("Once a year.", "مرة في السنة."), minutes="12–15")
-build(os.path.join(OUT, "00-current-employee-survey.xlsx"), current_meta["name"], rows, current_meta)
+library = [dict(
+    file="00-current-employee-survey",
+    name=(cur["name"]["en"], cur["name"]["ar"]),
+    purpose=("The full employee survey that ships with the system: 12 topics with 47 agree questions, plus eNPS and 3 comment questions.",
+             "الاستبيان الشامل المرفق بالنظام: ١٢ محوراً و٤٧ سؤال موافقة، إضافة إلى مؤشر التوصية و٣ أسئلة تعليق."),
+    when=("Once a year.", "مرة في السنة."), minutes="12–15", rows=None, built=rows)]
+library += TEMPLATES
+# 06–10 — employee satisfaction surveys supplied by Bawsala (satisfaction-surveys.json)
+for t in json.load(open(os.path.join(HERE, "satisfaction-surveys.json"))):
+    t["name"] = tuple(t["name"]); t["purpose"] = tuple(t["purpose"]); t["when"] = tuple(t["when"])
+    t["rows"] = [tuple(r) for r in t["rows"]]
+    library.append(t)
 
-for t in TEMPLATES:
-    build(os.path.join(OUT, f"{t['file']}.xlsx"), t["name"], to_rows(t["rows"]), t)
-
-# Blank template, served from the app
-build(os.path.join(OUT, "pulse-questions-template.xlsx"), ("", ""), [], None)
+manifest = []
+for t in library:
+    rows = t.get("built") or to_rows(t["rows"])
+    build(os.path.join(OUT, f"{t['file']}.xlsx"), t["name"], rows, t)
+    kinds = [r[7] for r in rows]
+    manifest.append({
+        "file": f"{t['file']}.xlsx",
+        "name": {"en": t["name"][0], "ar": t["name"][1]},
+        "purpose": {"en": t["purpose"][0], "ar": t["purpose"][1]},
+        "minutes": t["minutes"],
+        "questions": len(rows),
+        "sections": len({r[1] for r in rows if r[7] != "C" and r[1]}),
+    })
+json.dump(manifest, open(os.path.join(OUT, "index.json"), "w"), ensure_ascii=False, indent=1)
+# Blank template
+build(os.path.join(OUT, "..", "pulse-questions-template.xlsx"), ("", ""), [], None)
 print("\n".join(sorted(os.listdir(OUT))))

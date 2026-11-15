@@ -80,7 +80,7 @@ TEMPLATES.append(dict(
         ("I have someone I can go to with questions.", "يوجد شخص ألجأ إليه عند وجود أسئلة.", L, False),
         ("I still feel like an outsider in my team.", "ما زلت أشعر أنني غريب في فريقي.", L, True),
     ]) +
-    sec("Recommendation", "التوصية", "Would you recommend {org} to someone like you?", "هل توصي بـ{org} لشخص مثلك؟", [
+    sec("Recommendation", "التوصية", "Would you recommend {org} to someone like you?", "هل توصي شخصاً مثلك بالعمل في {org}؟", [
         ("Based on your first months, how likely are you to recommend {org} as a place to work?", "بناءً على أشهرك الأولى، ما مدى احتمال أن توصي بالعمل في {org}؟", N, False),
     ]) +
     [("", "", "", "", "What would have made your first weeks easier?", "ما الذي كان سيجعل أسابيعك الأولى أسهل؟", C, False),
@@ -120,7 +120,7 @@ TEMPLATES.append(dict(
         ("I could voice concerns without fear.", "استطعت التعبير عن مخاوفي دون خوف.", L, False),
         ("Leadership communicated openly about decisions that affected me.", "تواصلت القيادة بانفتاح بشأن القرارات التي أثّرت عليّ.", L, False),
     ]) +
-    sec("Recommendation", "التوصية", "Would you recommend {org} as an employer?", "هل توصي بـ{org} كجهة عمل؟", [
+    sec("Recommendation", "التوصية", "Would you recommend {org} as an employer?", "هل توصي بالعمل في {org}؟", [
         ("How likely are you to recommend {org} as a place to work?", "ما مدى احتمال أن توصي بالعمل في {org}؟", N, False),
     ]) +
     [("", "", "", "", "What was the main reason you decided to leave?", "ما السبب الرئيسي لقرارك بالمغادرة؟", C, False),
@@ -160,7 +160,7 @@ TEMPLATES.append(dict(
     sec("Support", "الدعم", "Help available when things are difficult.", "المساندة المتاحة في الأوقات الصعبة.", [
         ("My manager notices when I am under too much pressure.", "يلاحظ مديري عندما أكون تحت ضغط كبير.", L, False),
         ("I know where to get help if work affects my health.", "أعرف أين أجد المساعدة إذا أثّر العمل على صحتي.", L, False),
-        ("{org} genuinely cares about the wellbeing of its staff.", "يهتم {org} فعلاً برفاه موظفيه.", L, False),
+        ("{org} genuinely cares about the wellbeing of its staff.", "تهتم إدارة {org} فعلاً برفاه الموظفين.", L, False),
     ]) +
     [("", "", "", "", "What is the biggest source of pressure in your work right now?", "ما أكبر مصدر للضغط في عملك حالياً؟", C, False),
      ("", "", "", "", "What one change would most improve your wellbeing at work?", "ما التغيير الواحد الذي سيحسّن رفاهك في العمل أكثر من غيره؟", C, False)],

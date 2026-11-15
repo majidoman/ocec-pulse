@@ -173,7 +173,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
   },
   {
     q: {
-      ar: "هل الاستبيان مصمم لـ{org} أم قالب عام للضيافة؟",
+      ar: "هل الاستبيان مصمم خصيصاً لـ {org} أم قالب عام للضيافة؟",
       en: "Is this written for {org} or a generic hospitality template?",
     },
     a: {

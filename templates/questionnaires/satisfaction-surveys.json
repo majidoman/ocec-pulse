@@ -1,0 +1,2642 @@
+[
+ {
+  "file": "06-overall-satisfaction",
+  "name": [
+   "Overall Employee Satisfaction",
+   "الرضا العام للموظفين"
+  ],
+  "purpose": [
+   "A broad annual measure of satisfaction across leadership, managers, fairness, growth, wellbeing and belonging.",
+   "قياس سنوي شامل للرضا يغطي القيادة والمديرين والعدالة والنمو والرفاه والانتماء."
+  ],
+  "when": [
+   "Once a year.",
+   "مرة في السنة."
+  ],
+  "minutes": "12–15",
+  "rows": [
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "I trust the vision of senior leadership for {org}.",
+    "أثق في رؤية القيادة العليا في {org}.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "Senior leadership communicates with employees with sufficient transparency.",
+    "تتواصل القيادة العليا مع الموظفين بشفافية كافية.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "I feel confident in leadership's ability to guide the organization.",
+    "أشعر بالثقة في قدرة القيادة على توجيه المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "Leadership supports the organization's values.",
+    "القيادة تدعم قيم المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My direct manager provides the necessary support for my success at work.",
+    "يقدم مديري المباشر الدعم اللازم لنجاحي في عملي.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager gives constructive feedback.",
+    "مديري يعطي ملاحظات بناءة.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager treats me with respect.",
+    "مديري يعاملني باحترام.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager supports my professional development.",
+    "مديري يدعم تطوري المهني.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "I get the information I need to do my job in a timely manner.",
+    "أحصل على المعلومات التي أحتاجها لأداء عملي في الوقت المناسب.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "Communication within the team is effective.",
+    "التواصل داخل الفريق فعال.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "I know what is expected of me in my job.",
+    "أعرف ما هو متوقع مني في عملي.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "There are clear channels to express my opinions.",
+    "هناك قنوات واضحة للتعبير عن آرائي.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "I feel that I am treated with respect in the workplace.",
+    "أشعر أنني أعامل باحترام في مكان العمل.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "Opportunities are distributed fairly.",
+    "الفرص موزعة بعدالة.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "I am treated fairly regardless of my background.",
+    "أعامل بعدالة بغض النظر عن خلفيتي.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "Policies are applied fairly.",
+    "السياسات تطبق بشكل عادل.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "My team members collaborate well.",
+    "أعضاء فريقي يتعاونون جيداً.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "I feel supported by my colleagues.",
+    "أشعر بالدعم من زملائي.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "Teamwork achieves better results.",
+    "العمل الجماعي يحقق نتائج أفضل.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "There is a positive team spirit.",
+    "هناك روح فريق إيجابية.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "My contributions and efforts are appropriately recognized.",
+    "يتم تقدير مساهماتي وجهودي بشكل مناسب.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "The reward system is fair.",
+    "نظام المكافآت عادل.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "I feel appreciated by the organization.",
+    "أشعر بالتقدير من قبل المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "Recognition motivates me to perform better.",
+    "التقدير يشجعني على الأداء الأفضل.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "I have sufficient opportunities for learning and professional development.",
+    "تتوفر لي فرص كافية للتعلم والتطوير المهني.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "The organization supports my career development.",
+    "المؤسسة تدعم تطوري الوظيفي.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "I can acquire new skills.",
+    "أستطيع اكتساب مهارات جديدة.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "There is a clear path for advancement.",
+    "هناك مسار واضح للتقدم.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "I can manage my workload well without excessive strain.",
+    "أستطيع إدارة عبء عملي بشكل جيد دون إجهاد زائد.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "I can achieve a good balance between my work requirements and personal life.",
+    "أستطيع تحقيق توازن جيد بين متطلبات عملي وحياتي الشخصية.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "I feel my mental health is supported.",
+    "أشعر أن صحتي النفسية مدعومة.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "The work environment supports my wellbeing.",
+    "بيئة العمل تدعم رفاهيتي.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I have the tools and resources needed to perform my work efficiently.",
+    "تتوفر لدي الأدوات والموارد اللازمة لأداء عملي بكفاءة.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I feel empowered to make decisions.",
+    "أشعر بالتمكين لاتخاذ قرارات.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "Resources are sufficient to complete tasks.",
+    "الموارد كافية لإنجاز المهام.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I can access information easily.",
+    "أستطيع الوصول إلى المعلومات بسهولة.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I am proud to work at {org}.",
+    "أفتخر بالعمل في {org}.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I recommend the organization as a good place to work.",
+    "أوصي بالمؤسسة كمكان عمل جيد.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I feel a sense of belonging to the organization.",
+    "أشعر بالانتماء إلى المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I see that my work contributes to the organization's success.",
+    "أرى أن عملي يساهم في نجاح المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "I feel encouraged to share new ideas to improve work.",
+    "أشعر بالتشجيع لتقديم أفكار جديدة لتحسين العمل.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "My ideas are heard and valued.",
+    "أفكاري تُسمع وتُقدر.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "The organization supports innovation.",
+    "المؤسسة تدعم الابتكار.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Guest needs are considered in decisions related to my work.",
+    "تُراعى احتياجات الضيوف في القرارات المتعلقة بعملي.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "I understand guest needs.",
+    "أفهم احتياجات الضيوف.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "I strive to provide an excellent guest experience.",
+    "أسعى لتقديم تجربة ممتازة للضيوف.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Guest feedback is used for improvement.",
+    "ملاحظات الضيوف تُستخدم للتحسين.",
+    "L",
+    false
+   ],
+   [
+    "Overall Engagement",
+    "المشاركة العامة",
+    "",
+    "",
+    "How likely are you to recommend {org} as a good place to work?",
+    "ما مدى احتمال أن توصي بالعمل في {org} كمكان عمل جيد؟",
+    "N",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "What are the most positive aspects of the current work environment?",
+    "ما أبرز الجوانب الإيجابية في بيئة العمل حالياً؟",
+    "C",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "What could be improved?",
+    "ما الذي يمكن تحسينه؟",
+    "C",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "Any additional comments?",
+    "أي تعليقات إضافية؟",
+    "C",
+    false
+   ]
+  ]
+ },
+ {
+  "file": "07-leadership-trust",
+  "name": [
+   "Leadership and Trust",
+   "القيادة والثقة"
+  ],
+  "purpose": [
+   "The full survey with a deeper focus on leadership credibility and trust.",
+   "الاستبيان الشامل مع تركيز أعمق على مصداقية القيادة والثقة بها."
+  ],
+  "when": [
+   "Once a year, or after leadership changes.",
+   "مرة في السنة، أو بعد تغييرات في القيادة."
+  ],
+  "minutes": "12–15",
+  "rows": [
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "I fully trust the decisions of senior leadership.",
+    "أثق تماماً في قرارات القيادة العليا.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "Leadership communicates with employees regularly and transparently.",
+    "القيادة تتواصل مع الموظفين بانتظام وشفافية.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "Leadership considers the interests of employees.",
+    "القيادة تضع مصلحة الموظفين في الاعتبار.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "I feel confident about the organization's future under current leadership.",
+    "أشعر بالثقة في مستقبل المؤسسة تحت القيادة الحالية.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager demonstrates trustworthy leadership.",
+    "مديري يظهر قيادة موثوقة.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager builds a culture of trust in the team.",
+    "مديري يبني ثقافة الثقة في الفريق.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager supports me in achieving my goals.",
+    "مديري يدعمني في تحقيق أهدافي.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager acts with transparency.",
+    "مديري يتعامل بشفافية.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "Communication from senior leadership is clear and effective.",
+    "التواصل من القيادة العليا واضح وفعال.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "I receive regular updates on organizational goals.",
+    "أتلقى تحديثات منتظمة حول أهداف المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "There is transparency in communication about changes.",
+    "هناك شفافية في التواصل حول التغييرات.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "I can easily access important information.",
+    "يمكنني الوصول بسهولة إلى المعلومات الهامة.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "Leadership treats everyone fairly.",
+    "القيادة تعامل الجميع بعدالة.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "I feel respected by leadership.",
+    "أشعر بالاحترام من قبل القيادات.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "Decisions are made based on fair criteria.",
+    "القرارات تُتخذ بناءً على معايير عادلة.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "There is no discrimination in treatment.",
+    "لا يوجد تمييز في المعاملة.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "Leadership encourages collaboration between teams.",
+    "القيادة تشجع التعاون بين الفرق.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "I feel that teams work together towards a common goal.",
+    "أشعر أن الفرق تعمل معاً نحو هدف مشترك.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "There is mutual support between departments.",
+    "هناك دعم متبادل بين الأقسام.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "Teamwork is promoted by management.",
+    "العمل الجماعي يُعزز من قبل الإدارة.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "Leadership appreciates the efforts made.",
+    "القيادة تقدر الجهود المبذولة.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "There is clear recognition of achievements.",
+    "هناك تقدير واضح للإنجازات.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "I feel that my contributions are noticed.",
+    "أشعر أن مساهماتي تُلاحظ.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "The recognition system builds trust.",
+    "نظام التقدير يعزز الثقة.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "Leadership supports growth opportunities for employees.",
+    "القيادة تدعم فرص النمو للموظفين.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "I feel there is investment in employee development.",
+    "أشعر أن هناك استثماراً في تطوير الموظفين.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "I have opportunities to advance under current leadership.",
+    "لدي فرص للتقدم تحت القيادة الحالية.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "Training and development are available.",
+    "التدريب والتطوير متاحان.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "Leadership cares about employee wellbeing.",
+    "القيادة تهتم برفاه الموظفين.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "I feel my physical and mental health matter to the organization.",
+    "أشعر أن صحتي الجسدية والنفسية مهمة للمنظمة.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "There is support for work-life balance.",
+    "هناك دعم للتوازن بين العمل والحياة.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "The work environment is safe and comfortable.",
+    "بيئة العمل آمنة ومريحة.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "Leadership provides the necessary resources.",
+    "القيادة توفر الموارد اللازمة.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I feel empowered by management.",
+    "أشعر بالتمكين من قبل الإدارة.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I have the authority needed to do my job.",
+    "لدي الصلاحيات اللازمة لأداء عملي.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "Resources are distributed fairly.",
+    "الموارد تُوزع بشكل عادل.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I am proud of the leadership at {org}.",
+    "أفتخر بالقيادة في {org}.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I feel proud to belong to this organization.",
+    "أشعر بالفخر بالانتماء إلى هذه المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I see that leadership represents the organization's values.",
+    "أرى أن القيادة تمثل قيم المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I recommend working here because of the leadership.",
+    "أوصي بالعمل هنا بسبب القيادة.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "Leadership encourages innovation.",
+    "القيادة تشجع على الابتكار.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "My ideas are taken into consideration.",
+    "أفكاري تُؤخذ بعين الاعتبار.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "There is a culture that supports new ideas.",
+    "هناك ثقافة تدعم الأفكار الجديدة.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Leadership puts the guest experience first.",
+    "القيادة تضع تجربة الضيف في المقدمة.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "I see that decisions focus on guest satisfaction.",
+    "أرى أن القرارات تركز على رضا الضيف.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "We are committed to providing the best guest experience.",
+    "نحن ملتزمون بتقديم أفضل تجربة للضيوف.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Guest feedback influences our improvements.",
+    "ملاحظات الضيوف تُؤثر على تحسيناتنا.",
+    "L",
+    false
+   ],
+   [
+    "Overall Engagement",
+    "المشاركة العامة",
+    "",
+    "",
+    "How likely are you to recommend {org} as a good place to work?",
+    "ما مدى احتمال أن توصي بالعمل في {org} كمكان عمل جيد؟",
+    "N",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "What are the most positive aspects of the current work environment?",
+    "ما أبرز الجوانب الإيجابية في بيئة العمل حالياً؟",
+    "C",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "What could be improved?",
+    "ما الذي يمكن تحسينه؟",
+    "C",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "Any additional comments?",
+    "أي تعليقات إضافية؟",
+    "C",
+    false
+   ]
+  ]
+ },
+ {
+  "file": "08-career-growth",
+  "name": [
+   "Career Growth and Development",
+   "النمو والتطوير المهني"
+  ],
+  "purpose": [
+   "The full survey with a deeper focus on learning, career paths and development.",
+   "الاستبيان الشامل مع تركيز أعمق على التعلم والمسارات المهنية والتطوير."
+  ],
+  "when": [
+   "Before planning the training budget.",
+   "قبل التخطيط لميزانية التدريب."
+  ],
+  "minutes": "12–15",
+  "rows": [
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "Leadership supports professional development opportunities.",
+    "القيادة تدعم فرص التطوير المهني.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "I trust leadership's commitment to employee growth.",
+    "أثق في التزام القيادة بنمو الموظفين.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "Leadership provides an environment for learning.",
+    "القيادة توفر بيئة للتعلم.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "I feel supported in my career path.",
+    "أشعر بالدعم في مسيرتي المهنية.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager helps me set development goals.",
+    "مديري يساعدني في تحديد أهداف التطور.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager provides learning opportunities.",
+    "مديري يوفر فرص التعلم.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager supports my career progress.",
+    "مديري يدعم تقدمي الوظيفي.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager gives useful guidance for my growth.",
+    "مديري يعطي توجيهات مفيدة لنموي.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "There is clear communication about growth opportunities.",
+    "يتم التواصل بوضوح حول فرص النمو.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "I know how I can advance in the organization.",
+    "أعرف كيف يمكنني التقدم في المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "There is regular feedback on my performance.",
+    "هناك تغذية راجعة منتظمة حول أدائي.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "I receive information about development programs.",
+    "أتلقى معلومات عن برامج التطوير.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "Growth opportunities are distributed fairly.",
+    "فرص النمو موزعة بعدالة.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "I feel everyone has equal opportunities for development.",
+    "أشعر أن الجميع لديهم فرص متساوية للتطور.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "Evaluations are fair and support growth.",
+    "التقييمات عادلة وتدعم النمو.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "There is no discrimination in training opportunities.",
+    "لا يوجد تمييز في فرص التدريب.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "The team supports members' learning.",
+    "الفريق يدعم تعلم الأعضاء.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "I share knowledge with my colleagues.",
+    "أشارك المعرفة مع زملائي.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "Teamwork enhances development.",
+    "العمل الجماعي يعزز التطوير.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "There is a culture of sharing experiences.",
+    "هناك ثقافة تبادل الخبرات.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "Effort in learning and development is appreciated.",
+    "يُقدر الجهد في التعلم والتطور.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "There are rewards for professional progress.",
+    "هناك مكافآت للتقدم المهني.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "I feel recognized when acquiring new skills.",
+    "أشعر بالتقدير عند اكتساب مهارات جديدة.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "Recognition encourages continuous development.",
+    "التقدير يشجع على التطوير المستمر.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "I have sufficient opportunities to learn and grow.",
+    "لدي فرص كافية للتعلم والنمو.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "The organization invests in employee development.",
+    "المؤسسة تستثمر في تطوير الموظفين.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "I can see a clear career path.",
+    "أستطيع رؤية مسار وظيفي واضح.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "Training programs are effective and useful.",
+    "برامج التدريب فعالة ومفيدة.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "Professional development does not negatively affect my wellbeing.",
+    "التطوير المهني لا يؤثر سلباً على رفاهيتي.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "I feel balanced while pursuing development.",
+    "أشعر بالتوازن أثناء متابعة التطور.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "There is support for health during learning.",
+    "هناك دعم للصحة أثناء التعلم.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "The work environment supports personal growth.",
+    "بيئة العمل تدعم النمو الشخصي.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I have the resources needed for professional development.",
+    "لدي الموارد اللازمة للتطوير المهني.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I feel empowered to pursue growth opportunities.",
+    "أشعر بالتمكين لمتابعة فرص النمو.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "Access to learning tools is easy.",
+    "الوصول إلى أدوات التعلم سهل.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "Resources support the development of my competencies.",
+    "الموارد تدعم تطوير كفاءاتي.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I am proud of the growth opportunities available at {org}.",
+    "أفتخر بفرص النمو المتاحة في {org}.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I feel proud of my development within the organization.",
+    "أشعر بالفخر بتطوري داخل المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "The organization helps employees succeed.",
+    "المؤسسة تساعد الموظفين على النجاح.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I see a promising future here.",
+    "أرى مستقبلاً واعداً هنا.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "Learning encourages innovation.",
+    "التعلم يشجع على الابتكار.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "I share ideas to improve development processes.",
+    "أشارك أفكاراً لتحسين عمليات التطوير.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "The organization supports new ideas in development.",
+    "المؤسسة تدعم الأفكار الجديدة في التطوير.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Employee development improves the guest experience.",
+    "تطوير الموظفين يحسن تجربة الضيف.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "I apply what I learn in serving guests.",
+    "أطبق ما أتعلمه في خدمة الضيوف.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "We are committed to better service through development.",
+    "نحن ملتزمون بتقديم خدمة أفضل من خلال التطوير.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Guest feedback guides development programs.",
+    "ملاحظات الضيوف توجه برامج التطوير.",
+    "L",
+    false
+   ],
+   [
+    "Overall Engagement",
+    "المشاركة العامة",
+    "",
+    "",
+    "How likely are you to recommend {org} as a good place to work?",
+    "ما مدى احتمال أن توصي بالعمل في {org} كمكان عمل جيد؟",
+    "N",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "What are the most positive aspects of the current work environment?",
+    "ما أبرز الجوانب الإيجابية في بيئة العمل حالياً؟",
+    "C",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "What could be improved?",
+    "ما الذي يمكن تحسينه؟",
+    "C",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "Any additional comments?",
+    "أي تعليقات إضافية؟",
+    "C",
+    false
+   ]
+  ]
+ },
+ {
+  "file": "09-wellbeing-environment",
+  "name": [
+   "Wellbeing and Work Environment",
+   "الرفاه وبيئة العمل"
+  ],
+  "purpose": [
+   "The full survey with a deeper focus on wellbeing, workload and the work environment.",
+   "الاستبيان الشامل مع تركيز أعمق على الرفاه وعبء العمل وبيئة العمل."
+  ],
+  "when": [
+   "After peak periods, or once a year.",
+   "بعد فترات الذروة، أو مرة في السنة."
+  ],
+  "minutes": "12–15",
+  "rows": [
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "Leadership cares about employee wellbeing.",
+    "القيادة تهتم برفاه الموظفين.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "I trust that leadership supports balance.",
+    "أثق في أن القيادة تدعم التوازن.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "Leadership provides a healthy work environment.",
+    "القيادة توفر بيئة عمل صحية.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "I feel secure under leadership regarding wellbeing.",
+    "أشعر بالأمان تحت القيادة فيما يتعلق بالرفاه.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager cares about my team's wellbeing.",
+    "مديري يهتم برفاه فريقي.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager helps manage workload.",
+    "مديري يساعد في إدارة عبء العمل.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager supports work-life balance.",
+    "مديري يدعم التوازن بين العمل والحياة.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager notices signs of burnout.",
+    "مديري يلاحظ علامات الإرهاق.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "There is clear communication about wellbeing policies.",
+    "يتم التواصل حول سياسات الرفاه بوضوح.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "I know the resources available to support my wellbeing.",
+    "أعرف الموارد المتاحة لدعم رفاهيتي.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "There are channels to report wellbeing issues.",
+    "هناك قنوات للإبلاغ عن مشكلات الرفاه.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "Communication supports a positive work environment.",
+    "التواصل يدعم بيئة عمل إيجابية.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "Wellbeing policies are applied fairly.",
+    "سياسات الرفاه تطبق بعدالة.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "I feel respected regarding my personal needs.",
+    "أشعر بالاحترام فيما يتعلق باحتياجاتي الشخصية.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "Everyone has equal opportunities for rest.",
+    "الجميع لديهم فرص متساوية للراحة.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "There is no unfair pressure on some employees.",
+    "لا يوجد ضغط غير عادل على بعض الموظفين.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "The team supports each other's wellbeing.",
+    "الفريق يدعم رفاه بعضه البعض.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "We collaborate to distribute workload fairly.",
+    "نتعاون لتوزيع عبء العمل بشكل عادل.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "There is mutual support during pressure times.",
+    "هناك دعم متبادل في أوقات الضغط.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "Team spirit helps with wellbeing.",
+    "روح الفريق تساعد على الرفاه.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "Effort is appreciated while considering wellbeing.",
+    "يُقدر الجهد مع مراعاة الرفاه.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "There is recognition for work that maintains balance.",
+    "هناك تقدير للعمل الذي يحافظ على التوازن.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "I feel appreciated without exhaustion.",
+    "أشعر بالتقدير دون استنزاف.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "Rewards do not come at the expense of wellbeing.",
+    "المكافآت لا تأتي على حساب الرفاه.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "Growth opportunities do not negatively affect my wellbeing.",
+    "فرص النمو لا تؤثر سلباً على رفاهيتي.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "Development is done in a sustainable way.",
+    "التطوير يتم بطريقة مستدامة.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "I feel supported in learning without excessive pressure.",
+    "أشعر بالدعم في التعلم دون ضغط زائد.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "There is a balance between growth and wellbeing.",
+    "هناك توازن بين النمو والرفاه.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "My workload is reasonable and manageable.",
+    "عبء عملي معقول ويمكن إدارته.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "I can achieve a good balance between work and personal life.",
+    "أستطيع تحقيق توازن جيد بين العمل والحياة الشخصية.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "I feel my mental and physical health are supported.",
+    "أشعر أن صحتي النفسية والجسدية مدعومة.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "The work environment promotes my wellbeing.",
+    "بيئة العمل تعزز رفاهيتي.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I have the tools needed to do my job without excessive strain.",
+    "لدي الأدوات اللازمة لأداء عملي دون إجهاد زائد.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I feel empowered to manage my time.",
+    "أشعر بالتمكين لإدارة وقتي.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "Resources support my wellbeing.",
+    "الموارد تدعم رفاهيتي.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I can request support when needed.",
+    "أستطيع طلب الدعم عند الحاجة.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I am proud of the wellbeing-supportive work environment at {org}.",
+    "أفتخر ببيئة العمل الداعمة للرفاه في {org}.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I feel proud of the attention to employee health.",
+    "أشعر بالفخر بالاهتمام بصحة الموظفين.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "The organization cares about its employees as individuals.",
+    "المؤسسة تهتم بموظفيها كأفراد.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I recommend working here because of the focus on wellbeing.",
+    "أوصي بالعمل هنا بسبب الاهتمام بالرفاه.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "I share ideas to improve wellbeing.",
+    "أشارك أفكاراً لتحسين الرفاه.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "My ideas about the work environment are heard.",
+    "أفكاري حول بيئة العمل تُسمع.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "The organization supports innovation in wellbeing.",
+    "المؤسسة تدعم الابتكار في مجال الرفاه.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Employee wellbeing positively reflects on the guest experience.",
+    "رفاه الموظفين ينعكس إيجاباً على تجربة الضيف.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "I feel able to provide excellent service without strain.",
+    "أشعر بالقدرة على تقديم خدمة ممتازة دون إجهاد.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "We care for guests while maintaining our wellbeing.",
+    "نحن نهتم بالضيوف مع الحفاظ على رفاهنا.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Guest feedback is balanced with employee needs.",
+    "ملاحظات الضيوف تُوازن مع احتياجات الموظفين.",
+    "L",
+    false
+   ],
+   [
+    "Overall Engagement",
+    "المشاركة العامة",
+    "",
+    "",
+    "How likely are you to recommend {org} as a good place to work?",
+    "ما مدى احتمال أن توصي بالعمل في {org} كمكان عمل جيد؟",
+    "N",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "What are the most positive aspects of the current work environment?",
+    "ما أبرز الجوانب الإيجابية في بيئة العمل حالياً؟",
+    "C",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "What could be improved?",
+    "ما الذي يمكن تحسينه؟",
+    "C",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "Any additional comments?",
+    "أي تعليقات إضافية؟",
+    "C",
+    false
+   ]
+  ]
+ },
+ {
+  "file": "10-recognition-inclusion",
+  "name": [
+   "Recognition, Collaboration & Inclusion",
+   "التقدير والتعاون والشمولية"
+  ],
+  "purpose": [
+   "The full survey with a deeper focus on recognition, collaboration and inclusion.",
+   "الاستبيان الشامل مع تركيز أعمق على التقدير والتعاون والشمولية."
+  ],
+  "when": [
+   "Once a year.",
+   "مرة في السنة."
+  ],
+  "minutes": "12–15",
+  "rows": [
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "Leadership promotes a culture of recognition and collaboration.",
+    "القيادة تعزز ثقافة التقدير والتعاون.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "I trust leadership's commitment to inclusion.",
+    "أثق في التزام القيادة بالشمولية.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "Leadership treats everyone with respect.",
+    "القيادة تعامل الجميع باحترام.",
+    "L",
+    false
+   ],
+   [
+    "Senior Leadership",
+    "القيادة العليا",
+    "",
+    "",
+    "I feel confident in an inclusive work environment.",
+    "أشعر بالثقة في بيئة عمل شاملة.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager appreciates team contributions.",
+    "مديري يقدر مساهمات الفريق.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager fosters collaboration within the team.",
+    "مديري يعزز التعاون داخل الفريق.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager treats everyone fairly.",
+    "مديري يعامل الجميع بعدالة.",
+    "L",
+    false
+   ],
+   [
+    "Direct Manager Support",
+    "دعم المدير المباشر",
+    "",
+    "",
+    "My manager builds an inclusive environment.",
+    "مديري يبني بيئة شاملة.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "Communication promotes collaboration and inclusion.",
+    "التواصل يعزز التعاون والشمولية.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "I feel my voice is heard.",
+    "أشعر أن صوتي يُسمع.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "There is open communication among everyone.",
+    "هناك تواصل مفتوح بين الجميع.",
+    "L",
+    false
+   ],
+   [
+    "Communication",
+    "التواصل",
+    "",
+    "",
+    "Information is shared fairly.",
+    "المعلومات تُشارك بشكل عادل.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "I feel respected and equal.",
+    "أشعر بالاحترام والمساواة.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "Treatment is fair for all employees.",
+    "المعاملة عادلة لجميع الموظفين.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "There is no discrimination of any kind.",
+    "لا يوجد تمييز من أي نوع.",
+    "L",
+    false
+   ],
+   [
+    "Fairness and Equal Treatment",
+    "العدالة والمعاملة المتساوية",
+    "",
+    "",
+    "Policies support inclusion.",
+    "السياسات تدعم الشمولية.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "I collaborate effectively with my colleagues.",
+    "أتعاون بشكل فعال مع زملائي.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "The team works in harmony.",
+    "الفريق يعمل بانسجام.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "There is strong mutual support.",
+    "هناك دعم متبادل قوي.",
+    "L",
+    false
+   ],
+   [
+    "Collaboration and Teamwork",
+    "التعاون والعمل الجماعي",
+    "",
+    "",
+    "Teamwork is valued and encouraged.",
+    "العمل الجماعي يُقدر ويُعزز.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "My work is recognized regularly.",
+    "يتم تقدير عملي بشكل منتظم.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "The recognition system is fair and inclusive.",
+    "نظام التقدير عادل وشامل.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "I feel appreciated by colleagues and my manager.",
+    "أشعر بالتقدير من قبل زملائي ومديري.",
+    "L",
+    false
+   ],
+   [
+    "Recognition and Reward",
+    "التقدير والمكافأة",
+    "",
+    "",
+    "Recognition enhances collaboration.",
+    "التقدير يعزز التعاون.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "Growth opportunities are available to everyone.",
+    "فرص النمو متاحة للجميع.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "I feel supported in my development regardless of my background.",
+    "أشعر بالدعم في تطوري بغض النظر عن خلفيتي.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "Development promotes inclusion.",
+    "التطوير يعزز الشمولية.",
+    "L",
+    false
+   ],
+   [
+    "Professional Growth",
+    "النمو المهني",
+    "",
+    "",
+    "There are equal opportunities for advancement.",
+    "هناك فرص متساوية للتقدم.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "The inclusive work environment supports my wellbeing.",
+    "بيئة العمل الشاملة تدعم رفاهيتي.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "I feel safe to express myself.",
+    "أشعر بالأمان للتعبير عن نفسي.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "Collaboration reduces pressure.",
+    "التعاون يقلل من الضغط.",
+    "L",
+    false
+   ],
+   [
+    "Wellbeing and Balance",
+    "الرفاه والتوازن",
+    "",
+    "",
+    "Recognition positively affects my mental health.",
+    "التقدير يؤثر إيجاباً على صحتي النفسية.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "Resources are available to everyone fairly.",
+    "الموارد متاحة للجميع بشكل عادل.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I feel empowered to participate.",
+    "أشعر بالتمكين للمشاركة.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "Tools support collaboration.",
+    "الأدوات تدعم التعاون.",
+    "L",
+    false
+   ],
+   [
+    "Resources and Empowerment",
+    "الموارد والتمكين",
+    "",
+    "",
+    "I can access what I need.",
+    "أستطيع الوصول إلى ما أحتاجه.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I am proud of the culture of recognition and collaboration at {org}.",
+    "أفتخر بثقافة التقدير والتعاون في {org}.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I feel proud of the inclusion in the organization.",
+    "أشعر بالفخر بالشمولية في المؤسسة.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I see that everyone is treated with dignity.",
+    "أرى أن الجميع يُعامل بكرامة.",
+    "L",
+    false
+   ],
+   [
+    "Belonging and Pride",
+    "الانتماء والفخر بالمؤسسة",
+    "",
+    "",
+    "I recommend working here because of the positive environment.",
+    "أوصي بالعمل هنا بسبب البيئة الإيجابية.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "Everyone is encouraged to share ideas.",
+    "الجميع يُشجعون على مشاركة الأفكار.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "My ideas are valued regardless of my position.",
+    "أفكاري تُقدر بغض النظر عن منصبي.",
+    "L",
+    false
+   ],
+   [
+    "Innovation and Ideas",
+    "الابتكار والأفكار",
+    "",
+    "",
+    "Collaboration leads to innovative ideas.",
+    "التعاون يؤدي إلى أفكار مبتكرة.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Collaboration between teams improves the guest experience.",
+    "التعاون بين الفرق يحسن تجربة الضيف.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Recognition encourages better service.",
+    "التقدير يشجع على خدمة أفضل.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "Inclusion reflects positively on guests.",
+    "الشمولية تنعكس إيجاباً على الضيوف.",
+    "L",
+    false
+   ],
+   [
+    "Guest Focus",
+    "التركيز على الضيف",
+    "",
+    "",
+    "We work together for guest satisfaction.",
+    "نحن نعمل معاً لرضا الضيف.",
+    "L",
+    false
+   ],
+   [
+    "Overall Engagement",
+    "المشاركة العامة",
+    "",
+    "",
+    "How likely are you to recommend {org} as a good place to work?",
+    "ما مدى احتمال أن توصي بالعمل في {org} كمكان عمل جيد؟",
+    "N",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "What are the most positive aspects of the current work environment?",
+    "ما أبرز الجوانب الإيجابية في بيئة العمل حالياً؟",
+    "C",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "What could be improved?",
+    "ما الذي يمكن تحسينه؟",
+    "C",
+    false
+   ],
+   [
+    "",
+    "",
+    "",
+    "",
+    "Any additional comments?",
+    "أي تعليقات إضافية؟",
+    "C",
+    false
+   ]
+  ]
+ }
+]

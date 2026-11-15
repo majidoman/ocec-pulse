@@ -3,6 +3,13 @@
 Every change that reaches the live site is listed here, newest first.
 Each release has a version, a date, what changed in plain words, and how to undo it.
 
+## [Questionnaire library 0.5] — 2026-11-15 — branches `staging` and `package`
+- **Ready-made questionnaires inside the app** (Settings → Survey builder → Import questions from Excel → Ready-made questionnaires): 11 bilingual questionnaires, each with "Check and use" (same check, backup and history as an uploaded file) and a download button.
+- **Added Bawsala's five employee satisfaction surveys** (Overall satisfaction, Leadership & trust, Career growth, Wellbeing & work environment, Recognition, collaboration & inclusion): 12 topics, 47 agree questions, eNPS and 3 comments each. "OCEC" replaced by the organisation-name placeholder so they work for any client; "(0-10)" removed from the question (the scale is on screen).
+- **Arabic wording:** six questions that read badly once the organisation name is filled in ("لـالمركز", "بـالمركز") reworded.
+- Sources and the build script live in `templates/questionnaires/` (README explains how to add more).
+- Verified: all 11 pass the import check; satisfaction survey taken in English and Arabic with the name filled in; import checks 19/19; full test 66/66.
+
 ## [Questionnaire import 0.4] — 2026-11-15 — branches `staging` and `package`
 - **Import questions from Excel** (Settings → Survey builder): choose a workbook, see a check of the file (sections, question counts, problems with row numbers, warnings), then replace all sections and questions. The survey name can come from the file too.
 - **Safe by design:** only before anyone has answered and while the questions are unlocked (checked by the server as well); the previous questions are kept as a backup with a "Go back to them" button; every import and restore is in the change history.
