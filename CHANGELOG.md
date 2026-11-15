@@ -3,6 +3,13 @@
 Every change that reaches the live site is listed here, newest first.
 Each release has a version, a date, what changed in plain words, and how to undo it.
 
+## [Questionnaire import 0.4] — 2026-11-15 — branches `staging` and `package`
+- **Import questions from Excel** (Settings → Survey builder): choose a workbook, see a check of the file (sections, question counts, problems with row numbers, warnings), then replace all sections and questions. The survey name can come from the file too.
+- **Safe by design:** only before anyone has answered and while the questions are unlocked (checked by the server as well); the previous questions are kept as a backup with a "Go back to them" button; every import and restore is in the change history.
+- **Templates:** blank template downloadable from the page; six ready workbooks in `templates/questionnaires/` (current survey, engagement pulse, new joiner, exit, wellbeing & safety, manager effectiveness), each with bilingual instructions and drop-down lists.
+- Verified: 4 unit tests for the file reader, 19 browser checks (import, take the imported survey, blocking with answers, restore, Arabic), full test 66/66.
+- Undo: roll back in Vercel; no database change (the backup is one settings row).
+
 ## [Survey design 0.3] — 2026-11-15 — branches `staging` and `package` — what staff see
 - **Opening screen:** one clear "Your answers are anonymous" panel (three facts, full notice one tap away) instead of six repeated boxes; time and closing date at the top; a 1–5 preview of the answer scale; the Start button stays in reach on phones.
 - **Question pages:** "Section 2 of 15" and progress at the top, staying visible while scrolling; Back/Next stay in reach; answer buttons show the full words ("Strongly disagree", not "S. disagree"); visible keyboard focus; a short fade between sections (off when the phone's reduce-motion setting is on).

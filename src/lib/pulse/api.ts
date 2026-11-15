@@ -275,6 +275,154 @@ export const getAdminConfig = createServerFn({ method: "GET" })
     return core.loadConfig();
   });
 
+// ── Questionnaire import (Excel) ────────────────────────────────────────────
+// The browser reads the workbook (questionnaire-import.ts) and sends the parsed sections and
+// questions. The server re-checks the shape, refuses while answers exist or the questions are
+// locked, keeps the current set as a backup, and logs the change.
+
+const loc300 = z.object({ en: z.string().max(300), ar: z.string().max(300) });
+const importSchema = z.object({
+  fileName: z.string().max(200),
+  surveyName: z.object({ en: z.string().min(1).max(120), ar: z.string().min(1).max(120) }).nullable(),
+  dimensions: z
+    .array(
+      z.object({
+        id: z.string().regex(/^[a-z0-9-]{1,40}$/),
+        name: loc300,
+        short: loc300,
+        blurb: loc300,
+        visible: z.boolean(),
+        archived: z.boolean(),
+        order: z.number().int().min(0).max(100),
+        kind: z.enum(["likert", "enps"]),
+      }),
+    )
+    .min(1)
+    .max(20),
+  questions: z
+    .array(
+      z.object({
+        id: z.string().regex(/^[A-Za-z0-9_-]{1,12}$/),
+        dimension: z.string().max(40),
+        type: z.enum(["likert", "enps", "text"]),
+        text: loc300,
+        required: z.boolean(),
+        reverse: z.boolean().optional(),
+        visible: z.boolean(),
+        order: z.number().int().min(0).max(500),
+      }),
+    )
+    .min(1)
+    .max(120),
+});
+
+interface QuestionnaireBackup {
+  at: string;
+  by: string;
+  replacedBy: string;
+  cycleName: PulseConfig["general"]["cycleName"];
+  dimensions: PulseConfig["dimensions"];
+  questions: PulseConfig["questions"];
+}
+
+async function questionnaireGuard(core: typeof import("./core.server")) {
+  const { responseCount } = await import("./results.server");
+  const answers = await responseCount();
+  if (answers > 0) {
+    throw new core.BadRequestError(
+      `This survey already has ${answers} answer(s). Replacing the questions now would break the results. Delete the answers first (Settings → Danger zone), or wait for the next survey.`,
+    );
+  }
+  const config = await core.loadConfig();
+  if (config.instrumentStatus === "frozen") {
+    throw new core.BadRequestError("The questions are locked. Press \"Unlock to edit\" on the Survey builder page first.");
+  }
+  return config;
+}
+
+export const getQuestionnaireImportState = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const core = await import("./core.server");
+    await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    const { responseCount } = await import("./results.server");
+    const config = await core.loadConfig();
+    const backup = await core.readSetting<QuestionnaireBackup>("questionnaire_backup");
+    return {
+      answers: await responseCount(),
+      locked: config.instrumentStatus === "frozen",
+      backup: backup ? { at: backup.at, by: backup.by, replacedBy: backup.replacedBy, questions: backup.questions.length } : null,
+    };
+  });
+
+export const importQuestionnaire = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) => importSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const core = await import("./core.server");
+    const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    // Cross-checks the schema cannot express.
+    const dimIds = new Set(data.dimensions.map((d) => d.id));
+    const qIds = new Set(data.questions.map((q) => q.id.toUpperCase()));
+    if (dimIds.size !== data.dimensions.length || qIds.size !== data.questions.length) throw new core.BadRequestError("Duplicate section or question IDs.");
+    for (const q of data.questions) {
+      if (q.type === "text" ? q.dimension !== "open" : !dimIds.has(q.dimension)) throw new core.BadRequestError(`Question ${q.id} points to an unknown section.`);
+      const dim = data.dimensions.find((d) => d.id === q.dimension);
+      if (dim && (dim.kind === "enps") !== (q.type === "enps")) throw new core.BadRequestError(`Question ${q.id} does not match its section type.`);
+    }
+    if (data.questions.filter((q) => q.type === "enps").length > 1) throw new core.BadRequestError("Only one 0–10 question is allowed.");
+    if (!data.questions.some((q) => q.type === "likert")) throw new core.BadRequestError("At least one 1–5 question is needed.");
+
+    const config = await questionnaireGuard(core);
+    const actor = core.actorOf(staff);
+    const backup: QuestionnaireBackup = {
+      at: new Date().toISOString(),
+      by: actor,
+      replacedBy: data.fileName,
+      cycleName: config.general.cycleName,
+      dimensions: config.dimensions,
+      questions: config.questions,
+    };
+    await core.writeSetting("questionnaire_backup", backup);
+    config.dimensions = data.dimensions;
+    config.questions = data.questions.map((q) => ({ ...q, reverse: q.type === "likert" ? q.reverse : undefined }));
+    if (data.surveyName) config.general.cycleName = data.surveyName;
+    await core.saveConfig(config);
+    const nScale = data.questions.length;
+    await core.audit(
+      actor,
+      `Imported the survey questions from "${data.fileName}": ${data.dimensions.length} sections, ${nScale} questions. The previous questions were kept as a backup.`,
+      `استيراد أسئلة الاستبيان من "${data.fileName}": ${data.dimensions.length} أقسام، ${nScale} سؤالاً. حُفظت الأسئلة السابقة نسخة احتياطية.`,
+    );
+    return { ok: true as const };
+  });
+
+export const restoreQuestionnaireBackup = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => {
+    const core = await import("./core.server");
+    const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    const backup = await core.readSetting<QuestionnaireBackup>("questionnaire_backup");
+    if (!backup) throw new core.BadRequestError("There is no earlier set of questions to go back to.");
+    const config = await questionnaireGuard(core);
+    const actor = core.actorOf(staff);
+    // Swap, so the restore itself can be undone.
+    await core.writeSetting("questionnaire_backup", {
+      at: new Date().toISOString(),
+      by: actor,
+      replacedBy: "restore",
+      cycleName: config.general.cycleName,
+      dimensions: config.dimensions,
+      questions: config.questions,
+    } satisfies QuestionnaireBackup);
+    config.dimensions = backup.dimensions;
+    config.questions = backup.questions;
+    config.general.cycleName = backup.cycleName;
+    await core.saveConfig(config);
+    await core.audit(actor, "Went back to the previous set of survey questions.", "الرجوع إلى مجموعة أسئلة الاستبيان السابقة.");
+    return { ok: true as const };
+  });
+
 export const saveAdminConfig = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((d: unknown) => z.object({ config: z.record(z.string(), z.unknown()) }).parse(d))
