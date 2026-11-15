@@ -3,21 +3,29 @@
 Every change that reaches the live site is listed here, newest first.
 Each release has a version, a date, what changed in plain words, and how to undo it.
 
-## [Questionnaire library 0.5] — 2026-11-15 — branches `staging` and `package`
+## [Unreleased] — on the test site, waiting for approval
+- Nothing yet.
+
+## [1.2.0] — 2026-11-15 — released to live
+Approved by the owner on 15 November 2026. Everything below was on the test site first.
+- Undo: Vercel → Deployments → promote the 1.1.0 deployment (seconds). Database backup taken before release: Neon branch `backup-pre-v1.2.0-2026-11-15` (the free plan allows one snapshot, kept for 1.1.0). No database structure changes in this release; only settings rows. 1.1.0 runs unchanged against it.
+- Not included: the security patch for SEC-001/SEC-002 (`analysis/pulse/security_remediation.patch`) — still waiting for "apply the fix".
+
+### Questionnaire library 0.5 — 2026-11-15 — branches `staging` and `package`
 - **Ready-made questionnaires inside the app** (Settings → Survey builder → Import questions from Excel → Ready-made questionnaires): 11 bilingual questionnaires, each with "Check and use" (same check, backup and history as an uploaded file) and a download button.
 - **Added Bawsala's five employee satisfaction surveys** (Overall satisfaction, Leadership & trust, Career growth, Wellbeing & work environment, Recognition, collaboration & inclusion): 12 topics, 47 agree questions, eNPS and 3 comments each. "OCEC" replaced by the organisation-name placeholder so they work for any client; "(0-10)" removed from the question (the scale is on screen).
 - **Arabic wording:** six questions that read badly once the organisation name is filled in ("لـالمركز", "بـالمركز") reworded.
 - Sources and the build script live in `templates/questionnaires/` (README explains how to add more).
 - Verified: all 11 pass the import check; satisfaction survey taken in English and Arabic with the name filled in; import checks 19/19; full test 66/66.
 
-## [Questionnaire import 0.4] — 2026-11-15 — branches `staging` and `package`
+### Questionnaire import 0.4 — 2026-11-15 — branches `staging` and `package`
 - **Import questions from Excel** (Settings → Survey builder): choose a workbook, see a check of the file (sections, question counts, problems with row numbers, warnings), then replace all sections and questions. The survey name can come from the file too.
 - **Safe by design:** only before anyone has answered and while the questions are unlocked (checked by the server as well); the previous questions are kept as a backup with a "Go back to them" button; every import and restore is in the change history.
 - **Templates:** blank template downloadable from the page; six ready workbooks in `templates/questionnaires/` (current survey, engagement pulse, new joiner, exit, wellbeing & safety, manager effectiveness), each with bilingual instructions and drop-down lists.
 - Verified: 4 unit tests for the file reader, 19 browser checks (import, take the imported survey, blocking with answers, restore, Arabic), full test 66/66.
 - Undo: roll back in Vercel; no database change (the backup is one settings row).
 
-## [Survey design 0.3] — 2026-11-15 — branches `staging` and `package` — what staff see
+### Survey design 0.3 — 2026-11-15 — branches `staging` and `package` — what staff see
 - **Opening screen:** one clear "Your answers are anonymous" panel (three facts, full notice one tap away) instead of six repeated boxes; time and closing date at the top; a 1–5 preview of the answer scale; the Start button stays in reach on phones.
 - **Question pages:** "Section 2 of 15" and progress at the top, staying visible while scrolling; Back/Next stay in reach; answer buttons show the full words ("Strongly disagree", not "S. disagree"); visible keyboard focus; a short fade between sections (off when the phone's reduce-motion setting is on).
 - **Arabic:** numbers in Arabic-Indic digits on the survey (١–٥، القسم ١ من ١٥), matching the dates.
@@ -28,7 +36,7 @@ Each release has a version, a date, what changed in plain words, and how to undo
 - Verified: full test (66 checks), 10 checks for unanswered questions / language / fonts, screenshots on phone and desktop in English and Arabic.
 - Undo: roll back in Vercel. No database change. Saved texts in Settings (privacy notice, emails) keep their own wording until edited there.
 
-## [Package 0.2] — 2026-11-15 — branches `package` and `staging` — modern web guidance (Chrome / MDN)
+### Package 0.2 — 2026-11-15 — branches `package` and `staging` — modern web guidance (Chrome / MDN)
 Checked against Google Chrome's *Modern Web Guidance*. Its automatic legacy scan found nothing; these came from the guides on forms, accessibility, privacy and text scaling.
 - **Fonts are bundled with the app.** They were loaded from Google's servers, so every staff member's browser contacted Google when the survey opened, and an installation without internet showed fallback fonts. Now served by the app itself; no request leaves for any outside server.
 - **Unanswered questions are pointed out.** Pressing Next with a required question unanswered now marks each one ("⚠ Not answered yet", red outline), moves the person to the first one, and links the message to the question for screen readers. Before, only a general message appeared at the bottom.
@@ -39,7 +47,7 @@ Checked against Google Chrome's *Modern Web Guidance*. Its automatic legacy scan
 - Verified: full test (66 checks), 10 new checks for the items above, self-hosted build serving headers and fonts locally, first real install on Windows with Docker Desktop.
 - Undo: roll back in Vercel / reinstall the previous package. No database change.
 
-## [Package 0.1] — 2026-11-14 — branch `package` — for installation testing
+### Package 0.1 — 2026-11-14 — branch `package` — for installation testing
 Self-hosted installation package (does not change the Vercel test or live sites).
 - Plain Node server build (`npm run build:selfhost`) with no Grok layer; runs on any server with Docker.
 - Docker Compose: app, PostgreSQL (not exposed), jobs (nightly backups kept 14 days, daily reminders), optional HTTPS (Caddy).
@@ -51,7 +59,7 @@ Self-hosted installation package (does not change the Vercel test or live sites)
 - Rate limit trusts only the proxy-added address.
 - Verified here: standalone build, wizard (11 checks), runtime rehearsal with the real entrypoint, backup and restore round trip, full test (65 checks). Not verified: the Docker image build itself and install.ps1 (no Docker Hub access or PowerShell here).
 
-## [Unreleased] — on the test site, waiting for approval
+### Test site, white-label, wording and settings (13–14 November)
 - Test-site banner: an amber "TEST ENVIRONMENT" strip appears on every page of the test site only.
 - This changelog and the release procedure (`RELEASING.md`).
 - **White-label.** No client name is built into the app any more.
