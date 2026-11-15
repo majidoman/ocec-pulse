@@ -88,6 +88,59 @@ async function transport(config: PulseConfig) {
   });
 }
 
+/**
+ * The server's own mailbox from environment variables, for messages that must work before anyone can
+ * sign in (password reset). Used when Settings → Invitations & email is not set up yet.
+ * SMTP_HOST, SMTP_PORT (465), SMTP_SECURE (true), SMTP_USER, SMTP_PASSWORD, SMTP_FROM.
+ */
+function envMailbox() {
+  const host = process.env.SMTP_HOST?.trim();
+  const from = (process.env.SMTP_FROM ?? process.env.SMTP_USER ?? "").trim();
+  if (!host || !from.includes("@")) return null;
+  const secure = (process.env.SMTP_SECURE ?? "true").toLowerCase() !== "false";
+  return {
+    host,
+    port: Number(process.env.SMTP_PORT) || (secure ? 465 : 587),
+    secure,
+    user: process.env.SMTP_USER?.trim() ?? "",
+    pass: process.env.SMTP_PASSWORD ?? "",
+    from,
+  };
+}
+
+/** True when a system email (password reset) can be sent: Settings mailbox or the server's own. */
+export async function systemMailAvailable(config: PulseConfig): Promise<boolean> {
+  const secret = await readSetting<SmtpSecret>("smtp_secret");
+  return mailReady(config, Boolean(secret?.passEnc)) === null || envMailbox() !== null;
+}
+
+/** Sends one system email through the Settings mailbox, or the server's own when that is not set up. */
+export async function sendSystemMail(config: PulseConfig, mail: OutgoingMail): Promise<void> {
+  const secret = await readSetting<SmtpSecret>("smtp_secret");
+  if (mailReady(config, Boolean(secret?.passEnc)) === null) {
+    const [r] = await sendMail(config, [mail]);
+    if (!r?.ok) throw new Error(r?.error ?? "send failed");
+    return;
+  }
+  const env = envMailbox();
+  if (!env) throw new BadRequestError("Email is not set up on this server.");
+  const nodemailer = await import("nodemailer");
+  const tx = nodemailer.createTransport({
+    host: env.host,
+    port: env.port,
+    secure: env.secure,
+    auth: env.user ? { user: env.user, pass: env.pass } : undefined,
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 15_000,
+  });
+  try {
+    await tx.sendMail({ from: env.from, to: mail.to, subject: mail.subject, text: mail.text, html: mail.html });
+  } finally {
+    tx.close();
+  }
+}
+
 export async function sendMail(config: PulseConfig, mails: OutgoingMail[]): Promise<{ to: string; ok: boolean; error?: string }[]> {
   if (!mails.length) return [];
   const tx = await transport(config);

@@ -6,6 +6,14 @@ Each release has a version, a date, what changed in plain words, and how to undo
 ## [Unreleased] — on the test site, waiting for approval
 - Nothing yet.
 
+## [1.2.1] — 2026-11-15 — released to live
+Requested by the owner (no way back into the live site without the password).
+- **Forgot password?** link on the sign-in page. Enter the email; if it has an account, a link to choose a new password is emailed (works once, 60 minutes). The page answers the same way for unknown emails, so it cannot be used to find out who has access. Only a hash of the link is stored. After a reset the account is signed out everywhere and the change history records it. Limits: 3 requests per account and 10 per network address an hour.
+- **Server mailbox for system emails:** password-reset emails use the mailbox in Settings → Invitations & email, or, before that is set up, the server's own (`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM`). Live uses admin@bowsalaom.com; the owner enters `SMTP_PASSWORD` in Vercel.
+- Sign-in page: "Staff access" label in normal case.
+- Verified: 15 checks on the reset flow (unknown email, single use, expiry, old password refused, limits, Arabic), full test 66/66.
+- Undo: promote 1.2.0 in Vercel. Backup: Neon branch `backup-pre-v1.2.1-2026-11-15`. No database structure change (uses the sign-in library's existing `verification` table).
+
 ## [1.2.0] — 2026-11-15 — released to live
 Approved by the owner on 15 November 2026. Everything below was on the test site first.
 - Undo: Vercel → Deployments → promote the 1.1.0 deployment (seconds). Database backup taken before release: Neon branch `backup-pre-v1.2.0-2026-11-15` (the free plan allows one snapshot, kept for 1.1.0). No database structure changes in this release; only settings rows. 1.1.0 runs unchanged against it.

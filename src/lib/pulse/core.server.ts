@@ -288,8 +288,9 @@ function callerAddress(): string | null {
  * RateLimitedError past `limit`. Only a salted one-way hash of the address is kept, per hour,
  * and it is never linked to a response, an invitation or an account.
  */
-export async function rateLimit(kind: string, limit: number): Promise<void> {
-  const address = callerAddress();
+export async function rateLimit(kind: string, limit: number, opts: { perAddress?: boolean } = {}): Promise<void> {
+  // perAddress (default): one bucket per caller address. false: one bucket for everyone (e.g. per account).
+  const address = (opts.perAddress ?? true) ? callerAddress() : "*";
   if (!address) return;
   const sql = await getSql();
   const hour = new Date();

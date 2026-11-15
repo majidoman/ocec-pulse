@@ -26,23 +26,6 @@ index 8b3b0e5..b74dc25 100644
        returning email, name, role, department_id
      `;
      if (!claimed.length) throw new core.BadRequestError("This invitation link is not valid or was already used.");
-# SEC-001: rateLimit() can count per account (one bucket for all addresses)
-diff --git a/src/lib/pulse/core.server.ts b/src/lib/pulse/core.server.ts
-index b92afbf..25b1c48 100644
---- a/src/lib/pulse/core.server.ts
-+++ b/src/lib/pulse/core.server.ts
-@@ -288,8 +288,9 @@ function callerAddress(): string | null {
-  * RateLimitedError past `limit`. Only a salted one-way hash of the address is kept, per hour,
-  * and it is never linked to a response, an invitation or an account.
-  */
--export async function rateLimit(kind: string, limit: number): Promise<void> {
--  const address = callerAddress();
-+export async function rateLimit(kind: string, limit: number, opts: { perAddress?: boolean } = {}): Promise<void> {
-+  // perAddress (default): one bucket per caller address. false: one bucket for everyone (e.g. per account).
-+  const address = (opts.perAddress ?? true) ? callerAddress() : "*";
-   if (!address) return;
-   const sql = await getSql();
-   const hour = new Date();
 # SEC-001: persistent sign-in throttling — 30/hour per address, 20/hour per account
 diff --git a/src/routes/api/auth/$.ts b/src/routes/api/auth/$.ts
 index 6025263..96a5803 100644
