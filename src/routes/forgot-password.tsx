@@ -2,6 +2,8 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MailCheck } from "lucide-react";
 import { AuthShell } from "@/components/auth-shell";
+import { Captcha } from "@/components/captcha";
+import { captchaForSubmit, CAPTCHA_MISSING } from "@/lib/pulse/captcha-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,13 +18,17 @@ function ForgotPassword() {
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    setBusy(true);
     setError(null);
+    const cap = await captchaForSubmit(captcha);
+    if (!cap) return setError(loc(CAPTCHA_MISSING));
+    setBusy(true);
     try {
-      const r = await requestPasswordReset({ data: { email: email.trim() } });
+      const r = await requestPasswordReset({ data: { email: email.trim(), captcha: cap === "off" ? undefined : cap } });
       if (r.ok) setSent(true);
       else if (r.reason === "mail_not_set_up")
         setError(
@@ -31,7 +37,11 @@ function ForgotPassword() {
             ar: "لم يُضبط البريد على هذا الخادم بعد، لذلك لا يمكن إرسال رابط. تواصل مع مدير النظام.",
           }),
         );
-      else setError(loc({ en: "Too many requests. Wait an hour, then try again.", ar: "طلبات كثيرة. انتظر ساعة ثم أعد المحاولة." }));
+      else if (r.reason === "captcha") {
+        setError(loc({ en: "The “I'm not a robot” check expired. Tick it again, then retry.", ar: "انتهت صلاحية التحقق «أنا لست روبوتاً». ضع العلامة مرة أخرى ثم أعد المحاولة." }));
+        setCaptcha(null);
+        setCaptchaKey((k) => k + 1);
+      } else setError(loc({ en: "Too many requests. Wait an hour, then try again.", ar: "طلبات كثيرة. انتظر ساعة ثم أعد المحاولة." }));
     } catch {
       setError(loc({ en: "Enter a valid email address.", ar: "أدخل بريداً إلكترونياً صحيحاً." }));
     } finally {
@@ -73,6 +83,7 @@ function ForgotPassword() {
               <Label htmlFor="email">{loc({ en: "Email", ar: "البريد الإلكتروني" })}</Label>
               <Input id="email" type="email" required autoComplete="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
+            <Captcha key={captchaKey} onChange={setCaptcha} />
             {error ? (
               <p className="text-sm text-score-crit" role="alert">
                 {error}

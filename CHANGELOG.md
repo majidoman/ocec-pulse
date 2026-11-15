@@ -6,6 +6,17 @@ Each release has a version, a date, what changed in plain words, and how to undo
 ## [Unreleased] — on the test site, waiting for approval
 - Nothing yet.
 
+## [1.4.0] — 2026-11-15 — released to live ("go ahead")
+- **Invitation link finishes the account in one step:** the link opens "Finish your account" with the invited email filled in and locked (and the name, if the invitation had one). The person only chooses a password, repeats it, and lands on the results with access active. If the email already has an account, the page asks for that password only (with "Forgot password?"). If they are already signed in with the invited email, access is activated automatically.
+- **An invitation can only create an account for its own email** (the sign-up gate now checks the email, not just the code).
+- **"I'm not a robot" check** (ALTCHA, self-hosted: no Google or Cloudflare account, nothing about the visitor sent anywhere) on sign-in, account creation, the invitation page, the setup wizard and "Forgot password". The browser solves a small puzzle while the person types, so the box is usually ticked by the time they finish. One solved check covers up to 3 tries in 10 minutes. Self-hosted installs can switch it off with `PULSE_CAPTCHA=off`.
+- Plain error messages on sign-in (wrong email or password, too many attempts, check expired), in English and Arabic.
+- Invitation email now says "open the link and choose a password".
+- Database: new table `pulse_captcha_used` (migration 0004; only hashes with an expiry). 1.3.0 runs unchanged with it.
+- Verified: invitation + check 23/23 (`scripts/invite-captcha-check.cjs`), full test, security checks, password reset and server mailbox suites.
+- Vercel builds now install with `npm ci` (clean install from the lockfile).
+- Undo: promote 1.3.0 in Vercel; the extra table can stay. Backup: Neon branch `backup-pre-v1.4.0-2026-11-15`.
+
 ## [1.3.0] — 2026-11-15 — released to live ("apply the fix")
 - **Security fix SEC-001:** password guessing is limited in the database (30 attempts an hour from one address, 20 an hour against one account), so the limit holds on Vercel.
 - **Security fix SEC-002:** a staff invitation works only for the email it was sent to, and only for 30 days.

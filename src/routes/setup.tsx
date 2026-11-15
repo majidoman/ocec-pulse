@@ -4,6 +4,8 @@ import { toast } from "sonner";
 import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
 import { TextField } from "@/components/settings-field";
+import { Captcha } from "@/components/captcha";
+import { captchaForSubmit, CAPTCHA_MISSING, authErrorText, captchaFetch } from "@/lib/pulse/captcha-client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -137,6 +139,8 @@ function AccountStep({ requiresCode, onDone }: { requiresCode: boolean; onDone: 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const [captchaKey, setCaptchaKey] = useState(0);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -195,14 +199,20 @@ function AccountStep({ requiresCode, onDone }: { requiresCode: boolean; onDone: 
     if (password.length < 10) return setError(loc({ en: "Use at least 10 characters for the password.", ar: "استخدم عشرة أحرف على الأقل لكلمة المرور." }));
     if (password !== confirm) return setError(loc({ en: "The two passwords do not match.", ar: "كلمتا المرور غير متطابقتين." }));
     if (requiresCode && !code.trim()) return setError(loc({ en: "Enter the setup code.", ar: "أدخل رمز الإعداد." }));
+    const cap = await captchaForSubmit(captcha);
+    if (!cap) return setError(loc(CAPTCHA_MISSING));
     setBusy(true);
     try {
-      const up = await authClient.signUp.email({ email: email.trim(), password, name: name.trim() || email.trim() });
+      const up = await authClient.signUp.email({ email: email.trim(), password, name: name.trim() || email.trim() }, captchaFetch(cap));
       if (up.error) {
         // Account may already exist (e.g. a retry): sign in instead.
-        const inRes = await authClient.signIn.email({ email: email.trim(), password });
+        const inRes = await authClient.signIn.email({ email: email.trim(), password }, captchaFetch(cap));
         if (inRes.error) {
-          setError(up.error.message ?? loc({ en: "Could not create the account.", ar: "تعذّر إنشاء الحساب." }));
+          setError(authErrorText(up.error, loc, { en: "Could not create the account.", ar: "تعذّر إنشاء الحساب." }));
+          if (up.error.code === "CAPTCHA_REQUIRED" || inRes.error.code === "CAPTCHA_REQUIRED") {
+            setCaptcha(null);
+            setCaptchaKey((k) => k + 1);
+          }
           return;
         }
       }
@@ -249,6 +259,7 @@ function AccountStep({ requiresCode, onDone }: { requiresCode: boolean; onDone: 
           <Label htmlFor="confirm">{loc({ en: "Repeat the password", ar: "أعد كتابة كلمة المرور" })}</Label>
           <Input id="confirm" type="password" dir="ltr" required value={confirm} onChange={(e) => setConfirm(e.target.value)} autoComplete="new-password" />
         </div>
+        <Captcha key={captchaKey} onChange={setCaptcha} />
         {error ? <p className="text-sm text-score-crit" role="alert">{error}</p> : null}
         <Button type="submit" disabled={busy}>
           {busy ? loc({ en: "Creating…", ar: "جارٍ الإنشاء…" }) : loc({ en: "Create owner account", ar: "إنشاء حساب المالك" })}

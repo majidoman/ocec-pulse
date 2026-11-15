@@ -240,7 +240,10 @@ export const completeSetup = createServerFn({ method: "POST" })
 /** What a staff invitation link is for, so the join page can prefill the right email. No sign-in needed. */
 export const getInviteInfo = createServerFn({ method: "POST" })
   .validator((d: unknown) => z.object({ code: z.string().min(8).max(100) }).parse(d))
-  .handler(async ({ data }): Promise<{ status: "ok" | "used" | "expired" | "invalid"; email?: string; role?: StaffRole }> => {
+  .handler(
+    async ({
+      data,
+    }): Promise<{ status: "ok" | "used" | "expired" | "invalid"; email?: string; name?: string; role?: StaffRole; hasAccount?: boolean }> => {
     const core = await import("./core.server");
     const { getSql } = await import("@/lib/db");
     try {
@@ -249,16 +252,23 @@ export const getInviteInfo = createServerFn({ method: "POST" })
       return { status: "invalid" };
     }
     const sql = await getSql();
-    const rows = await sql<{ email: string; role: StaffRole; used: boolean; fresh: boolean }>`
-      select email, role, accepted_by is not null as used, created_at > now() - interval '30 days' as fresh
+    const rows = await sql<{ email: string; name: string | null; role: StaffRole; used: boolean; fresh: boolean }>`
+      select email, name, role, accepted_by is not null as used, created_at > now() - interval '30 days' as fresh
       from pulse_staff_invites where code = ${data.code}
     `;
     if (!rows.length) return { status: "invalid" };
     const r = rows[0];
     if (r.used) return { status: "used" };
     if (!r.fresh) return { status: "expired" };
-    return { status: "ok", email: r.email.trim().toLowerCase(), role: r.role };
-  });
+    const email = r.email.trim().toLowerCase();
+    // Only the holder of the invitation code learns this, so the page can ask for a new password
+    // (first time) or the existing one.
+    const { auth } = await import("@/lib/auth/server");
+    const ctx = await auth.$context;
+    const found = await ctx.internalAdapter.findUserByEmail(email).catch(() => null);
+    return { status: "ok", email, name: r.name ?? undefined, role: r.role, hasAccount: Boolean(found?.user) };
+  },
+  );
 
 export const acceptInvite = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
@@ -684,8 +694,8 @@ export const inviteStaff = createServerFn({ method: "POST" })
             data.email,
             `${org.en} — access to the survey results`,
             `${org.ar} — صلاحية الاطلاع على نتائج الاستبيان`,
-            `You have been invited to the ${org.en} survey workspace.\n\nOpen this link and create your account with this email address (${data.email.trim().toLowerCase()}). If you already have an account, sign in instead. Your access is activated straight after:\n\n${link}\n\nThe link works once, for 30 days.`,
-            `تمت دعوتك إلى مساحة استبيان ${org.ar}.\n\nافتح هذا الرابط وأنشئ حسابك بهذا البريد نفسه (${data.email.trim().toLowerCase()}). إن كان لديك حساب فسجّل الدخول بدلاً من ذلك. تُفعَّل صلاحيتك مباشرة بعدها:\n\n${link}\n\nيعمل الرابط مرة واحدة خلال ٣٠ يوماً.`,
+            `You have been invited to the ${org.en} survey workspace.\n\nOpen this link and choose a password to finish your account (${data.email.trim().toLowerCase()}). Your access is activated straight away:\n\n${link}\n\nThe link works once, for 30 days.`,
+            `تمت دعوتك إلى مساحة استبيان ${org.ar}.\n\nافتح هذا الرابط واختر كلمة مرور لإكمال حسابك (${data.email.trim().toLowerCase()}). تُفعَّل صلاحيتك مباشرة:\n\n${link}\n\nيعمل الرابط مرة واحدة خلال ٣٠ يوماً.`,
           ),
         ]);
         emailed = Boolean(res[0]?.ok);

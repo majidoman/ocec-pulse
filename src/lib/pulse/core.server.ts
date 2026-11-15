@@ -72,7 +72,7 @@ export async function saveConfig(config: PulseConfig): Promise<void> {
 // Encrypted at rest with a key derived from the app's own session secret, so a
 // database dump alone does not reveal the mailbox password.
 
-function secretKey(): Buffer {
+export function secretKey(): Buffer {
   const base = process.env.BETTER_AUTH_SECRET?.trim() || "ocec-pulse-preview-key";
   return createHash("sha256").update(`pulse-secrets:${base}`).digest();
 }
