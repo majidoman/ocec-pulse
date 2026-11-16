@@ -629,6 +629,22 @@ const csvCell = (v: unknown) => {
 };
 const toCsv = (rows: unknown[][]) => `\uFEFF${rows.map((r) => r.map(csvCell).join(",")).join("\r\n")}`;
 
+export const exportWorkbook = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) => z.object({}).parse(d))
+  .handler(async ({ context }): Promise<{ filename: string; base64: string }> => {
+    const core = await import("./core.server");
+    const { computeResults } = await import("./results.server");
+    const { buildResultsWorkbook } = await import("./excel.server");
+    const staff = await core.requireStaff(context.userId, ["super", "pc", "exec"]);
+    const config = await core.loadConfig();
+    const r = await computeResults(config, staff);
+    await core.audit(core.actorOf(staff), "Exported the Excel workbook (anonymised)", "تصدير ملف إكسل (مجهول الهوية)");
+    const buf = await buildResultsWorkbook(r, config);
+    const day = new Date().toISOString().slice(0, 10);
+    return { filename: `pulse-results-${day}.xlsx`, base64: buf.toString("base64") };
+  });
+
 export const exportData = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((d: unknown) => z.object({ kind: z.enum(["departments", "items", "comments"]) }).parse(d))

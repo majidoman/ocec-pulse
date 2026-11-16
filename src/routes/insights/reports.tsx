@@ -10,7 +10,7 @@ import { PlanBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useCensus } from "@/lib/census";
-import { exportData } from "@/lib/pulse/api";
+import { exportData, exportWorkbook } from "@/lib/pulse/api";
 import { downloadText, signed } from "@/lib/pulse/format";
 import { buildNarrative } from "@/lib/pulse/narrative";
 import type { CutRow } from "@/lib/pulse/results-types";
@@ -32,6 +32,21 @@ function ReportsPage() {
   const actions = useSettings((s) => s.actions);
   const [pack, setPack] = useState<Pack>("exec");
   const canExport = currentRole === "super" || currentRole === "pc" || currentRole === "exec";
+
+  async function downloadWorkbook() {
+    try {
+      const res = await exportWorkbook({ data: {} });
+      const bytes = Uint8Array.from(atob(res.base64), (c) => c.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.filename;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Export failed");
+    }
+  }
 
   async function download(kind: "departments" | "items" | "comments") {
     try {
@@ -76,6 +91,7 @@ function ReportsPage() {
             {loc({ en: "Anonymised totals only. Hidden groups stay hidden in the files.", ar: "مجاميع مجهولة فقط. المجموعات المحجوبة تبقى محجوبة في الملفات." })}
           </p>
           <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => void downloadWorkbook()}>{loc({ en: "Excel workbook (.xlsx)", ar: "ملف إكسل (.xlsx)" })}</Button>
             <Button variant="outline" size="sm" onClick={() => void download("departments")}>{loc({ en: "Departments × dimensions", ar: "الإدارات × الأبعاد" })}</Button>
             <Button variant="outline" size="sm" onClick={() => void download("items")}>{loc({ en: "Every question", ar: "كل سؤال" })}</Button>
             <Button variant="outline" size="sm" onClick={() => void download("comments")}>{t("themesTitle")}</Button>
