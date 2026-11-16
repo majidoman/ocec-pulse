@@ -333,6 +333,14 @@ export async function computeResults(config: PulseConfig, viewer: Pick<StaffCont
     if (d) dimensions[id] = { score: pct(d.fav, d.n), n: d.n };
   }
 
+  const deptItems: NonNullable<Results["deptItems"]> = {};
+  for (const d of config.departments.filter((x) => !x.archived)) {
+    const shown = deptVisible.has(d.id) && (scopeDepartment === null || scopeDepartment === d.id);
+    if (!shown) continue;
+    const agg = aggregate(deptMembers.get(d.id) ?? []);
+    deptItems[d.id] = Object.fromEntries(agg.itemScores.filter((r) => r.n >= k).map((r) => [r.id, { fav: r.fav, n: r.n }]));
+  }
+
   const isScoped = scopeDepartment !== null;
   return {
     k,
@@ -347,6 +355,7 @@ export async function computeResults(config: PulseConfig, viewer: Pick<StaffCont
       .map((r) => ({ id: r.id, dimension: dimOf.get(r.id) ?? "", favorable: r.fav, n: r.n }))
       .sort((a, b) => b.favorable - a.favorable),
     departments,
+    deptItems,
     unspecified: !isScoped && deptVisible.has("__unspecified__") ? unspecifiedIds.length : null,
     cuts: isScoped
       ? scopeEnough
