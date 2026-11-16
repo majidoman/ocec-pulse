@@ -128,8 +128,11 @@ function MobileNav() {
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="start" className="pt-12">
+      <SheetContent side="start" className="overflow-y-auto pt-12">
         <SideNav onNavigate={() => setOpen(false)} />
+        <div className="mt-6 border-t border-border pt-4">
+          <UserButton />
+        </div>
       </SheetContent>
     </Sheet>
   );

@@ -5,7 +5,7 @@ import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { NAV } from "@/lib/nav";
+import { NAV, SETTINGS_NAV } from "@/lib/nav";
 import { useCensus } from "@/lib/census";
 import { canEditSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
@@ -113,15 +113,22 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
             <p className="mb-1.5 px-2 text-[11px] font-medium uppercase tracking-[0.14em] text-subtle">
               {t("groupSettings")}
             </p>
-            <Link
-              to="/settings"
-              onClick={onNavigate}
-              className="flex h-10 items-center gap-2 rounded-lg px-2 text-sm text-muted hover:bg-sand-2 hover:text-ink"
-              activeProps={{ className: "bg-sand-2 font-medium text-ink" }}
-            >
-              <Settings2 className="size-4 shrink-0" />
-              {t("groupSettings")}
-            </Link>
+            <ul className="flex flex-col gap-0.5">
+              {SETTINGS_NAV.map((item) => (
+                <li key={item.to}>
+                  <Link
+                    to={item.to}
+                    onClick={onNavigate}
+                    activeOptions={{ exact: item.exact }}
+                    className="flex h-10 items-center gap-2 rounded-lg px-2 text-sm text-muted hover:bg-sand-2 hover:text-ink"
+                    activeProps={{ className: "bg-sand-2 font-medium text-ink" }}
+                  >
+                    <item.icon className="size-4 shrink-0" />
+                    {t(item.key)}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         ) : null}
       </nav>
@@ -139,8 +146,11 @@ function MobileNav() {
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="start" className="pt-12">
+      <SheetContent side="start" className="overflow-y-auto pt-12">
         <SideNav onNavigate={() => setOpen(false)} />
+        <div className="mt-6 border-t border-border pt-4">
+          <UserButton />
+        </div>
       </SheetContent>
     </Sheet>
   );
