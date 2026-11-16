@@ -54,7 +54,7 @@ function EmailPage() {
     if (!testTo && me?.email) setTestTo(me.email);
   }, [me, testTo]);
 
-  const sampleLink = `${status?.surveyUrl ?? ""}?t=…`;
+  const sampleLink = `${(status?.surveyUrl ?? "").split("?")[0]}?t=…`;
   const preview = useMemo(
     () =>
       applyTokens(lang === "ar" ? email.bodyAr : email.bodyEn, {

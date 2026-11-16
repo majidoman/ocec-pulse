@@ -109,7 +109,7 @@ function DepartmentsPage() {
                 <p className="text-xs text-subtle">
                   {loc({
                     en: `${r.unspecified} people chose not to state a department. They are counted in the house figures only.`,
-                    ar: `${r.unspecified} شخصاً فضّلوا عدم ذكر الإدارة. يُحتسبون في أرقام البيت فقط.`,
+                    ar: `${r.unspecified} شخصاً فضّلوا عدم ذكر الإدارة. يُحتسبون في أرقام المؤسسة فقط.`,
                   })}
                 </p>
               ) : null}

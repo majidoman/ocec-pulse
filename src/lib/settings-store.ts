@@ -5,6 +5,7 @@ import {
   type AnonymitySettings,
   type BenchmarkSettings,
   type BrandingSettings,
+  type PresentationSettings,
   type CalendarSettings,
   type EmailSettings,
   type GeneralSettings,
@@ -44,6 +45,7 @@ export interface SettingsState extends PulseConfig {
   hydrateAdmin: (c: PulseConfig) => void;
   patchGeneral: (p: Partial<GeneralSettings>) => void;
   patchBranding: (p: Partial<BrandingSettings>) => void;
+  patchPresentation: (p: Partial<PresentationSettings>) => void;
   patchCalendar: (p: Partial<CalendarSettings>) => void;
   patchAnonymity: (p: Partial<AnonymitySettings>) => void;
   patchEmail: (p: Partial<EmailSettings>) => void;
@@ -72,6 +74,7 @@ const CONFIG_KEYS: (keyof PulseConfig)[] = [
   "version",
   "general",
   "branding",
+  "presentation",
   "calendar",
   "anonymity",
   "email",
@@ -144,6 +147,7 @@ export const useSettings = create<SettingsState>()((set, get) => {
         source: "public",
         general: { ...s.general, ...c.general },
         branding: c.branding,
+        presentation: { ...s.presentation, ...(c.presentation ?? {}) },
         calendar: { ...s.calendar, ...c.calendar },
         anonymity: { ...s.anonymity, ...c.anonymity },
         departments: c.departments.map((d) => ({ ...d, headcount: 0 })),
@@ -154,6 +158,7 @@ export const useSettings = create<SettingsState>()((set, get) => {
     hydrateAdmin: (c) => set({ ...c, source: "admin", saveState: "idle", saveError: null }),
     patchGeneral: (p) => change((s) => ({ general: { ...s.general, ...p } })),
     patchBranding: (p) => change((s) => ({ branding: { ...s.branding, ...p } })),
+    patchPresentation: (p) => change((s) => ({ presentation: { ...s.presentation, ...p } })),
     patchCalendar: (p) => change((s) => ({ calendar: { ...s.calendar, ...p } })),
     patchAnonymity: (p) => change((s) => ({ anonymity: { ...s.anonymity, ...p } })),
     patchEmail: (p) => change((s) => ({ email: { ...s.email, ...p } })),

@@ -2,11 +2,12 @@
  * Server-only data access for OCEC Pulse: configuration, staff and audit log.
  * Import ONLY from server function handlers (dynamic import) or server routes.
  */
+import { AsyncLocalStorage } from "node:async_hooks";
 import { createCipheriv, createDecipheriv, createHash, randomBytes, randomUUID } from "node:crypto";
 import { getRequest } from "@tanstack/react-start/server";
 import { getSql } from "@/lib/db";
 import type { StaffRole } from "@/lib/types";
-import { defaultConfig, normalizeConfig, type PulseConfig } from "./config";
+import { defaultConfig, mergeSurveyPart, normalizeConfig, pickSurveyPart, withSharedFrom, type PulseConfig, type SurveyPart } from "./config";
 import type { Me } from "./results-types";
 
 export class ForbiddenError extends Error {
@@ -58,14 +59,90 @@ export async function writeSetting(key: string, value: unknown): Promise<void> {
   `;
 }
 
-export async function loadConfig(): Promise<PulseConfig> {
-  const stored = await readSetting<unknown>("config");
-  if (!stored) return defaultConfig();
-  return normalizeConfig(stored);
+// ── Which survey ─────────────────────────────────────────────────────────────
+// Staff work on one survey at a time (chosen in the survey switcher, kept in the pulse_survey cookie).
+// Employees reach a survey through their personal link (the token says which survey) or ?s=<id>.
+// Code that must act on a given survey (cron jobs, the public survey) runs inside inSurvey(id, …).
+
+export const MAIN_SURVEY = "main";
+export const SURVEY_COOKIE = "pulse_survey";
+const surveyScope = new AsyncLocalStorage<string>();
+
+export function inSurvey<T>(id: string, fn: () => Promise<T>): Promise<T> {
+  return surveyScope.run(id, fn);
 }
 
-export async function saveConfig(config: PulseConfig): Promise<void> {
-  await writeSetting("config", normalizeConfig(config));
+export function isSurveyId(v: unknown): v is string {
+  return typeof v === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(v);
+}
+
+/** The survey the current request is about. */
+export function surveyId(): string {
+  const scoped = surveyScope.getStore();
+  if (scoped) return scoped;
+  const cookie = getRequest()?.headers.get("cookie") ?? "";
+  const m = new RegExp(`(?:^|;\\s*)${SURVEY_COOKIE}=([^;]+)`).exec(cookie);
+  const v = m ? decodeURIComponent(m[1]) : "";
+  return isSurveyId(v) ? v : MAIN_SURVEY;
+}
+
+export async function surveyExists(id: string): Promise<boolean> {
+  if (id === MAIN_SURVEY) return true;
+  const sql = await getSql();
+  const rows = await sql<{ id: string }>`select id from pulse_surveys where id = ${id}`;
+  return rows.length > 0;
+}
+
+/** The survey opened by the plain /survey link and the QR code. */
+export async function publicSurveyId(): Promise<string> {
+  const v = (await readSetting<{ id?: string }>("public_survey"))?.id;
+  return isSurveyId(v) && (await surveyExists(v)) ? v : MAIN_SURVEY;
+}
+
+/** Deletes a survey's answers and comments (its invitation list is handled separately). */
+export async function deleteSurveyResponses(id: string): Promise<void> {
+  const sql = await getSql();
+  await sql`delete from pulse_comments where survey_id = ${id}`;
+  await sql`delete from pulse_attachments where survey_id = ${id}`;
+  await sql`delete from pulse_answers where response_id in (select id from pulse_responses where survey_id = ${id})`;
+  await sql`delete from pulse_responses where survey_id = ${id}`;
+}
+
+export async function listSurveyIds(): Promise<string[]> {
+  const sql = await getSql();
+  const rows = await sql<{ id: string }>`select id from pulse_surveys order by created_at, id`;
+  const ids = rows.map((r) => r.id);
+  return ids.includes(MAIN_SURVEY) ? ids : [MAIN_SURVEY, ...ids];
+}
+
+async function readSurveyPart(id: string): Promise<SurveyPart | null> {
+  const sql = await getSql();
+  const rows = await sql<{ config: unknown }>`select config from pulse_surveys where id = ${id}`;
+  const v = rows[0]?.config;
+  if (!v) return null;
+  return (typeof v === "string" ? JSON.parse(v) : v) as SurveyPart;
+}
+
+/** The full settings for a survey (default: the current one): shared settings with the survey's own part. */
+export async function loadConfig(id: string = surveyId()): Promise<PulseConfig> {
+  const stored = await readSetting<unknown>("config");
+  const shared = stored ? normalizeConfig(stored) : defaultConfig();
+  if (id === MAIN_SURVEY) return shared;
+  return mergeSurveyPart(shared, await readSurveyPart(id));
+}
+
+export async function saveConfig(config: PulseConfig, id: string = surveyId()): Promise<void> {
+  const next = normalizeConfig(config);
+  if (id === MAIN_SURVEY) {
+    await writeSetting("config", next);
+    return;
+  }
+  // Shared settings go to the main document (keeping the main survey's own part); this survey's part to its row.
+  const stored = await readSetting<unknown>("config");
+  const main = stored ? normalizeConfig(stored) : defaultConfig();
+  await writeSetting("config", withSharedFrom(main, next));
+  const sql = await getSql();
+  await sql`update pulse_surveys set config = ${JSON.stringify(pickSurveyPart(next))}::jsonb where id = ${id}`;
 }
 
 // ── Secrets (SMTP password) ──────────────────────────────────────────────────

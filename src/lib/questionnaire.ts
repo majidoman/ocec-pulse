@@ -86,7 +86,7 @@ export const DIMENSIONS: Dimension[] = [
     short: { en: "Recognition", ar: "التقدير" },
     blurb: {
       en: "Being seen for good work — including pit-stop celebrations.",
-      ar: "الإحساس بأن العمل الجيد يُرى ويُقدَّر، بما في ذلك اجتماعات البيت ستوب.",
+      ar: "الإحساس بأن العمل الجيد يُرى ويُقدَّر، بما في ذلك اجتماعات «بِت ستوب».",
     },
     visible: true,
     archived: false,
@@ -138,7 +138,7 @@ export const DIMENSIONS: Dimension[] = [
     short: { en: "Pride", ar: "الفخر" },
     blurb: {
       en: "Pride in the house, its values and its place in Oman.",
-      ar: "الفخر بالبيت وقيمه ومكانته في عُمان.",
+      ar: "الفخر بالمؤسسة وقيمها ومكانتها في عُمان.",
     },
     visible: true,
     archived: false,
@@ -250,7 +250,7 @@ const RAW_QUESTIONS: Omit<Question, "visible" | "order">[] = [
   { id: "T3", dimension: "teamwork", type: "likert", required: true, text: { en: "I feel I belong on my team.", ar: "أشعر بالانتماء إلى فريقي." } },
   { id: "T4", dimension: "teamwork", type: "likert", required: true, text: { en: "Conflicts are handled constructively.", ar: "تُعالج الخلافات بطريقة بنّاءة." } },
   { id: "R1", dimension: "recognition", type: "likert", required: true, text: { en: "I am recognised when I do good work.", ar: "يتم تقديري عندما أقدّم عملاً جيداً." } },
-  { id: "R2", dimension: "recognition", type: "likert", required: true, text: { en: "{org}’s pit-stop meetings make me feel my contribution is seen.", ar: "تجعلني اجتماعات البيت ستوب أشعر أن مساهمتي مرئية." } },
+  { id: "R2", dimension: "recognition", type: "likert", required: true, text: { en: "{org}’s pit-stop meetings make me feel my contribution is seen.", ar: "تجعلني اجتماعات «بِت ستوب» أشعر أن مساهمتي مرئية." } },
   { id: "R3", dimension: "recognition", type: "likert", required: true, text: { en: "Pay and benefits feel fair for my role.", ar: "أشعر أن الراتب والمزايا عادلان لدورى." } },
   { id: "R4", dimension: "recognition", type: "likert", required: true, text: { en: "Outstanding service to guests is celebrated here.", ar: "يُحتفى هنا بالخدمة المتميزة للضيوف." } },
   { id: "C1", dimension: "career", type: "likert", required: true, text: { en: "I can see a future for myself at {org}.", ar: "أستطيع أن أرى مستقبلاً لي في {org}." } },

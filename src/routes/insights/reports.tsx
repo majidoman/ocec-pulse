@@ -41,7 +41,7 @@ function ReportsPage() {
 
   const packs: { id: Pack; title: string; body: string }[] = [
     { id: "exec", title: t("execPack"), body: loc({ en: "Summary, headline figures, strongest and weakest items, action plan.", ar: "الملخص والأرقام الرئيسية وأقوى وأضعف البنود وخطة العمل." }) },
-    { id: "dept", title: t("deptPack"), body: loc({ en: "Heat map by department, demographic cuts, comments.", ar: "الخريطة الحرارية حسب الإدارة والفئات والتعليقات." }) },
+    { id: "dept", title: t("deptPack"), body: loc({ en: "Heat map by department, demographic cuts, comments.", ar: "النظرة الشاملة حسب الإدارة والفئات والتعليقات." }) },
     { id: "board", title: t("boardPack"), body: loc({ en: "Headline figures, dimension scores, comparisons where sourced.", ar: "الأرقام الرئيسية ودرجات الأبعاد والمقارنات الموثّقة." }) },
   ];
 

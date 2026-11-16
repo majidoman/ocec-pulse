@@ -12,6 +12,8 @@ type Load = "idle" | "loading" | "ready" | "error";
 
 interface PulseSession {
   publicState: Load;
+  /** The survey the employee pages are showing (from the personal link, ?s=, or the default). */
+  publicSurveyId: string | null;
   stats: PublicStats | null;
   me: Me | null;
   meState: Load | "signed_out";
@@ -27,6 +29,7 @@ interface PulseSession {
 
 export const usePulse = create<PulseSession>()((set, get) => ({
   publicState: "idle",
+  publicSurveyId: null,
   stats: null,
   me: null,
   meState: "idle",
@@ -37,9 +40,17 @@ export const usePulse = create<PulseSession>()((set, get) => ({
     if (get().publicState === "loading") return;
     set({ publicState: "loading" });
     try {
-      const res = await getPublic();
+      const params = typeof window === "undefined" ? null : new URLSearchParams(window.location.search);
+      const survey = params?.get("s")?.replace(/^"|"$/g, "") || undefined;
+      const token = params?.get("t")?.replace(/^"|"$/g, "") || undefined;
+      const res = await getPublic({
+        data: {
+          ...(survey && /^[A-Za-z0-9_-]{1,64}$/.test(survey) ? { survey } : {}),
+          ...(token && token.length >= 8 && token.length <= 200 ? { token } : {}),
+        },
+      });
       useSettings.getState().hydratePublic(res.config);
-      set({ publicState: "ready", stats: res.stats });
+      set({ publicState: "ready", stats: res.stats, publicSurveyId: res.surveyId });
     } catch {
       set({ publicState: "error" });
     }

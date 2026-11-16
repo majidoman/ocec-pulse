@@ -50,6 +50,15 @@ export interface BrandingSettings {
   accent: string;
 }
 
+/** Colour themes for the pages employees see (survey, landing, thank-you). */
+export type ThemeId = "brand" | "desert" | "ocean" | "palm" | "slate" | "night" | "contrast";
+
+export interface PresentationSettings {
+  theme: ThemeId;
+  /** "section": one section per page (best for long surveys); "single": everything on one page. */
+  pageMode: "section" | "single";
+}
+
 export interface CalendarSettings {
   kickoff: string;
   freeze: string;
@@ -123,6 +132,7 @@ export interface PulseConfig {
   version: number;
   general: GeneralSettings;
   branding: BrandingSettings;
+  presentation: PresentationSettings;
   calendar: CalendarSettings;
   anonymity: AnonymitySettings;
   email: EmailSettings;
@@ -145,6 +155,7 @@ export interface PublicConfig {
     "orgName" | "orgShort" | "cycleName" | "defaultLang" | "supportEmail" | "supportPhone" | "status" | "allowOpenLink"
   >;
   branding: BrandingSettings;
+  presentation: PresentationSettings;
   calendar: Pick<CalendarSettings, "fieldOpen" | "fieldClose" | "note">;
   anonymity: Pick<AnonymitySettings, "kFloor" | "privacyNotice">;
   departments: Pick<Department, "id" | "name">[];
@@ -186,7 +197,7 @@ const defaultReminders: ReminderRule[] = [
     enabled: true,
     sent: 0,
     bodyEn: "Halfway. The house is listening. Your confidential link cannot be traced to you.",
-    bodyAr: "منتصف الطريق. البيت يستمع. رابطك السري لا يُتتبع إليك.",
+    bodyAr: "منتصف الطريق. المؤسسة تستمع. رابطك السري لا يُتتبع إليك.",
   },
   {
     id: "d10",
@@ -222,6 +233,7 @@ export function defaultConfig(): PulseConfig {
       primary: "#142A32",
       accent: "#2C6A6A",
     },
+    presentation: { theme: "brand", pageMode: "section" },
     calendar: {
       kickoff: "",
       freeze: "",
@@ -288,6 +300,7 @@ export function normalizeConfig(raw: unknown): PulseConfig {
     version: CONFIG_VERSION,
     general: { ...base.general, ...(r.general ?? {}) },
     branding: { ...base.branding, ...(r.branding ?? {}) },
+    presentation: { ...base.presentation, ...(r.presentation ?? {}) },
     calendar: { ...base.calendar, ...(r.calendar ?? {}) },
     anonymity: { ...base.anonymity, ...(r.anonymity ?? {}) },
     email: { ...base.email, ...(r.email ?? {}) },
@@ -319,6 +332,7 @@ export function toPublicConfig(c: PulseConfig): PublicConfig {
       allowOpenLink: c.general.allowOpenLink,
     },
     branding: c.branding,
+    presentation: c.presentation,
     calendar: {
       fieldOpen: c.calendar.fieldOpen,
       fieldClose: c.calendar.fieldClose,
@@ -421,4 +435,63 @@ export function brandText(text: string, names: BrandNames, lang: Lang): string {
 
 export function brandLocalized(value: Localized, names: BrandNames): Localized {
   return { en: brandText(value.en, names, "en"), ar: brandText(value.ar, names, "ar") };
+}
+
+// ── Several surveys ─────────────────────────────────────────────────────────
+// Organisation-wide settings (names, branding, email server, privacy rules, departments) are shared;
+// everything below belongs to one survey.
+
+export const SURVEY_KEYS = [
+  "presentation",
+  "calendar",
+  "reminderCfg",
+  "benchmarks",
+  "dimensions",
+  "questions",
+  "instrumentStatus",
+  "frozenAt",
+  "changelog",
+  "actions",
+] as const satisfies readonly (keyof PulseConfig)[];
+export const SURVEY_GENERAL_KEYS = ["cycleName", "status", "allowOpenLink", "closedAt"] as const satisfies readonly (keyof GeneralSettings)[];
+
+export type SurveyPart = Partial<Pick<PulseConfig, (typeof SURVEY_KEYS)[number]>> & {
+  general?: Partial<Pick<GeneralSettings, (typeof SURVEY_GENERAL_KEYS)[number]>>;
+};
+
+/** The survey's own settings, taken out of a full settings document. */
+export function pickSurveyPart(c: PulseConfig): SurveyPart {
+  const out: Record<string, unknown> = {};
+  for (const k of SURVEY_KEYS) out[k] = c[k];
+  const g: Record<string, unknown> = {};
+  for (const k of SURVEY_GENERAL_KEYS) g[k] = c.general[k];
+  out.general = g;
+  return out as SurveyPart;
+}
+
+/** A full settings document: the organisation's shared settings with one survey's own part on top. */
+export function mergeSurveyPart(shared: PulseConfig, part: SurveyPart | null | undefined): PulseConfig {
+  if (!part) return shared;
+  const out: Record<string, unknown> = { ...shared };
+  for (const k of SURVEY_KEYS) if (part[k] !== undefined) out[k] = part[k];
+  out.general = { ...shared.general, ...(part.general ?? {}) };
+  return normalizeConfig(out);
+}
+
+/** The shared settings from `next`, with `keepSurvey`'s own part kept (used when saving another survey). */
+export function withSharedFrom(keepSurvey: PulseConfig, next: PulseConfig): PulseConfig {
+  return mergeSurveyPart(next, pickSurveyPart(keepSurvey));
+}
+
+export interface SurveySummary {
+  id: string;
+  name: Localized;
+  status: CensusStatus;
+  isDemo: boolean;
+  createdAt: string;
+  responses: number;
+  fieldOpen: string;
+  fieldClose: string;
+  /** Opened by the plain survey link and QR code (/survey without ?s=). */
+  isPublicDefault: boolean;
 }

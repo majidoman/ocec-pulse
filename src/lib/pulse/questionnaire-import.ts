@@ -17,7 +17,7 @@
  */
 import type { Dimension, Localized, Question } from "@/lib/types";
 
-export type ImportType = "likert" | "enps" | "text";
+export type ImportType = "likert" | "enps" | "text" | "file";
 
 export interface ImportIssue {
   /** Spreadsheet row number as Excel shows it (1-based), or 0 for the whole file. */
@@ -81,6 +81,7 @@ const clean = (v: unknown) =>
 function parseType(raw: string): ImportType | null {
   const v = raw.toLowerCase().replace(/[–—]/g, "-");
   if (!v) return null;
+  if (/file|upload|attach|مرفق|ملف|رفع/.test(v)) return "file";
   if (/comment|text|open|تعليق|نص|مفتوح/.test(v)) return "text";
   if (/0\s*-\s*10|recommend|enps|nps|توصية|٠\s*-\s*١٠/.test(v)) return "enps";
   if (/1\s*-\s*5|agree|likert|scale|موافق|١\s*-\s*٥|مقياس/.test(v)) return "likert";
@@ -219,7 +220,7 @@ export function parseQuestionnaire(rows: unknown[][], surveyRows?: unknown[][] |
     if (reverse && type !== "likert") warn(rowNo, "Only Agree 1–5 questions can be reverse-worded; ignored.", "الأسئلة المعكوسة تكون في أسئلة الموافقة ١–٥ فقط؛ تم التجاهل.");
 
     let sectionKey: string | null = null;
-    if (type !== "text") {
+    if (type !== "text" && type !== "file") {
       const secEn = get(r, "secEn");
       const secAr = get(r, "secAr");
       if (!secEn || !secAr) {
@@ -252,7 +253,7 @@ export function parseQuestionnaire(rows: unknown[][], surveyRows?: unknown[][] |
       section: sectionKey,
       type,
       text: { en: qEn, ar: qAr },
-      required: required ?? type !== "text",
+      required: required ?? (type !== "text" && type !== "file"),
       reverse: type === "likert" && reverse === true,
     });
   }
@@ -309,8 +310,8 @@ export function parseQuestionnaire(rows: unknown[][], surveyRows?: unknown[][] |
     }
   };
   const questions: Question[] = raw.map((q, order) => {
-    const dim = q.type === "text" ? "open" : sectionId.get(q.section!)!;
-    const id = q.id || (q.type === "enps" ? nextId("NPS") : q.type === "text" ? nextId("O") : nextId("Q"));
+    const dim = q.type === "text" || q.type === "file" ? "open" : sectionId.get(q.section!)!;
+    const id = q.id || (q.type === "enps" ? nextId("NPS") : q.type === "text" ? nextId("O") : q.type === "file" ? nextId("F") : nextId("Q"));
     return {
       id,
       dimension: dim,
