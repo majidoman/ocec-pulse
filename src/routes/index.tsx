@@ -90,7 +90,7 @@ function Home() {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="font-display text-2xl font-medium">{t("insights")}</div>
-                    <p className="mt-1 text-sm leading-relaxed text-muted">{loc({ en: "Results, heat maps, drivers and action plans. Sign-in required.", ar: "النتائج والخرائط الحرارية والمحركات وخطط العمل. يتطلب تسجيل الدخول." })}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-muted">{loc({ en: "Results, heat maps, drivers and action plans. Sign-in required.", ar: "النتائج والنظرة الشاملة والمحركات وخطط العمل. يتطلب تسجيل الدخول." })}</p>
                   </div>
                   <ArrowUpRight className="size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </div>

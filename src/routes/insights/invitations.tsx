@@ -134,7 +134,7 @@ function InvitationsPage() {
           <div className="flex flex-col gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="camp">{t("campaignName")}</Label>
-              <Input id="camp" value={name} placeholder={loc({ en: "House launch", ar: "إطلاق البيت" })} onChange={(e) => setName(e.target.value)} />
+              <Input id="camp" value={name} placeholder={loc({ en: "House launch", ar: "إطلاق على مستوى المؤسسة" })} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="aud">{t("pickDept")}</Label>

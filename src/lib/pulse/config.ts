@@ -197,7 +197,7 @@ const defaultReminders: ReminderRule[] = [
     enabled: true,
     sent: 0,
     bodyEn: "Halfway. The house is listening. Your confidential link cannot be traced to you.",
-    bodyAr: "منتصف الطريق. البيت يستمع. رابطك السري لا يُتتبع إليك.",
+    bodyAr: "منتصف الطريق. المؤسسة تستمع. رابطك السري لا يُتتبع إليك.",
   },
   {
     id: "d10",

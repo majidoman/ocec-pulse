@@ -107,7 +107,7 @@ function Overview() {
                 </Link>
                 <Link to="/insights/executive" className="rounded-2xl bg-paper p-5 shadow-[var(--shadow-border)] hover:bg-sand-2">
                   <div className="text-sm font-semibold text-ink">{t("navExec")}</div>
-                  <p className="mt-1 text-sm text-muted">{loc({ en: "The house story on one page for the leadership team.", ar: "قصة البيت في صفحة واحدة لفريق القيادة." })}</p>
+                  <p className="mt-1 text-sm text-muted">{loc({ en: "The house story on one page for the leadership team.", ar: "قصة المؤسسة في صفحة واحدة لفريق القيادة." })}</p>
                 </Link>
                 <Link to="/insights/actions" className="rounded-2xl bg-paper p-5 shadow-[var(--shadow-border)] hover:bg-sand-2">
                   <div className="text-sm font-semibold text-ink">{t("navActions")}</div>

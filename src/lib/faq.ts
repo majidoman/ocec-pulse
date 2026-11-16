@@ -7,7 +7,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "What is {app} and {survey}?",
     },
     a: {
-      ar: "{app} منصة مشاركة الموظفين في {orgName}. {survey} هو استبيان سري لكل من يعمل في البيت — من المطابخ إلى الطابق التنفيذي — لمعرفة ما يقوّي المشاركة وما يعطّلها.",
+      ar: "{app} منصة مشاركة الموظفين في {orgName}. {survey} هو استبيان سري لكل من يعمل في المؤسسة — من المطابخ إلى الطابق التنفيذي — لمعرفة ما يقوّي المشاركة وما يعطّلها.",
       en: "{app} is the employee-engagement platform for {orgName}. {survey} is a confidential survey of everyone who makes the house work — kitchens to the executive floor.",
     },
   },
@@ -127,7 +127,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "When does {survey} close?",
     },
     a: {
-      ar: "تاريخ الإغلاق يظهر في الصفحة الرئيسية وفي رسالة الدعوة. بعد الإغلاق تُشارك إحاطة البيت وخطة التسعين يوماً.",
+      ar: "تاريخ الإغلاق يظهر في الصفحة الرئيسية وفي رسالة الدعوة. بعد الإغلاق تُشارك إحاطة المؤسسة وخطة التسعين يوماً.",
       en: "The closing date is shown on the home page and in your invitation. After close, the house briefing and the 90-day plan are shared.",
     },
   },
@@ -177,7 +177,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "Is this written for {org} or a generic hospitality template?",
     },
     a: {
-      ar: "كُتب لهذا البيت: اجتماعات البيت ستوب، أسابيع الذروة والفعاليات المتتالية، التعمين، شعار «حيث يلتقي العالم»، الاستدامة، والطهي والمآدب. ليست نسخة مستوردة من فندق آخر.",
+      ar: "كُتب لهذه المؤسسة: اجتماعات «بِت ستوب»، أسابيع الذروة والفعاليات المتتالية، التعمين، شعار «حيث يلتقي العالم»، الاستدامة، والطهي والمآدب. ليست نسخة مستوردة من فندق آخر.",
       en: "It is written for this house: pit-stops, peak and triple-header weeks, Omanisation, “Where the World Meets,” sustainability, and culinary & banqueting. Not a hotel template with the logo swapped.",
     },
   },
@@ -187,7 +187,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "How are results used after close?",
     },
     a: {
-      ar: "ملخص تنفيذي للقيادة، وخريطة حرارية حسب الإدارة، وتحليل للمحركات مقابل مؤشر التوصية. ثم حركات محددة في تسعين يوماً بمسؤول وأفق زمني — لا تقرير في درج.",
+      ar: "ملخص تنفيذي للقيادة، ونظرة شاملة حسب الإدارة، وتحليل للمحركات مقابل مؤشر التوصية. ثم حركات محددة في تسعين يوماً بمسؤول وأفق زمني — لا تقرير في درج.",
       en: "An executive summary, a department heat map and driver analysis against eNPS. Then owned moves in ninety days — not a report in a drawer.",
     },
   },
