@@ -4,6 +4,9 @@ Every change that reaches the live site is listed here, newest first.
 Each release has a version, a date, what changed in plain words, and how to undo it.
 
 ## [Unreleased] — on the test site, waiting for approval
+- Nothing yet.
+
+## [1.5.0] — 2026-11-16 — released to live ("موافق"); backup: Neon branch `backup-pre-v1.5.0-2026-11-16`
 ### Survey experience (phase 1)
 - **Look & layout** settings page (Settings → Look & layout): 7 colour themes for the pages employees see (Brand colours, Desert, Ocean, Palm, Corporate, Night, High contrast). Every theme passes the WCAG AA contrast check (`scripts/theme-contrast.mjs`). Dashboards keep the standard look.
 - **Preview in a new tab** from the Survey builder and Look & layout: the real survey with a "Preview — answers are not sent" banner, works while the survey is still a draft, only for signed-in staff; can preview any theme or page layout before choosing it.
