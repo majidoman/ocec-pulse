@@ -138,6 +138,58 @@ export async function buildResultsWorkbook(r: Results, config: PulseConfig): Pro
   widths(qs, [8, 22, 28, 14, 12, 16]);
   qs.views = [{ state: "frozen", ySplit: 4, showGridLines: false }];
 
+  // ── Questions by department (matrix and detail) ───────────────────────────
+  const deptItems = r.deptItems ?? {};
+  const shownDepts = r.departments.filter((d) => d.dims !== null && deptItems[d.id]);
+  const likertQs = config.questions.filter((q) => q.visible && q.type === "likert");
+  const qText = (id: string) => config.questions.find((q) => q.id === id)?.text.en ?? id;
+  const qDim = (id: string) => dimName(config.questions.find((q) => q.id === id)?.dimension ?? "");
+  const orgFav = new Map(r.items.map((it) => [it.id, it.favorable]));
+  const col = (n: number) => String.fromCharCode(64 + n); // 1 → A, 4 → D
+
+  const matrix = wb.addWorksheet("Questions by dept");
+  title(matrix, "Answers by department and question", "Favourable % for each question. A blank cell means fewer than k people answered it in that group.");
+  header(matrix, 4, ["Question", "Dimension", "Whole organisation", ...shownDepts.map((d) => deptName(d.id))]);
+  likertQs.forEach((q, i) => {
+    const row = matrix.getRow(5 + i);
+    row.values = [qText(q.id), qDim(q.id), orgFav.get(q.id) ?? "", ...shownDepts.map((d) => deptItems[d.id]?.[q.id]?.fav ?? "")];
+    row.alignment = { wrapText: true, vertical: "middle" };
+  });
+  if (likertQs.length && shownDepts.length) {
+    scale(matrix, `D5:${col(3 + shownDepts.length)}${4 + likertQs.length}`);
+  }
+  widths(matrix, [48, 24, 16, ...shownDepts.map(() => 16)]);
+  matrix.views = [{ state: "frozen", xSplit: 1, ySplit: 4, showGridLines: false }];
+
+  const detailRows: (string | number)[][] = [];
+  for (const d of shownDepts) {
+    for (const q of likertQs) {
+      const cell = deptItems[d.id]?.[q.id];
+      if (!cell) continue;
+      const org = orgFav.get(q.id);
+      const diff = typeof org === "number" ? Math.round(cell.fav - org) : null;
+      const result = diff === null ? "" : diff >= 5 ? "Above" : diff <= -5 ? "Below" : "In line";
+      detailRows.push([deptName(d.id), qDim(q.id), qText(q.id), cell.fav, org ?? "", diff ?? "", cell.n, result]);
+    }
+  }
+  const detail = wb.addWorksheet("Department detail");
+  title(detail, "Each department against each question", "Difference is the department minus the whole organisation, in points. Above or below means 5 points or more.");
+  const detailCols = ["Department", "Dimension", "Question", "Department favourable %", "Whole organisation %", "Difference (points)", "Answers", "Result"];
+  if (detailRows.length) {
+    detail.addTable({
+      name: "DeptDetail",
+      ref: "A4",
+      headerRow: true,
+      style: { theme: "TableStyleMedium2", showRowStripes: true },
+      columns: detailCols.map((name) => ({ name })),
+      rows: detailRows,
+    });
+  } else {
+    detail.getCell("A4").value = "Not enough answers in any group yet to show a breakdown.";
+  }
+  widths(detail, [26, 24, 56, 20, 20, 18, 12, 12]);
+  detail.views = [{ state: "frozen", ySplit: 4, showGridLines: false }];
+
   // ── Drivers ───────────────────────────────────────────────────────────────
   const dr = wb.addWorksheet("Drivers");
   title(dr, "What drives recommendation (eNPS)", "Correlation between each dimension and eNPS: closer to +1 means a stronger link.");

@@ -62,6 +62,8 @@ export interface Results {
   /** Pearson r between each dimension and eNPS. `null` until there are enough respondents. */
   drivers: { dimension: string; r: number }[] | null;
   comments: CommentRow[] | null;
+  /** Favourable % and answers per question for each shown department; a question is left out below the floor. */
+  deptItems?: Record<string, Record<string, { fav: number; n: number }>>;
   /** When set, the viewer is a department head and sees only this department. */
   scopeDepartment: string | null;
   role: StaffRole;
