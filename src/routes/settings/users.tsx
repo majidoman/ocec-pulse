@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useCensus } from "@/lib/census";
-import { inviteStaff, listAudit, listStaff, revokeStaffInvite, updateStaff } from "@/lib/pulse/api";
+import { inviteStaff, listStaff, revokeStaffInvite, updateStaff } from "@/lib/pulse/api";
 import type { AuditRow, StaffInviteRow, StaffRow } from "@/lib/pulse/results-types";
 import { usePulse } from "@/lib/pulse/session";
 import { ROLE_LABEL } from "@/lib/settings-store";
@@ -29,7 +29,6 @@ function UsersPage() {
   const me = usePulse((s) => s.me);
   const [staff, setStaff] = useState<StaffRow[]>([]);
   const [invites, setInvites] = useState<StaffInviteRow[]>([]);
-  const [audit, setAudit] = useState<AuditRow[]>([]);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<StaffRole>("viewer");
@@ -39,10 +38,9 @@ function UsersPage() {
 
   const load = useCallback(async () => {
     try {
-      const [s, a] = await Promise.all([listStaff(), listAudit()]);
+      const s = await listStaff();
       setStaff(s.staff);
       setInvites(s.invites);
-      setAudit(a);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not load users");
     }
@@ -216,20 +214,6 @@ function UsersPage() {
         </Card>
       ) : null}
 
-      <Card>
-        <h2 className="mb-3 text-sm font-semibold text-ink">{t("auditTitle")}</h2>
-        <ul className="flex flex-col gap-2 text-sm">
-          {audit.map((a) => (
-            <li key={a.id} className="flex flex-col justify-between gap-1 border-b border-border pb-2 text-muted last:border-0 sm:flex-row sm:gap-3">
-              <span>{lang === "ar" ? a.ar : a.en}</span>
-              <span className="shrink-0 text-xs text-subtle" dir="ltr">
-                {a.actor} · {new Date(a.at).toLocaleString()}
-              </span>
-            </li>
-          ))}
-          {!audit.length ? <li className="text-muted">—</li> : null}
-        </ul>
-      </Card>
     </PageFrame>
   );
 }
