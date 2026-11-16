@@ -1,6 +1,6 @@
 import { useState } from "react";
+import { Route as HeatmapRoute } from "./heatmap";
 import { createFileRoute } from "@tanstack/react-router";
-import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { HiddenNote, NeedResults } from "@/components/results";
 import { Score } from "@/components/score";
@@ -10,7 +10,7 @@ import { signed } from "@/lib/pulse/format";
 import { useT } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/insights/departments")({ component: DepartmentsPage });
+export const Route = createFileRoute("/insights/departments")({ component: CombinedPage });
 
 function DepartmentsPage() {
   const { t, loc } = useT();
@@ -19,7 +19,6 @@ function DepartmentsPage() {
 
   return (
     <PageFrame title={t("navDepts")} hint={t("deptHint")}>
-      <PageTabs group="depts" />
       <NeedResults>
         {(r) => {
           const rows = r.departments
@@ -120,5 +119,19 @@ function DepartmentsPage() {
         }}
       </NeedResults>
     </PageFrame>
+  );
+}
+
+const HeatmapSection = HeatmapRoute.options.component!;
+
+/** All related pages on one page, one after another (no tabs). */
+function CombinedPage() {
+  return (
+    <>
+      <DepartmentsPage />
+      <section id="glance">
+        <HeatmapSection />
+      </section>
+    </>
   );
 }

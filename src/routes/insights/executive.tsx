@@ -1,6 +1,8 @@
+import { Route as AiRoute } from "./ai";
+import { Route as ReportsRoute } from "./reports";
+import { Route as DesignRoute } from "./design";
 import { createFileRoute } from "@tanstack/react-router";
 import { EnpsMix } from "@/components/mix-bar";
-import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { PlanBadge } from "@/components/status-badge";
@@ -12,7 +14,7 @@ import { buildNarrative, opportunitiesOf, strengthsOf } from "@/lib/pulse/narrat
 import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 
-export const Route = createFileRoute("/insights/executive")({ component: ExecutivePage });
+export const Route = createFileRoute("/insights/executive")({ component: CombinedPage });
 
 function ExecutivePage() {
   const { t, loc, lang } = useT();
@@ -24,7 +26,6 @@ function ExecutivePage() {
 
   return (
     <PageFrame title={t("navExec")} hint={t("execHint")}>
-      <PageTabs group="reports" />
       <NeedResults>
         {(r) => {
           const story = buildNarrative(r, { dimensions, departments, general, benchmarks }, lang);
@@ -125,5 +126,27 @@ function ExecutivePage() {
         }}
       </NeedResults>
     </PageFrame>
+  );
+}
+
+const AiSection = AiRoute.options.component!;
+const ReportsSection = ReportsRoute.options.component!;
+const DesignSection = DesignRoute.options.component!;
+
+/** All related pages on one page, one after another (no tabs). */
+function CombinedPage() {
+  return (
+    <>
+      <ExecutivePage />
+      <section id="ai">
+        <AiSection />
+      </section>
+      <section id="reports">
+        <ReportsSection />
+      </section>
+      <section id="method">
+        <DesignSection />
+      </section>
+    </>
   );
 }

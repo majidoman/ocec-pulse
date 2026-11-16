@@ -1,6 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { redirect, createFileRoute } from "@tanstack/react-router";
 import { Check, ExternalLink } from "lucide-react";
-import { PreviewFooter, SurveyTabs } from "@/components/survey-tabs";
+import { PreviewFooter } from "@/components/survey-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,7 +9,10 @@ import { openSurveyPreview } from "@/lib/pulse/preview";
 import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 
-export const Route = createFileRoute("/settings/appearance")({ component: AppearancePage });
+export const Route = createFileRoute("/settings/appearance")({
+  beforeLoad: () => {
+    throw redirect({ to: "/settings/surveys", hash: "look" });
+  }, component: AppearancePage });
 
 function AppearancePage() {
   const { loc } = useT();
@@ -28,7 +31,6 @@ function AppearancePage() {
         ar: "كيف يظهر الاستبيان للموظفين. تبقى لوحات النتائج بالشكل المعتاد.",
       })}
     >
-      <SurveyTabs />
       <Card>
         <h2 className="text-sm font-semibold text-ink">{loc({ en: "Theme", ar: "الثيم" })}</h2>
         <p className="mt-1 text-sm text-muted">

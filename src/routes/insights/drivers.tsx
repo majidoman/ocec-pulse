@@ -1,6 +1,6 @@
+import { Route as ActionsRoute } from "./actions";
 import { createFileRoute } from "@tanstack/react-router";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Score } from "@/components/score";
@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { useCensus } from "@/lib/census";
 import { useT } from "@/lib/store";
 
-export const Route = createFileRoute("/insights/drivers")({ component: DriversPage });
+export const Route = createFileRoute("/insights/drivers")({ component: CombinedPage });
 
 function DriversPage() {
   const { t, loc, lang } = useT();
@@ -22,7 +22,6 @@ function DriversPage() {
         ar: "الارتباط بين كل بُعد ومؤشر التوصية. الأعلى يعني صلة أقوى بتوصية الموظفين بالعمل هنا.",
       })}
     >
-      <PageTabs group="actions" />
       <NeedResults>
         {(r) => {
           if (!r.drivers) {
@@ -85,5 +84,19 @@ function DriversPage() {
         }}
       </NeedResults>
     </PageFrame>
+  );
+}
+
+const ActionsSection = ActionsRoute.options.component!;
+
+/** All related pages on one page, one after another (no tabs). */
+function CombinedPage() {
+  return (
+    <>
+      <DriversPage />
+      <section id="actions">
+        <ActionsSection />
+      </section>
+    </>
   );
 }

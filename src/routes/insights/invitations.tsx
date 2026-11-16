@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
+import { Route as RemindersRoute } from "./reminders";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { Qr } from "@/components/qr";
 import { RosterUpload } from "@/components/roster-upload";
@@ -22,7 +22,7 @@ import { usePulse } from "@/lib/pulse/session";
 import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 
-export const Route = createFileRoute("/insights/invitations")({ component: InvitationsPage });
+export const Route = createFileRoute("/insights/invitations")({ component: CombinedPage });
 
 function InvitationsPage() {
   const { t, loc } = useT();
@@ -51,7 +51,6 @@ function InvitationsPage() {
   if (!canEditSettings(currentRole)) {
     return (
       <PageFrame title={t("navInvite")}>
-      <PageTabs group="invites" />
         <Card>
           <p className="text-sm text-muted">{loc({ en: "Only administrators manage invitations.", ar: "إدارة الدعوات للمديرين فقط." })}</p>
         </Card>
@@ -93,7 +92,6 @@ function InvitationsPage() {
 
   return (
     <PageFrame title={t("navInvite")} hint={t("inviteHint")}>
-      <PageTabs group="invites" />
       {error ? (
         <Card>
           <p className="text-sm text-score-crit">{error}</p>
@@ -259,5 +257,19 @@ function Stat({ label, value }: { label: string; value: number | undefined }) {
       <dt className="text-xs text-subtle">{label}</dt>
       <dd className="mt-0.5 font-display text-2xl tabular-nums text-ink">{value ?? "—"}</dd>
     </div>
+  );
+}
+
+const RemindersSection = RemindersRoute.options.component!;
+
+/** All related pages on one page, one after another (no tabs). */
+function CombinedPage() {
+  return (
+    <>
+      <InvitationsPage />
+      <section id="reminders">
+        <RemindersSection />
+      </section>
+    </>
   );
 }

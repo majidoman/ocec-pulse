@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { redirect, createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { PlanBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -15,7 +14,10 @@ import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 import type { ActionPlan } from "@/lib/types";
 
-export const Route = createFileRoute("/insights/actions")({ component: ActionsPage });
+export const Route = createFileRoute("/insights/actions")({
+  beforeLoad: () => {
+    throw redirect({ to: "/insights/drivers", hash: "actions" });
+  }, component: ActionsPage });
 
 const blank = { title: "", owner: "", horizon: "90 days", why: "", steps: "" };
 
@@ -55,7 +57,6 @@ function ActionsPage() {
       actions={
         canEdit ? (
           <Button className="print:hidden" onClick={() => setOpen(!open)}>
-      <PageTabs group="actions" />
             {loc({ en: "Add an action", ar: "إضافة إجراء" })}
           </Button>
         ) : undefined

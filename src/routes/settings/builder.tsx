@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { redirect, createFileRoute } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { PreviewFooter, SurveyTabs } from "@/components/survey-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { QuestionnaireImport } from "@/components/questionnaire-import";
 import { Button } from "@/components/ui/button";
@@ -18,7 +17,10 @@ import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 import type { Dimension, Question, QuestionType } from "@/lib/types";
 
-export const Route = createFileRoute("/settings/builder")({ component: BuilderPage });
+export const Route = createFileRoute("/settings/builder")({
+  beforeLoad: () => {
+    throw redirect({ to: "/settings/surveys", hash: "questions" });
+  }, component: BuilderPage });
 
 function BuilderPage() {
   const { t, loc, lang } = useT();
@@ -65,7 +67,6 @@ function BuilderPage() {
       hint={locked ? t("lockedHint") : t("settingsHint")}
       actions={
         <div className="flex flex-wrap gap-2">
-      <SurveyTabs />
           <SurveySwitcher />
           <Button size="sm" variant="outline" onClick={downloadBank}>
             {t("exportJson")}
@@ -241,7 +242,6 @@ function BuilderPage() {
           ))}
         </ul>
       </Card>
-      <PreviewFooter />
     </PageFrame>
   );
 }

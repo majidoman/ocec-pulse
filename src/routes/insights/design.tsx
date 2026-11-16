@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
-import { PageTabs } from "@/components/page-tabs";
+import { redirect, createFileRoute } from "@tanstack/react-router";
 import { PageFrame } from "@/components/page-frame";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -9,7 +8,10 @@ import { LIKERT, questionsByDimension } from "@/lib/questionnaire";
 import { useCensus } from "@/lib/census";
 import { useT } from "@/lib/store";
 
-export const Route = createFileRoute("/insights/design")({ component: DesignPage });
+export const Route = createFileRoute("/insights/design")({
+  beforeLoad: () => {
+    throw redirect({ to: "/insights/executive", hash: "method" });
+  }, component: DesignPage });
 
 function DesignPage() {
   const { t, loc, lang } = useT();
@@ -18,7 +20,6 @@ function DesignPage() {
   const likertN = questions.filter((q) => q.type === "likert").length;
   return (
     <PageFrame title={t("navDesign")} hint={t("designHint")}>
-      <PageTabs group="reports" />
       <Card>
         <h2 className="font-display text-xl text-ink">{t("method")}</h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">{t("methodIntro")}</p>

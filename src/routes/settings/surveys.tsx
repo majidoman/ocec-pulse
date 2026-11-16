@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
+import { Route as BuilderRoute } from "./builder";
+import { Route as AppearanceRoute } from "./appearance";
 import { createFileRoute } from "@tanstack/react-router";
 import { FlaskConical, Link2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { SurveyTabs } from "@/components/survey-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,7 +17,7 @@ import { useT } from "@/lib/store";
 
 export const Route = createFileRoute("/settings/surveys")({
   validateSearch: (s: Record<string, unknown>): { new?: boolean } => (s.new === true || s.new === "true" || s.new === 1 ? { new: true } : {}),
-  component: SurveysPage,
+  component: CombinedPage,
 });
 
 function SurveysPage() {
@@ -59,7 +60,6 @@ function SurveysPage() {
       actions={
         canEdit ? (
           <Button size="sm" onClick={() => setShowNew(true)}>
-      <SurveyTabs />
             <Plus className="size-4" /> {loc({ en: "New survey", ar: "استبيان جديد" })}
           </Button>
         ) : null
@@ -308,5 +308,23 @@ function NewSurvey({ onCancel }: { onCancel: () => void }) {
         </div>
       </form>
     </Card>
+  );
+}
+
+const BuilderSection = BuilderRoute.options.component!;
+const AppearanceSection = AppearanceRoute.options.component!;
+
+/** All related pages on one page, one after another (no tabs). */
+function CombinedPage() {
+  return (
+    <>
+      <SurveysPage />
+      <section id="questions">
+        <BuilderSection />
+      </section>
+      <section id="look">
+        <AppearanceSection />
+      </section>
+    </>
   );
 }

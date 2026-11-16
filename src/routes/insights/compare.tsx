@@ -1,6 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { redirect, createFileRoute, Link } from "@tanstack/react-router";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Delta, Score } from "@/components/score";
@@ -11,7 +10,10 @@ import { signed } from "@/lib/pulse/format";
 import { useT } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/insights/compare")({ component: ComparePage });
+export const Route = createFileRoute("/insights/compare")({
+  beforeLoad: () => {
+    throw redirect({ to: "/insights/trends", hash: "year" });
+  }, component: ComparePage });
 
 function ComparePage() {
   const { t, loc } = useT();
@@ -22,7 +24,6 @@ function ComparePage() {
 
   return (
     <PageFrame title={t("navCompare")} hint={hasPrior ? t("compareHint") : t("baselineOnly")}>
-      <PageTabs group="compare" />
       <NeedResults>
         {(r) => {
           if (!hasPrior) {

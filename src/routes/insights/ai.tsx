@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { redirect, createFileRoute } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
-import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,10 @@ import { buildNarrative } from "@/lib/pulse/narrative";
 import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 
-export const Route = createFileRoute("/insights/ai")({ component: AiPage });
+export const Route = createFileRoute("/insights/ai")({
+  beforeLoad: () => {
+    throw redirect({ to: "/insights/executive", hash: "ai" });
+  }, component: AiPage });
 
 function AiPage() {
   const { t, lang, loc } = useT();
@@ -48,7 +50,6 @@ function AiPage() {
       })}
       actions={
         <Button onClick={() => void run()} disabled={busy} className="print:hidden">
-      <PageTabs group="reports" />
           <Sparkles className="size-4" />
           {busy ? t("generating") : t("generateAi")}
         </Button>

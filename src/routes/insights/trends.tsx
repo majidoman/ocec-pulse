@@ -1,6 +1,7 @@
+import { Route as CompareRoute } from "./compare";
+import { Route as BenchmarksRoute } from "./benchmarks";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Score } from "@/components/score";
@@ -9,7 +10,7 @@ import { useCensus } from "@/lib/census";
 import { canEditSettings } from "@/lib/pulse/config";
 import { useT } from "@/lib/store";
 
-export const Route = createFileRoute("/insights/trends")({ component: TrendsPage });
+export const Route = createFileRoute("/insights/trends")({ component: CombinedPage });
 
 function TrendsPage() {
   const { t, loc } = useT();
@@ -18,7 +19,6 @@ function TrendsPage() {
 
   return (
     <PageFrame title={t("navTrends")} hint={earlier.length ? t("trendHint") : t("baselineOnly")}>
-      <PageTabs group="compare" />
       <NeedResults>
         {(r) => {
           const thisYear = new Date(r.generatedAt).getFullYear();
@@ -75,5 +75,23 @@ function TrendsPage() {
         }}
       </NeedResults>
     </PageFrame>
+  );
+}
+
+const CompareSection = CompareRoute.options.component!;
+const BenchmarksSection = BenchmarksRoute.options.component!;
+
+/** All related pages on one page, one after another (no tabs). */
+function CombinedPage() {
+  return (
+    <>
+      <TrendsPage />
+      <section id="year">
+        <CompareSection />
+      </section>
+      <section id="benchmarks">
+        <BenchmarksSection />
+      </section>
+    </>
   );
 }
