@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { FlaskConical, Link2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { SurveyTabs } from "@/components/survey-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -58,6 +59,7 @@ function SurveysPage() {
       actions={
         canEdit ? (
           <Button size="sm" onClick={() => setShowNew(true)}>
+      <SurveyTabs />
             <Plus className="size-4" /> {loc({ en: "New survey", ar: "استبيان جديد" })}
           </Button>
         ) : null

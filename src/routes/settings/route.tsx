@@ -1,4 +1,4 @@
-import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
+import { useRouterState, createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
 import { useState } from "react";
 import { DemoBanner, SurveySwitcher } from "@/components/survey-switcher";
@@ -31,13 +31,13 @@ function SettingsShell() {
 
   return (
     <div className="flex min-h-dvh">
-      <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-e border-border bg-paper/80 p-4 lg:flex">
+      <aside className="sticky top-0 hidden h-dvh w-56 lg:w-60 shrink-0 flex-col overflow-y-auto border-e border-border bg-paper/80 p-4 md:flex">
         <SideNav />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <DemoBanner />
         <header className="sticky top-0 z-20 flex flex-wrap items-center gap-2 border-b border-border bg-sand/90 px-4 py-2.5 backdrop-blur-sm lg:px-8">
-          <div className="flex items-center gap-2 lg:hidden">
+          <div className="flex items-center gap-2 md:hidden">
             <MobileNav />
             <Mark className="size-8" />
           </div>
@@ -78,6 +78,7 @@ function SettingsShell() {
 
 
 function SideNav({ onNavigate }: { onNavigate?: () => void }) {
+  const pathname = useRouterState({ select: (st) => st.location.pathname });
   const { t } = useT();
   return (
     <>
@@ -105,7 +106,7 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
               to={item.to}
               onClick={onNavigate}
               activeOptions={{ exact: item.exact }}
-              className="flex h-10 items-center gap-2 rounded-lg px-2 text-sm text-muted hover:bg-sand-2 hover:text-ink"
+              className={`flex h-10 items-center gap-2 rounded-lg px-2 text-sm text-muted hover:bg-sand-2 hover:text-ink ${"also" in item && (item.also as readonly string[] | undefined)?.includes(pathname) ? "bg-sand-2 font-medium text-ink" : ""}`}
               activeProps={{ className: "bg-sand-2 font-medium text-ink" }}
             >
               <item.icon className="size-4 shrink-0" />

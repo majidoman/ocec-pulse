@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Check, ExternalLink } from "lucide-react";
+import { PreviewFooter, SurveyTabs } from "@/components/survey-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,12 +27,8 @@ function AppearancePage() {
         en: "How the survey looks to employees. Results dashboards keep the standard look.",
         ar: "كيف يظهر الاستبيان للموظفين. تبقى لوحات النتائج بالشكل المعتاد.",
       })}
-      actions={
-        <Button size="sm" variant="outline" onClick={() => void openSurveyPreview()}>
-          <ExternalLink className="size-4" /> {loc({ en: "Preview in a new tab", ar: "معاينة في تبويب جديد" })}
-        </Button>
-      }
     >
+      <SurveyTabs />
       <Card>
         <h2 className="text-sm font-semibold text-ink">{loc({ en: "Theme", ar: "الثيم" })}</h2>
         <p className="mt-1 text-sm text-muted">
@@ -68,13 +65,6 @@ function AppearancePage() {
                     {loc(th.name)}
                     {selected ? <Check className="size-4 text-accent" aria-hidden /> : null}
                   </span>
-                </button>
-                <button
-                  type="button"
-                  className="border-t border-border px-3 py-1.5 text-start text-xs font-medium text-accent hover:bg-sand-2"
-                  onClick={() => void openSurveyPreview({ theme: th.id })}
-                >
-                  {loc({ en: "Preview this theme", ar: "معاينة هذا الثيم" })}
                 </button>
               </div>
             );
@@ -124,11 +114,6 @@ function AppearancePage() {
             );
           })}
         </div>
-        <Button size="sm" variant="ghost" className="mt-3 text-accent" onClick={() => void openSurveyPreview({ mode: p.pageMode === "single" ? "section" : "single" })}>
-          {p.pageMode === "single"
-            ? loc({ en: "Preview with one section per page", ar: "معاينة بقسم في كل صفحة" })
-            : loc({ en: "Preview with everything on one page", ar: "معاينة بكل الأسئلة في صفحة واحدة" })}
-        </Button>
       </Card>
 
       <Card>
@@ -157,6 +142,7 @@ function AppearancePage() {
           {loc({ en: "Only the layout changes, so this can be switched even while the survey is open; answers stay comparable.", ar: "يتغيّر العرض فقط، لذلك يمكن تبديله حتى أثناء فتح الاستبيان؛ وتبقى الإجابات قابلة للمقارنة." })}
         </p>
       </Card>
+      <PreviewFooter />
     </PageFrame>
   );
 }

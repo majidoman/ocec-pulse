@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowDown, ArrowUp, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { PreviewFooter, SurveyTabs } from "@/components/survey-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { QuestionnaireImport } from "@/components/questionnaire-import";
 import { Button } from "@/components/ui/button";
@@ -64,10 +65,8 @@ function BuilderPage() {
       hint={locked ? t("lockedHint") : t("settingsHint")}
       actions={
         <div className="flex flex-wrap gap-2">
+      <SurveyTabs />
           <SurveySwitcher />
-          <Button size="sm" variant="outline" onClick={() => void openSurveyPreview()}>
-            <ExternalLink className="size-4" /> {loc({ en: "Preview in a new tab", ar: "معاينة في تبويب جديد" })}
-          </Button>
           <Button size="sm" variant="outline" onClick={downloadBank}>
             {t("exportJson")}
           </Button>
@@ -242,6 +241,7 @@ function BuilderPage() {
           ))}
         </ul>
       </Card>
+      <PreviewFooter />
     </PageFrame>
   );
 }
