@@ -17,6 +17,7 @@ import {
   requestOrigin,
   todayIn,
   writeSetting,
+  surveyId,
 } from "./core.server";
 import type { InviteeStats } from "./results-types";
 
@@ -267,12 +268,13 @@ export async function addInvitees(
     return { added: 0, skipped, invalid, noDepartment, unmatched, unmatchedNames: names, blocked: true };
   }
   const sql = await getSql();
+  const survey = surveyId();
   let added = 0;
   for (const r of prepared) {
     const res = await sql<{ id: string }>`
-      insert into pulse_invitees (id, email, department_id, token)
-      values (${newId()}, ${r.email}, ${r.dept}, ${newToken()})
-      on conflict (email) do nothing
+      insert into pulse_invitees (id, email, department_id, token, survey_id)
+      values (${newId()}, ${r.email}, ${r.dept}, ${newToken()}, ${survey})
+      on conflict (survey_id, email) do nothing
       returning id
     `;
     if (res.length) added += 1;
@@ -291,7 +293,7 @@ export async function inviteeStats(config: PulseConfig): Promise<InviteeStats> {
            count(*) filter (where opened) as opened,
            count(*) filter (where used) as completed,
            count(*) filter (where send_error is not null) as failed
-    from pulse_invitees group by department_id
+    from pulse_invitees where survey_id = ${surveyId()} group by department_id
   `;
   const sum = (f: (r: (typeof rows)[number]) => number) => rows.reduce((n, r) => n + Number(f(r)), 0);
   const total = sum((r) => r.total);
@@ -344,16 +346,17 @@ export async function sendInvitationBatch(
   limit: number,
 ): Promise<{ sent: number; failed: number; remaining: number }> {
   const sql = await getSql();
+  const survey = surveyId();
   const origin = requestOrigin(config);
   if (!origin) throw new BadRequestError("Set the public address of the app in Settings → General before sending.");
   const rows =
     audience === "all"
       ? await sql<{ id: string; email: string; token: string }>`
           select id, email, token from pulse_invitees
-          where invited_at is null and used = false order by created_at, id limit ${limit}`
+          where survey_id = ${survey} and invited_at is null and used = false order by created_at, id limit ${limit}`
       : await sql<{ id: string; email: string; token: string }>`
           select id, email, token from pulse_invitees
-          where invited_at is null and used = false and department_id = ${audience} order by created_at, id limit ${limit}`;
+          where survey_id = ${survey} and invited_at is null and used = false and department_id = ${audience} order by created_at, id limit ${limit}`;
   if (!rows.length) return { sent: 0, failed: 0, remaining: 0 };
   const results = await sendMail(config, rows.map((r) => inviteMail(config, origin, r)));
   let sent = 0;
@@ -371,8 +374,8 @@ export async function sendInvitationBatch(
   }
   const left =
     audience === "all"
-      ? await sql<{ n: number }>`select count(*) as n from pulse_invitees where invited_at is null and used = false`
-      : await sql<{ n: number }>`select count(*) as n from pulse_invitees where invited_at is null and used = false and department_id = ${audience}`;
+      ? await sql<{ n: number }>`select count(*) as n from pulse_invitees where survey_id = ${survey} and invited_at is null and used = false`
+      : await sql<{ n: number }>`select count(*) as n from pulse_invitees where survey_id = ${survey} and invited_at is null and used = false and department_id = ${audience}`;
   return { sent, failed, remaining: Number(left[0]?.n ?? 0) };
 }
 
@@ -380,8 +383,10 @@ interface ReminderState {
   [ruleId: string]: { lastRun?: string; sent: number };
 }
 
+const reminderKey = () => (surveyId() === "main" ? "reminder_state" : `reminder_state:${surveyId()}`);
+
 export async function reminderState(): Promise<ReminderState> {
-  return (await readSetting<ReminderState>("reminder_state")) ?? {};
+  return (await readSetting<ReminderState>(reminderKey())) ?? {};
 }
 
 function inQuietHours(config: PulseConfig): boolean {
@@ -427,7 +432,7 @@ export async function runDueReminders(
     const days = Math.max(0, Math.round(Number(rule.dayOffset) || 0));
     const due = await sql<{ id: string; email: string; token: string }>`
       select id, email, token from pulse_invitees
-      where used = false and send_error is null and invited_at is not null
+      where survey_id = ${surveyId()} and used = false and send_error is null and invited_at is not null
         and reminders_sent <= ${step}
         and invited_at <= now() - make_interval(days => ${days})
       order by invited_at, id
@@ -454,7 +459,7 @@ export async function runDueReminders(
     const s = state[rule.id] ?? { sent: 0 };
     state[rule.id] = { sent: s.sent + results.filter((r) => r.ok).length, lastRun: new Date().toISOString() };
   }
-  if (sent || failed) await writeSetting("reminder_state", state);
+  if (sent || failed) await writeSetting(reminderKey(), state);
   return { sent, failed, remaining };
 }
 
@@ -469,7 +474,10 @@ export async function runRetention(): Promise<{ purgedInvitees: number }> {
   const closed = new Date(config.general.closedAt).getTime();
   if (!Number.isFinite(closed) || Date.now() - closed < days * 86_400_000) return { purgedInvitees: 0 };
   const sql = await getSql();
-  const rows = await sql<{ id: string }>`delete from pulse_invitees returning id`;
+  // The demo survey keeps its sample invitation list so its pages can be explored.
+  const demo = await sql<{ is_demo: boolean }>`select is_demo from pulse_surveys where id = ${surveyId()}`;
+  if (demo[0]?.is_demo) return { purgedInvitees: 0 };
+  const rows = await sql<{ id: string }>`delete from pulse_invitees where survey_id = ${surveyId()} returning id`;
   return { purgedInvitees: rows.length };
 }
 

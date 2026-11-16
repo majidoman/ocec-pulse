@@ -13,6 +13,23 @@ Each release has a version, a date, what changed in plain words, and how to undo
 - **Required answers:** each question already had a Required switch; the builder now also has "Make all required / Make all optional" per section and shows how many are required.
 - Verified: 29 checks (`phase1` test: themes, preview, grid on desktop and cards on phone, jump back to the page with the gap, one-page mode, Arabic), full test 65/65.
 
+### Several surveys and the demo survey (phase 2)
+- **Surveys page** (Settings → Surveys) and a **survey drop-down** in the top bar and the Survey builder. Each survey has its own questions, dates, look, reminders, invitation list, answers, comments, files and action plans; organisation settings (names, branding, email server, privacy rules, departments, users) are shared.
+- **New survey:** name in English and Arabic, start from a copy of the current survey or the standard questionnaire; then any ready-made questionnaire can be loaded in the builder.
+- **Plain link and QR code:** open one chosen survey ("Use for the plain link"); every other survey has its own `?s=` link and QR code. Personal invitation links always open the survey they were sent for.
+- **Demo survey:** "Load the demo survey" creates a finished past survey (closed, locked questionnaire) with realistic sample data for every stage: invitation list and sending history, reminders, answers by department, tenure, level and contract, eNPS, comments in Arabic and English, and three action plans. A banner marks it on every staff page; employees can never reach it; it is deleted like any other survey.
+- **Delete a survey** (super admin, type DELETE): removes it with its answers, comments, files and invitation list. The first survey cannot be deleted (use the Danger zone to clear it). Danger-zone actions now affect only the survey being worked on.
+- The reminder job now runs for every open survey. The same email can be invited to more than one survey.
+- Database: migration 0005 (table `pulse_surveys`; `survey_id` on invitees, responses, comments and campaigns, existing rows become the first survey `main`; invitee email unique per survey instead of overall). **Rollback note:** 1.4.0 code expects one invitee per email overall; after this migration roll back only together with the database backup, or re-add the old unique index if no email is in two surveys.
+
+### File-upload question (phase 3)
+- New question type **File upload** in the Survey builder (and in Excel templates, type "File"): choose accepted kinds (PDF, Word, Excel/CSV, PowerPoint, text, images, voice notes), largest file (0.5–4 MB) and files per person (1–5).
+- Employees see the limits and a reminder that documents and photos can carry their name; files upload with a progress bar and can be removed before sending. Required file questions are checked like other questions.
+- Safety: programs, scripts, web pages and SVG are never accepted; each file's first bytes must match its type (a renamed program is refused); size is checked in the browser and on the server; uploads are rate-limited; unsent files are removed after a day.
+- Privacy: like comments, files are not linked to the person's other answers; the department is shown only once it has enough files to stay anonymous. **Attached files** page (Insights) for People & Culture, executives and department heads (own department); files always download, never open inside the site.
+- Database: migration 0006 (table `pulse_attachments`).
+- Verified: phase 2 35 checks, phase 3 19 checks, plus the full suite.
+
 ## [1.4.0] — 2026-11-15 — released to live ("go ahead")
 - **Invitation link finishes the account in one step:** the link opens "Finish your account" with the invited email filled in and locked (and the name, if the invitation had one). The person only chooses a password, repeats it, and lands on the results with access active. If the email already has an account, the page asks for that password only (with "Forgot password?"). If they are already signed in with the invited email, access is activated automatically.
 - **An invitation can only create an account for its own email** (the sign-up gate now checks the email, not just the code).

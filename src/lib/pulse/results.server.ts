@@ -9,7 +9,7 @@
 import { getSql } from "@/lib/db";
 import type { PulseConfig } from "./config";
 import { canReadComments, totalHeadcount } from "./config";
-import type { StaffContext } from "./core.server";
+import { surveyId, type StaffContext } from "./core.server";
 import type { CommentRow, CutRow, DepartmentResult, EnpsScore, Results } from "./results-types";
 
 interface ResponseRow {
@@ -84,9 +84,9 @@ export function visibleGroups(counts: Map<string, number>, k: number): Set<strin
   return visible;
 }
 
-export async function responseCount(): Promise<number> {
+export async function responseCount(survey: string = surveyId()): Promise<number> {
   const sql = await getSql();
-  const rows = await sql<{ n: number }>`select count(*) as n from pulse_responses`;
+  const rows = await sql<{ n: number }>`select count(*) as n from pulse_responses where survey_id = ${survey}`;
   return Number(rows[0]?.n ?? 0);
 }
 
@@ -94,7 +94,8 @@ export async function computeResults(config: PulseConfig, viewer: Pick<StaffCont
   const sql = await getSql();
   const k = Math.max(2, Number(config.anonymity.kFloor) || 5);
   const headcount = totalHeadcount(config);
-  const responses = await sql<ResponseRow>`select id, department_id, tenure, level, contract from pulse_responses`;
+  const survey = surveyId();
+  const responses = await sql<ResponseRow>`select id, department_id, tenure, level, contract from pulse_responses where survey_id = ${survey}`;
   const total = responses.length;
   const scopeDepartment = viewer.role === "head" ? (viewer.departmentId ?? "__none__") : null;
 
@@ -121,7 +122,10 @@ export async function computeResults(config: PulseConfig, viewer: Pick<StaffCont
   };
   if (total < k) return empty;
 
-  const answers = await sql<AnswerRow>`select response_id, question_id, value from pulse_answers`;
+  const answers = await sql<AnswerRow>`
+    select a.response_id, a.question_id, a.value from pulse_answers a
+    join pulse_responses r on r.id = a.response_id where r.survey_id = ${survey}
+  `;
   const questions = config.questions.filter((q) => q.visible);
   const likert = questions.filter((q) => q.type === "likert");
   const likertIds = new Set(likert.map((q) => q.id));
@@ -302,7 +306,7 @@ export async function computeResults(config: PulseConfig, viewer: Pick<StaffCont
   let comments: CommentRow[] | null = null;
   if (canReadComments(viewer.role)) {
     const rows = await sql<{ question_id: string; department_id: string | null; body: string }>`
-      select question_id, department_id, body from pulse_comments
+      select question_id, department_id, body from pulse_comments where survey_id = ${survey}
     `;
     const perDept = new Map<string, number>();
     for (const c of rows) if (c.department_id) perDept.set(c.department_id, (perDept.get(c.department_id) ?? 0) + 1);

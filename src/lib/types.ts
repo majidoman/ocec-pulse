@@ -7,7 +7,7 @@ export type TenureId = "lt1" | "1to3" | "3to7" | "7plus";
 export type LevelId = "frontline" | "supervisor" | "manager" | "leadership";
 export type ContractId = "permanent" | "contract";
 
-export type QuestionType = "likert" | "enps" | "choice" | "multi" | "short" | "long" | "text";
+export type QuestionType = "likert" | "enps" | "choice" | "multi" | "short" | "long" | "text" | "file";
 
 export type CensusStatus = "draft" | "open" | "closed" | "archived";
 export type InstrumentStatus = "draft" | "frozen";
@@ -42,6 +42,10 @@ export interface Question {
   order: number;
   help?: Localized;
   choices?: Localized[];
+  /** File question: allowed extensions (lower case, no dot), size limit per file in MB, and how many files. */
+  fileTypes?: string[];
+  maxSizeMb?: number;
+  maxFiles?: number;
 }
 
 export interface Department {

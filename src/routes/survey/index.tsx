@@ -4,6 +4,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
 import { Likert, LikertMatrix, Enps } from "@/components/likert";
+import { FileQuestion, type UploadContext } from "@/components/file-question";
 import { ThemedPage } from "@/components/themed-page";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -19,11 +20,12 @@ import { useSettings } from "@/lib/settings-store";
 import { useApp, useT } from "@/lib/store";
 import type { Dimension, Question, SurveyDraft } from "@/lib/types";
 
-type Search = { t?: string; preview?: true; theme?: ThemeId; mode?: "section" | "single" };
+type Search = { t?: string; s?: string; preview?: true; theme?: ThemeId; mode?: "section" | "single" };
 
 export const Route = createFileRoute("/survey/")({
   validateSearch: (s: Record<string, unknown>): Search => ({
     ...(typeof s.t === "string" && s.t ? { t: s.t } : {}),
+    ...(typeof s.s === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(s.s) ? { s: s.s } : {}),
     ...(s.preview === "1" || s.preview === 1 || s.preview === true ? { preview: true as const } : {}),
     ...(typeof s.theme === "string" && THEMES.some((x) => x.id === s.theme) ? { theme: s.theme as ThemeId } : {}),
     ...(s.mode === "single" || s.mode === "section" ? { mode: s.mode } : {}),
@@ -101,7 +103,7 @@ function SurveyPage() {
     () => dimensions.map((d) => ({ dim: d, items: questionsFor(d, questions) })).filter((s) => s.items.length > 0),
     [dimensions, questions],
   );
-  const openQuestions = questions.filter((q) => q.type === "text" && q.dimension === "open");
+  const openQuestions = questions.filter((q) => (q.type === "text" || q.type === "file") && q.dimension === "open");
   const steps: string[] = [...sections.map((s) => s.dim.id), "open", "demo"];
   const totalSteps = steps.length;
   const step = Math.min(draft.step, totalSteps - 1);
@@ -111,7 +113,7 @@ function SurveyPage() {
     const v = draft.answers[q.id];
     return typeof v === "number" || (typeof v === "string" && v.trim() !== "");
   };
-  const requiredQs = sections.flatMap((s) => s.items.filter((q) => q.required));
+  const requiredQs = [...sections.flatMap((s) => s.items.filter((q) => q.required)), ...openQuestions.filter((q) => q.type === "file" && q.required)];
   const missingAll = requiredQs.filter((q) => !answered(q));
   const missingIds = new Set(showMissing ? missingAll.map((q) => q.id) : []);
   const stepOfQuestion = (q: Question) => steps.indexOf(q.dimension as string);
@@ -155,6 +157,7 @@ function SurveyPage() {
       const res = await submitResponse({
         data: {
           token: token || undefined,
+          survey: usePulse.getState().publicSurveyId ?? undefined,
           lang,
           answers: draft.answers,
           department: draft.department,
@@ -276,6 +279,7 @@ function SurveyPage() {
     );
   }
 
+  const uploadCtx: UploadContext = { token, survey: usePulse.getState().publicSurveyId ?? undefined, preview };
   const sectionView = (s: { dim: Dimension; items: Question[] }, headingLevel: "h1" | "h2") => (
     <SectionView
       key={s.dim.id}
@@ -285,13 +289,17 @@ function SurveyPage() {
       missingIds={missingIds}
       onAnswer={answer}
       heading={headingLevel}
+      upload={uploadCtx}
     />
   );
 
   const openView = (heading: "h1" | "h2") => (
     <section className="flex flex-col gap-4" aria-labelledby="open-title">
       <SectionHeading as={heading} id="open-title" title={loc({ en: "In your words", ar: "بكلماتك" })} body={loc({ en: "Optional. Do not include your name.", ar: "اختياري. لا تذكر اسمك." })} />
-      {openQuestions.map((q) => (
+      {openQuestions.map((q) =>
+        q.type === "file" ? (
+          <QuestionCard key={q.id} q={q} value={draft.answers[q.id]} missing={missingIds.has(q.id)} onAnswer={answer} optionalLabel={loc({ en: "Optional", ar: "اختياري" })} upload={uploadCtx} />
+        ) : (
         <div key={q.id} className="flex flex-col gap-2">
           <Label htmlFor={q.id}>{loc(q.text)}</Label>
           <Textarea
@@ -301,7 +309,8 @@ function SurveyPage() {
             maxLength={600}
           />
         </div>
-      ))}
+        ),
+      )}
     </section>
   );
 
@@ -524,6 +533,7 @@ function SectionView({
   missingIds,
   onAnswer,
   heading,
+  upload,
 }: {
   dim: Dimension;
   items: Question[];
@@ -531,6 +541,7 @@ function SectionView({
   missingIds: Set<string>;
   onAnswer: (id: string, v: number | string) => void;
   heading: "h1" | "h2";
+  upload: UploadContext;
 }) {
   const { t, loc } = useT();
   const matrixItems = dim.display === "matrix" ? items.filter((q) => q.type === "likert") : [];
@@ -557,13 +568,13 @@ function SectionView({
           </div>
           <div className="flex flex-col gap-4 md:hidden">
             {matrixItems.map((q) => (
-              <QuestionCard key={q.id} q={q} value={answers[q.id]} missing={missingIds.has(q.id)} onAnswer={onAnswer} optionalLabel={optional} />
+              <QuestionCard key={q.id} q={q} value={answers[q.id]} missing={missingIds.has(q.id)} onAnswer={onAnswer} optionalLabel={optional} upload={upload} />
             ))}
           </div>
         </>
       ) : null}
       {cardItems.map((q) => (
-        <QuestionCard key={q.id} q={q} value={answers[q.id]} missing={missingIds.has(q.id)} onAnswer={onAnswer} optionalLabel={optional} />
+        <QuestionCard key={q.id} q={q} value={answers[q.id]} missing={missingIds.has(q.id)} onAnswer={onAnswer} optionalLabel={optional} upload={upload} />
       ))}
     </section>
   );
@@ -575,12 +586,14 @@ function QuestionCard({
   missing,
   onAnswer,
   optionalLabel,
+  upload,
 }: {
   q: Question;
   value: number | string | undefined;
   missing: boolean;
   onAnswer: (id: string, v: number | string) => void;
   optionalLabel: string;
+  upload: UploadContext;
 }) {
   const { loc } = useT();
   return (
@@ -589,7 +602,7 @@ function QuestionCard({
       aria-describedby={missing ? `${q.id}-missing` : undefined}
       className={`rounded-2xl bg-paper p-4 shadow-[var(--shadow-border)] ${missing ? "ring-2 ring-score-crit" : ""}`}
     >
-      <legend className="float-left mb-3 w-full text-sm font-medium leading-relaxed text-ink">
+      <legend id={`q-${q.id}`} className="float-left mb-3 w-full text-sm font-medium leading-relaxed text-ink">
         {loc(q.text)}
         {!q.required ? <span className="ms-2 text-xs font-normal text-muted">({optionalLabel})</span> : null}
       </legend>
@@ -599,7 +612,9 @@ function QuestionCard({
           {loc({ en: "⚠ Not answered yet", ar: "⚠ لم تتم الإجابة بعد" })}
         </p>
       ) : null}
-      {q.type === "enps" ? (
+      {q.type === "file" ? (
+        <FileQuestion q={q} value={value} onChange={(v) => onAnswer(q.id, v)} ctx={upload} labelId={`q-${q.id}`} />
+      ) : q.type === "enps" ? (
         <Enps label={loc(q.text)} value={typeof value === "number" ? value : undefined} onChange={(v) => onAnswer(q.id, v)} />
       ) : q.type === "text" || q.type === "long" || q.type === "short" ? (
         <Textarea aria-label={loc(q.text)} value={typeof value === "string" ? value : ""} onChange={(e) => onAnswer(q.id, e.target.value)} />

@@ -436,3 +436,62 @@ export function brandText(text: string, names: BrandNames, lang: Lang): string {
 export function brandLocalized(value: Localized, names: BrandNames): Localized {
   return { en: brandText(value.en, names, "en"), ar: brandText(value.ar, names, "ar") };
 }
+
+// ── Several surveys ─────────────────────────────────────────────────────────
+// Organisation-wide settings (names, branding, email server, privacy rules, departments) are shared;
+// everything below belongs to one survey.
+
+export const SURVEY_KEYS = [
+  "presentation",
+  "calendar",
+  "reminderCfg",
+  "benchmarks",
+  "dimensions",
+  "questions",
+  "instrumentStatus",
+  "frozenAt",
+  "changelog",
+  "actions",
+] as const satisfies readonly (keyof PulseConfig)[];
+export const SURVEY_GENERAL_KEYS = ["cycleName", "status", "allowOpenLink", "closedAt"] as const satisfies readonly (keyof GeneralSettings)[];
+
+export type SurveyPart = Partial<Pick<PulseConfig, (typeof SURVEY_KEYS)[number]>> & {
+  general?: Partial<Pick<GeneralSettings, (typeof SURVEY_GENERAL_KEYS)[number]>>;
+};
+
+/** The survey's own settings, taken out of a full settings document. */
+export function pickSurveyPart(c: PulseConfig): SurveyPart {
+  const out: Record<string, unknown> = {};
+  for (const k of SURVEY_KEYS) out[k] = c[k];
+  const g: Record<string, unknown> = {};
+  for (const k of SURVEY_GENERAL_KEYS) g[k] = c.general[k];
+  out.general = g;
+  return out as SurveyPart;
+}
+
+/** A full settings document: the organisation's shared settings with one survey's own part on top. */
+export function mergeSurveyPart(shared: PulseConfig, part: SurveyPart | null | undefined): PulseConfig {
+  if (!part) return shared;
+  const out: Record<string, unknown> = { ...shared };
+  for (const k of SURVEY_KEYS) if (part[k] !== undefined) out[k] = part[k];
+  out.general = { ...shared.general, ...(part.general ?? {}) };
+  return normalizeConfig(out);
+}
+
+/** The shared settings from `next`, with `keepSurvey`'s own part kept (used when saving another survey). */
+export function withSharedFrom(keepSurvey: PulseConfig, next: PulseConfig): PulseConfig {
+  return mergeSurveyPart(next, pickSurveyPart(keepSurvey));
+}
+
+export interface SurveySummary {
+  id: string;
+  name: Localized;
+  status: CensusStatus;
+  isDemo: boolean;
+  createdAt: string;
+  responses: number;
+  fieldOpen: string;
+  fieldClose: string;
+  /** Opened by the plain survey link and QR code (/survey without ?s=). */
+  isPublicDefault: boolean;
+}

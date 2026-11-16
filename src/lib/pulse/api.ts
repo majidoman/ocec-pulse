@@ -10,7 +10,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { authMiddleware } from "@/lib/auth/middleware";
 import type { StaffRole } from "@/lib/types";
-import { brandNames, brandText, type PublicConfig, type PulseConfig } from "./config";
+import { brandNames, brandText, type PublicConfig, type PulseConfig, type SurveySummary } from "./config";
 import type {
   AuditRow,
   CampaignRow,
@@ -29,13 +29,35 @@ const ROLES = ["super", "pc", "exec", "head", "viewer"] as const;
 // PUBLIC
 // ═══════════════════════════════════════════════════════════════════════════
 
-export const getPublic = createServerFn({ method: "GET" }).handler(
-  async (): Promise<{ config: PublicConfig; stats: PublicStats }> => {
+const publicSchema = z
+  .object({ survey: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/).optional(), token: z.string().min(8).max(200).optional() })
+  .optional();
+
+/**
+ * Which survey an employee is looking at: their personal link decides; otherwise ?s=<id>;
+ * otherwise the survey chosen for the plain survey link and QR code.
+ */
+async function resolvePublicSurvey(input: { survey?: string; token?: string } | undefined): Promise<string> {
+  const core = await import("./core.server");
+  const { getSql } = await import("@/lib/db");
+  if (input?.token) {
+    const sql = await getSql();
+    const rows = await sql<{ survey_id: string }>`select survey_id from pulse_invitees where token = ${input.token}`;
+    if (rows[0]?.survey_id) return rows[0].survey_id;
+  }
+  if (input?.survey && (await core.surveyExists(input.survey))) return input.survey;
+  return core.publicSurveyId();
+}
+
+export const getPublic = createServerFn({ method: "GET" })
+  .validator((d: unknown) => publicSchema.parse(d))
+  .handler(async ({ data }): Promise<{ config: PublicConfig; stats: PublicStats; surveyId: string }> => {
     const { loadConfig } = await import("./core.server");
     const { toPublicConfig, totalHeadcount } = await import("./config");
     const { responseCount } = await import("./results.server");
-    const config = await loadConfig();
-    const total = await responseCount();
+    const survey = await resolvePublicSurvey(data);
+    const config = await loadConfig(survey);
+    const total = await responseCount(survey);
     const headcount = totalHeadcount(config);
     const k = Math.max(2, Number(config.anonymity.kFloor) || 5);
     return {
@@ -44,9 +66,9 @@ export const getPublic = createServerFn({ method: "GET" }).handler(
         status: config.general.status,
         rate: total >= k && headcount ? Math.min(100, Math.round((total / headcount) * 100)) : null,
       },
+      surveyId: survey,
     };
-  },
-);
+  });
 
 export type TokenState = "ok" | "used" | "invalid";
 
@@ -71,6 +93,7 @@ export const checkToken = createServerFn({ method: "POST" })
 
 const submitSchema = z.object({
   token: z.string().min(8).max(200).optional(),
+  survey: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/).optional(),
   lang: z.enum(["en", "ar"]),
   answers: z
     .record(z.string().max(40), z.union([z.number(), z.string().max(2000)]))
@@ -97,7 +120,8 @@ export const submitResponse = createServerFn({ method: "POST" })
       if (e instanceof RateLimitedError) return { ok: false, reason: "rate_limited" };
       throw e;
     }
-    const config = await loadConfig();
+    const survey = await resolvePublicSurvey({ survey: data.survey, token: data.token });
+    const config = await loadConfig(survey);
     const today = todayIn(config.general.timezone);
     if (config.general.status !== "open") return { ok: false, reason: "closed" };
     if (config.calendar.fieldOpen && today < config.calendar.fieldOpen) return { ok: false, reason: "not_open_yet" };
@@ -107,8 +131,10 @@ export const submitResponse = createServerFn({ method: "POST" })
     // Validate answers against the live question bank — never trust the client.
     const questions = config.questions.filter((q) => q.visible);
     const visibleDims = new Set(config.dimensions.filter((d) => d.visible && !d.archived).map((d) => d.id));
+    const { fileRules, parseFileRefs } = await import("./files");
     const numeric: Record<string, number> = {};
     const comments: { id: string; q: string; body: string }[] = [];
+    const fileRefs: { id: string; key: string; q: string }[] = [];
     for (const q of questions) {
       const inScope = q.dimension === "open" || q.dimension === "demo" || visibleDims.has(q.dimension);
       if (!inScope) continue;
@@ -118,12 +144,30 @@ export const submitResponse = createServerFn({ method: "POST" })
         const hi = q.type === "likert" ? 5 : 10;
         if (typeof v === "number" && Number.isInteger(v) && v >= lo && v <= hi) numeric[q.id] = v;
         else if (q.required) return { ok: false, reason: "incomplete" };
+      } else if (q.type === "file") {
+        const refs = parseFileRefs(v).slice(0, fileRules(q).maxFiles);
+        if (refs.length) fileRefs.push(...refs.map((r) => ({ ...r, q: q.id })));
+        else if (q.required) return { ok: false, reason: "incomplete" };
       } else if (typeof v === "string") {
         const body = v.trim().slice(0, 1000);
         if (body) comments.push({ id: newId(), q: q.id, body });
       }
     }
     if (!Object.keys(numeric).length) return { ok: false, reason: "incomplete" };
+    // Uploaded files must exist and still be waiting for this survey and question.
+    const sqlFiles = await (await import("@/lib/db")).getSql();
+    const validFiles: string[] = [];
+    for (const f of fileRefs) {
+      const rows = await sqlFiles<{ id: string }>`
+        select id from pulse_attachments
+        where id = ${f.id} and upload_key = ${f.key} and survey_id = ${survey} and question_id = ${f.q} and submitted = false`;
+      if (rows.length) validFiles.push(f.id);
+    }
+    for (const q of questions) {
+      if (q.type === "file" && q.required && !fileRefs.some((f) => f.q === q.id && validFiles.includes(f.id))) {
+        return { ok: false, reason: "incomplete" };
+      }
+    }
 
     const known = (list: string[], v?: string) => (v && list.includes(v) ? v : null);
     const department = known(
@@ -147,8 +191,8 @@ export const submitResponse = createServerFn({ method: "POST" })
            update pulse_invitees set used = true, opened = true
            where token = $1 and used = false returning 1
          ), resp as (
-           insert into pulse_responses (id, submitted_on, lang, department_id, tenure, level, contract, source)
-           select $2::text, $3::date, $4::text, $5::text, $6::text, $7::text, $8::text, 'token'
+           insert into pulse_responses (id, submitted_on, lang, department_id, tenure, level, contract, source, survey_id)
+           select $2::text, $3::date, $4::text, $5::text, $6::text, $7::text, $8::text, 'token', $11::text
            where exists (select 1 from tok)
            returning id
          ), ans as (
@@ -156,39 +200,55 @@ export const submitResponse = createServerFn({ method: "POST" })
            select resp.id, a.key, (a.value)::smallint from resp, jsonb_each_text($9::jsonb) a
            returning 1
          ), com as (
-           insert into pulse_comments (id, question_id, department_id, body, submitted_on)
-           select c->>'id', c->>'q', $5::text, c->>'body', $3::date
+           insert into pulse_comments (id, question_id, department_id, body, submitted_on, survey_id)
+           select c->>'id', c->>'q', $5::text, c->>'body', $3::date, $11::text
            from resp, jsonb_array_elements($10::jsonb) c
            returning 1
          )
          select (select count(*) from resp) as inserted, (select count(*) from ans) as a, (select count(*) from com) as c`,
-        [data.token, id, today, data.lang, department, tenure, level, contract, answersJson, commentsJson],
+        [data.token, id, today, data.lang, department, tenure, level, contract, answersJson, commentsJson, survey],
       );
-      if (Number(rows[0]?.inserted ?? 0) === 1) return { ok: true };
+      if (Number(rows[0]?.inserted ?? 0) === 1) {
+        await attachFiles(validFiles, department, today);
+        return { ok: true };
+      }
       const check = await sql<{ used: boolean }>`select used from pulse_invitees where token = ${data.token}`;
       return { ok: false, reason: check.length ? "token_used" : "token_invalid" };
     }
 
     await sql.query(
       `with resp as (
-         insert into pulse_responses (id, submitted_on, lang, department_id, tenure, level, contract, source)
-         values ($1::text, $2::date, $3::text, $4::text, $5::text, $6::text, $7::text, 'open')
+         insert into pulse_responses (id, submitted_on, lang, department_id, tenure, level, contract, source, survey_id)
+         values ($1::text, $2::date, $3::text, $4::text, $5::text, $6::text, $7::text, 'open', $10::text)
          returning id
        ), ans as (
          insert into pulse_answers (response_id, question_id, value)
          select resp.id, a.key, (a.value)::smallint from resp, jsonb_each_text($8::jsonb) a
          returning 1
        ), com as (
-         insert into pulse_comments (id, question_id, department_id, body, submitted_on)
-         select c->>'id', c->>'q', $4::text, c->>'body', $2::date
+         insert into pulse_comments (id, question_id, department_id, body, submitted_on, survey_id)
+         select c->>'id', c->>'q', $4::text, c->>'body', $2::date, $10::text
          from resp, jsonb_array_elements($9::jsonb) c
          returning 1
        )
        select (select count(*) from resp) as inserted, (select count(*) from ans) as a, (select count(*) from com) as c`,
-      [id, today, data.lang, department, tenure, level, contract, answersJson, commentsJson],
+      [id, today, data.lang, department, tenure, level, contract, answersJson, commentsJson, survey],
     );
+    await attachFiles(validFiles, department, today);
     return { ok: true };
   });
+
+/** Files become part of the results once the survey is sent; like comments they are not linked to the answers. */
+async function attachFiles(ids: string[], department: string | null, today: string) {
+  if (!ids.length) return;
+  const { getSql } = await import("@/lib/db");
+  const sql = await getSql();
+  await sql.query(
+    `update pulse_attachments set submitted = true, department_id = $2, submitted_on = $3::date, upload_key = '-'
+     where id = any($1::text[]) and submitted = false`,
+    [ids, department, today],
+  );
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // STAFF — identity
@@ -318,6 +378,13 @@ export const getAdminConfig = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<PulseConfig> => {
     const core = await import("./core.server");
     await core.requireStaff(context.userId);
+    // A survey chosen earlier may have been deleted by someone else: fall back to the main one.
+    const id = core.surveyId();
+    if (!(await core.surveyExists(id))) {
+      const { deleteCookie } = await import("@tanstack/react-start/server");
+      deleteCookie(core.SURVEY_COOKIE, { path: "/" });
+      return core.loadConfig(core.MAIN_SURVEY);
+    }
     return core.loadConfig();
   });
 
@@ -873,9 +940,9 @@ export const getInvitationOverview = createServerFn({ method: "GET" })
       sent: number;
       failed: number;
       created_at: string | Date;
-    }>`select id, name, kind, audience, recipients, sent, failed, created_at from pulse_campaigns order by created_at desc limit 30`;
+    }>`select id, name, kind, audience, recipients, sent, failed, created_at from pulse_campaigns where survey_id = ${core.surveyId()} order by created_at desc limit 30`;
     const failures = await sql<{ email: string; send_error: string }>`
-      select email, send_error from pulse_invitees where send_error is not null order by email limit 50
+      select email, send_error from pulse_invitees where survey_id = ${core.surveyId()} and send_error is not null order by email limit 50
     `;
     const passwordSet = await mail.smtpPasswordSet();
     const lastUpload = await core.readSetting<RosterUploadSummary>("roster_last_upload");
@@ -893,7 +960,11 @@ export const getInvitationOverview = createServerFn({ method: "GET" })
         createdAt: new Date(c.created_at).toISOString(),
       })),
       mail: { passwordSet, ...(await mail.mailRoute(config)) },
-      surveyUrl: `${core.requestOrigin(config)}/survey`,
+      // The plain link opens the default survey; any other survey gets its own ?s= link (and QR code).
+      surveyUrl:
+        core.surveyId() === (await core.publicSurveyId())
+          ? `${core.requestOrigin(config)}/survey`
+          : `${core.requestOrigin(config)}/survey?s=${encodeURIComponent(core.surveyId())}`,
       failures: failures.map((f) => ({ email: f.email, error: f.send_error })),
     };
   });
@@ -913,16 +984,16 @@ export const startCampaign = createServerFn({ method: "POST" })
     const sql = await getSql();
     const count =
       data.audience === "all"
-        ? await sql<{ n: number }>`select count(*) as n from pulse_invitees where invited_at is null and used = false`
-        : await sql<{ n: number }>`select count(*) as n from pulse_invitees where invited_at is null and used = false and department_id = ${data.audience}`;
+        ? await sql<{ n: number }>`select count(*) as n from pulse_invitees where survey_id = ${core.surveyId()} and invited_at is null and used = false`
+        : await sql<{ n: number }>`select count(*) as n from pulse_invitees where survey_id = ${core.surveyId()} and invited_at is null and used = false and department_id = ${data.audience}`;
     const recipients = Number(count[0]?.n ?? 0);
     if (!recipients) throw new core.BadRequestError("Everyone on this list has already been invited. Add people first.");
     const id = core.newId();
     const e = config.email;
     await sql`
-      insert into pulse_campaigns (id, name, kind, audience, subject_en, subject_ar, body_en, body_ar, recipients, created_by)
+      insert into pulse_campaigns (id, name, kind, audience, subject_en, subject_ar, body_en, body_ar, recipients, created_by, survey_id)
       values (${id}, ${data.name.trim() || "Invitation"}, 'invitation', ${data.audience}, ${e.subjectEn}, ${e.subjectAr},
-              ${e.bodyEn}, ${e.bodyAr}, ${recipients}, ${staff.userId})
+              ${e.bodyEn}, ${e.bodyAr}, ${recipients}, ${staff.userId}, ${core.surveyId()})
     `;
     await core.audit(core.actorOf(staff), `Started sending ${recipients} invitations`, `بدء إرسال ${recipients} دعوة`);
     return { id, recipients };
@@ -937,7 +1008,7 @@ export const sendCampaignBatch = createServerFn({ method: "POST" })
     const { getSql } = await import("@/lib/db");
     await core.requireStaff(context.userId, core.ADMIN_ROLES);
     const sql = await getSql();
-    const camp = await sql<{ audience: string }>`select audience from pulse_campaigns where id = ${data.id}`;
+    const camp = await sql<{ audience: string }>`select audience from pulse_campaigns where id = ${data.id} and survey_id = ${core.surveyId()}`;
     if (!camp.length) throw new core.BadRequestError("Campaign not found.");
     const res = await mail.sendInvitationBatch(await core.loadConfig(), camp[0].audience, 20);
     await sql`update pulse_campaigns set sent = sent + ${res.sent}, failed = failed + ${res.failed} where id = ${data.id}`;
@@ -953,7 +1024,7 @@ export const retryFailedInvitations = createServerFn({ method: "POST" })
     const sql = await getSql();
     const rows = await sql<{ id: string }>`
       update pulse_invitees set invited_at = null, send_error = null, reminders_sent = 0
-      where send_error is not null and used = false returning id
+      where survey_id = ${core.surveyId()} and send_error is not null and used = false returning id
     `;
     return { reset: rows.length };
   });
@@ -1018,7 +1089,7 @@ export const getReminderOverview = createServerFn({ method: "GET" })
     const config = await core.loadConfig();
     const sql = await getSql();
     const waiting = await sql<{ n: number }>`
-      select count(*) as n from pulse_invitees where used = false and invited_at is not null and send_error is null
+      select count(*) as n from pulse_invitees where survey_id = ${core.surveyId()} and used = false and invited_at is not null and send_error is null
     `;
     return {
       state: await mail.reminderState(),
@@ -1062,19 +1133,24 @@ export const manageData = createServerFn({ method: "POST" })
     const { defaultConfig } = await import("./config");
     const staff = await core.requireStaff(context.userId, ["super"]);
     const sql = await getSql();
+    // Only the survey being worked on is affected; other surveys keep their data.
+    const survey = core.surveyId();
     if (data.action === "reset_responses" || data.action === "delete_everything") {
-      await sql`delete from pulse_comments`;
-      await sql`delete from pulse_answers`;
-      await sql`delete from pulse_responses`;
-      await sql`update pulse_invitees set used = false, opened = false`;
+      await core.deleteSurveyResponses(survey);
+      await sql`update pulse_invitees set used = false, opened = false where survey_id = ${survey}`;
     }
     if (data.action === "delete_invitees" || data.action === "delete_everything") {
-      await sql`delete from pulse_invitees`;
-      await sql`delete from pulse_campaigns`;
-      await core.writeSetting("reminder_state", {});
+      await sql`delete from pulse_invitees where survey_id = ${survey}`;
+      await sql`delete from pulse_campaigns where survey_id = ${survey}`;
+      await core.writeSetting(survey === core.MAIN_SURVEY ? "reminder_state" : `reminder_state:${survey}`, {});
     }
     if (data.action === "delete_everything") {
-      await core.saveConfig(defaultConfig());
+      if (survey === core.MAIN_SURVEY) await core.saveConfig(defaultConfig());
+      else {
+        const { mergeSurveyPart, pickSurveyPart } = await import("./config");
+        const current = await core.loadConfig(survey);
+        await core.saveConfig(mergeSurveyPart(current, pickSurveyPart(defaultConfig())), survey);
+      }
     }
     const label =
       data.action === "reset_responses"
@@ -1158,4 +1234,194 @@ export const generateAiBriefing = createServerFn({ method: "POST" })
     } catch {
       return { ok: false, error: "failed" };
     }
+  });
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STAFF — several surveys
+// ═══════════════════════════════════════════════════════════════════════════
+
+const surveyIdSchema = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/);
+
+export const listSurveys = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }): Promise<{ current: string; publicDefault: string; surveys: SurveySummary[] }> => {
+    const core = await import("./core.server");
+    const { responseCount } = await import("./results.server");
+    const { getSql } = await import("@/lib/db");
+    await core.requireStaff(context.userId);
+    const sql = await getSql();
+    const meta = await sql<{ id: string; is_demo: boolean; created_at: string }>`select id, is_demo, created_at from pulse_surveys`;
+    const publicDefault = await core.publicSurveyId();
+    const surveys: SurveySummary[] = [];
+    for (const id of await core.listSurveyIds()) {
+      const c = await core.loadConfig(id);
+      const m = meta.find((r) => r.id === id);
+      surveys.push({
+        id,
+        name: c.general.cycleName,
+        status: c.general.status,
+        isDemo: Boolean(m?.is_demo),
+        createdAt: m ? new Date(m.created_at).toISOString() : "",
+        responses: await responseCount(id),
+        fieldOpen: c.calendar.fieldOpen,
+        fieldClose: c.calendar.fieldClose,
+        isPublicDefault: id === publicDefault,
+      });
+    }
+    const current = core.surveyId();
+    return { current: surveys.some((x) => x.id === current) ? current : core.MAIN_SURVEY, publicDefault, surveys };
+  });
+
+export const selectSurvey = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) => z.object({ id: surveyIdSchema }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const core = await import("./core.server");
+    await core.requireStaff(context.userId);
+    if (!(await core.surveyExists(data.id))) throw new core.BadRequestError("That survey no longer exists.");
+    const { setCookie } = await import("@tanstack/react-start/server");
+    setCookie(core.SURVEY_COOKIE, data.id, { path: "/", sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 365 });
+    return { ok: true };
+  });
+
+export const createSurvey = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) =>
+    z
+      .object({
+        name: z.object({ en: z.string().trim().min(1).max(120), ar: z.string().trim().max(120) }),
+        start: z.enum(["copy", "standard"]),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ id: string }> => {
+    const core = await import("./core.server");
+    const { getSql } = await import("@/lib/db");
+    const { defaultConfig, mergeSurveyPart, pickSurveyPart } = await import("./config");
+    const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    const current = await core.loadConfig();
+    const from = data.start === "copy" ? current : defaultConfig();
+    const id = `s-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const config = mergeSurveyPart(current, {
+      ...pickSurveyPart(from),
+      general: { cycleName: { en: data.name.en, ar: data.name.ar || data.name.en }, status: "draft", allowOpenLink: current.general.allowOpenLink },
+      calendar: { ...from.calendar, fieldOpen: "", fieldClose: "" },
+      instrumentStatus: "draft",
+      frozenAt: undefined,
+      changelog: [],
+      actions: [],
+    });
+    const sql = await getSql();
+    await sql`insert into pulse_surveys (id, config) values (${id}, ${JSON.stringify(pickSurveyPart(config))}::jsonb)`;
+    const { setCookie } = await import("@tanstack/react-start/server");
+    setCookie(core.SURVEY_COOKIE, id, { path: "/", sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 365 });
+    await core.audit(core.actorOf(staff), `Created a new survey: ${data.name.en}`, `إنشاء استبيان جديد: ${data.name.ar || data.name.en}`);
+    return { id };
+  });
+
+export const createDemoSurvey = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }): Promise<{ id: string; responses: number }> => {
+    const core = await import("./core.server");
+    const demo = await import("./demo.server");
+    const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    const res = await demo.createDemoSurvey(await core.loadConfig());
+    const { setCookie } = await import("@tanstack/react-start/server");
+    setCookie(core.SURVEY_COOKIE, res.id, { path: "/", sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 365 });
+    await core.audit(core.actorOf(staff), `Loaded the demo survey (${res.responses} sample answers)`, `تحميل الاستبيان التجريبي (${res.responses} إجابة تجريبية)`);
+    return res;
+  });
+
+export const setPublicSurvey = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) => z.object({ id: surveyIdSchema }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const core = await import("./core.server");
+    const { getSql } = await import("@/lib/db");
+    const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    if (!(await core.surveyExists(data.id))) throw new core.BadRequestError("That survey no longer exists.");
+    const sql = await getSql();
+    const demo = await sql<{ is_demo: boolean }>`select is_demo from pulse_surveys where id = ${data.id}`;
+    if (demo[0]?.is_demo) throw new core.BadRequestError("The demo survey cannot be given to employees.");
+    await core.writeSetting("public_survey", { id: data.id });
+    const c = await core.loadConfig(data.id);
+    await core.audit(core.actorOf(staff), `The plain survey link now opens: ${c.general.cycleName.en}`, `رابط الاستبيان العام يفتح الآن: ${c.general.cycleName.ar}`);
+    return { ok: true };
+  });
+
+export const deleteSurvey = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) => z.object({ id: surveyIdSchema, confirm: z.literal("DELETE") }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const core = await import("./core.server");
+    const { getSql } = await import("@/lib/db");
+    const staff = await core.requireStaff(context.userId, ["super"]);
+    if (data.id === core.MAIN_SURVEY) throw new core.BadRequestError("The first survey cannot be deleted. Use the Danger zone to clear it.");
+    if (!(await core.surveyExists(data.id))) return { ok: true };
+    const c = await core.loadConfig(data.id);
+    const sql = await getSql();
+    await core.deleteSurveyResponses(data.id);
+    await sql`delete from pulse_invitees where survey_id = ${data.id}`;
+    await sql`delete from pulse_campaigns where survey_id = ${data.id}`;
+    await sql`delete from pulse_settings where key = ${`reminder_state:${data.id}`}`;
+    await sql`delete from pulse_surveys where id = ${data.id}`;
+    if ((await core.readSetting<{ id?: string }>("public_survey"))?.id === data.id) await core.writeSetting("public_survey", { id: core.MAIN_SURVEY });
+    if (core.surveyId() === data.id) {
+      const { setCookie } = await import("@tanstack/react-start/server");
+      setCookie(core.SURVEY_COOKIE, core.MAIN_SURVEY, { path: "/", sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production", maxAge: 60 * 60 * 24 * 365 });
+    }
+    await core.audit(
+      core.actorOf(staff),
+      `Deleted the survey "${c.general.cycleName.en}" with its answers, comments and invitation list`,
+      `حذف الاستبيان «${c.general.cycleName.ar}» مع إجاباته وتعليقاته وقائمة دعواته`,
+    );
+    return { ok: true };
+  });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// STAFF — attached files
+// ═══════════════════════════════════════════════════════════════════════════
+
+export interface AttachmentRow {
+  id: string;
+  filename: string;
+  size: number;
+  mime: string;
+  submittedOn: string | null;
+  /** Shown only when the department has at least the minimum group size of files, like comments. */
+  departmentId: string | null;
+}
+
+export const listAttachments = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }): Promise<{ k: number; allowed: boolean; questions: { id: string; files: AttachmentRow[] }[] }> => {
+    const core = await import("./core.server");
+    const { canReadComments } = await import("./config");
+    const { getSql } = await import("@/lib/db");
+    const staff = await core.requireStaff(context.userId);
+    const config = await core.loadConfig();
+    const k = Math.max(2, Number(config.anonymity.kFloor) || 5);
+    if (!canReadComments(staff.role)) return { k, allowed: false, questions: [] };
+    const sql = await getSql();
+    const rows = await sql<{ id: string; question_id: string; filename: string; size: number; mime: string; submitted_on: string | null; department_id: string | null }>`
+      select id, question_id, filename, size, mime, submitted_on, department_id from pulse_attachments
+      where survey_id = ${core.surveyId()} and submitted = true order by submitted_on desc, filename`;
+    const perDept = new Map<string, number>();
+    for (const r of rows) if (r.department_id) perDept.set(r.department_id, (perDept.get(r.department_id) ?? 0) + 1);
+    const visible = staff.role === "head" ? rows.filter((r) => r.department_id && r.department_id === staff.departmentId && (perDept.get(r.department_id) ?? 0) >= k) : rows;
+    const byQ = new Map<string, AttachmentRow[]>();
+    for (const r of visible) {
+      const list = byQ.get(r.question_id) ?? [];
+      list.push({
+        id: r.id,
+        filename: r.filename,
+        size: Number(r.size),
+        mime: r.mime,
+        submittedOn: r.submitted_on ? new Date(r.submitted_on).toISOString().slice(0, 10) : null,
+        departmentId: r.department_id && (perDept.get(r.department_id) ?? 0) >= k ? r.department_id : null,
+      });
+      byQ.set(r.question_id, list);
+    }
+    return { k, allowed: true, questions: [...byQ.entries()].map(([id, files]) => ({ id, files })) };
   });

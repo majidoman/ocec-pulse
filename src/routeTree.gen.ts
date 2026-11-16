@@ -18,9 +18,11 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as SettingsRouteRouteImport } from './routes/settings/route'
 import { Route as SetupRouteImport } from './routes/setup'
+import { Route as ApiAttachmentRouteImport } from './routes/api/attachment'
 import { Route as ApiCaptchaRouteImport } from './routes/api/captcha'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiTestAccessRouteImport } from './routes/api/test-access'
+import { Route as ApiUploadRouteImport } from './routes/api/upload'
 import { Route as InsightsIndexRouteImport } from './routes/insights/index'
 import { Route as InsightsActionsRouteImport } from './routes/insights/actions'
 import { Route as InsightsAiRouteImport } from './routes/insights/ai'
@@ -30,6 +32,7 @@ import { Route as InsightsDepartmentsRouteImport } from './routes/insights/depar
 import { Route as InsightsDesignRouteImport } from './routes/insights/design'
 import { Route as InsightsDriversRouteImport } from './routes/insights/drivers'
 import { Route as InsightsExecutiveRouteImport } from './routes/insights/executive'
+import { Route as InsightsFilesRouteImport } from './routes/insights/files'
 import { Route as InsightsHeatmapRouteImport } from './routes/insights/heatmap'
 import { Route as InsightsInvitationsRouteImport } from './routes/insights/invitations'
 import { Route as InsightsRemindersRouteImport } from './routes/insights/reminders'
@@ -48,6 +51,7 @@ import { Route as SettingsEmailRouteImport } from './routes/settings/email'
 import { Route as SettingsHistoryRouteImport } from './routes/settings/history'
 import { Route as SettingsIntegrationsRouteImport } from './routes/settings/integrations'
 import { Route as SettingsRemindersRouteImport } from './routes/settings/reminders'
+import { Route as SettingsSurveysRouteImport } from './routes/settings/surveys'
 import { Route as SettingsUsersRouteImport } from './routes/settings/users'
 import { Route as SurveyIndexRouteImport } from './routes/survey/index'
 import { Route as SurveyCompleteRouteImport } from './routes/survey/complete'
@@ -99,6 +103,11 @@ const SetupRoute = SetupRouteImport.update({
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAttachmentRoute = ApiAttachmentRouteImport.update({
+  id: '/api/attachment',
+  path: '/api/attachment',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCaptchaRoute = ApiCaptchaRouteImport.update({
   id: '/api/captcha',
   path: '/api/captcha',
@@ -112,6 +121,11 @@ const ApiHealthRoute = ApiHealthRouteImport.update({
 const ApiTestAccessRoute = ApiTestAccessRouteImport.update({
   id: '/api/test-access',
   path: '/api/test-access',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiUploadRoute = ApiUploadRouteImport.update({
+  id: '/api/upload',
+  path: '/api/upload',
   getParentRoute: () => rootRouteImport,
 } as any)
 const InsightsIndexRoute = InsightsIndexRouteImport.update({
@@ -157,6 +171,11 @@ const InsightsDriversRoute = InsightsDriversRouteImport.update({
 const InsightsExecutiveRoute = InsightsExecutiveRouteImport.update({
   id: '/executive',
   path: '/executive',
+  getParentRoute: () => InsightsRouteRoute,
+} as any)
+const InsightsFilesRoute = InsightsFilesRouteImport.update({
+  id: '/files',
+  path: '/files',
   getParentRoute: () => InsightsRouteRoute,
 } as any)
 const InsightsHeatmapRoute = InsightsHeatmapRouteImport.update({
@@ -249,6 +268,11 @@ const SettingsRemindersRoute = SettingsRemindersRouteImport.update({
   path: '/reminders',
   getParentRoute: () => SettingsRouteRoute,
 } as any)
+const SettingsSurveysRoute = SettingsSurveysRouteImport.update({
+  id: '/surveys',
+  path: '/surveys',
+  getParentRoute: () => SettingsRouteRoute,
+} as any)
 const SettingsUsersRoute = SettingsUsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -285,9 +309,11 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/api/attachment': typeof ApiAttachmentRoute
   '/api/captcha': typeof ApiCaptchaRoute
   '/api/health': typeof ApiHealthRoute
   '/api/test-access': typeof ApiTestAccessRoute
+  '/api/upload': typeof ApiUploadRoute
   '/insights/actions': typeof InsightsActionsRoute
   '/insights/ai': typeof InsightsAiRoute
   '/insights/benchmarks': typeof InsightsBenchmarksRoute
@@ -296,6 +322,7 @@ export interface FileRoutesByFullPath {
   '/insights/design': typeof InsightsDesignRoute
   '/insights/drivers': typeof InsightsDriversRoute
   '/insights/executive': typeof InsightsExecutiveRoute
+  '/insights/files': typeof InsightsFilesRoute
   '/insights/heatmap': typeof InsightsHeatmapRoute
   '/insights/invitations': typeof InsightsInvitationsRoute
   '/insights/reminders': typeof InsightsRemindersRoute
@@ -313,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/settings/history': typeof SettingsHistoryRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/reminders': typeof SettingsRemindersRoute
+  '/settings/surveys': typeof SettingsSurveysRoute
   '/settings/users': typeof SettingsUsersRoute
   '/survey/complete': typeof SurveyCompleteRoute
   '/insights/': typeof InsightsIndexRoute
@@ -329,9 +357,11 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/api/attachment': typeof ApiAttachmentRoute
   '/api/captcha': typeof ApiCaptchaRoute
   '/api/health': typeof ApiHealthRoute
   '/api/test-access': typeof ApiTestAccessRoute
+  '/api/upload': typeof ApiUploadRoute
   '/insights/actions': typeof InsightsActionsRoute
   '/insights/ai': typeof InsightsAiRoute
   '/insights/benchmarks': typeof InsightsBenchmarksRoute
@@ -340,6 +370,7 @@ export interface FileRoutesByTo {
   '/insights/design': typeof InsightsDesignRoute
   '/insights/drivers': typeof InsightsDriversRoute
   '/insights/executive': typeof InsightsExecutiveRoute
+  '/insights/files': typeof InsightsFilesRoute
   '/insights/heatmap': typeof InsightsHeatmapRoute
   '/insights/invitations': typeof InsightsInvitationsRoute
   '/insights/reminders': typeof InsightsRemindersRoute
@@ -357,6 +388,7 @@ export interface FileRoutesByTo {
   '/settings/history': typeof SettingsHistoryRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/reminders': typeof SettingsRemindersRoute
+  '/settings/surveys': typeof SettingsSurveysRoute
   '/settings/users': typeof SettingsUsersRoute
   '/survey/complete': typeof SurveyCompleteRoute
   '/insights': typeof InsightsIndexRoute
@@ -376,9 +408,11 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/reset-password': typeof ResetPasswordRoute
   '/setup': typeof SetupRoute
+  '/api/attachment': typeof ApiAttachmentRoute
   '/api/captcha': typeof ApiCaptchaRoute
   '/api/health': typeof ApiHealthRoute
   '/api/test-access': typeof ApiTestAccessRoute
+  '/api/upload': typeof ApiUploadRoute
   '/insights/actions': typeof InsightsActionsRoute
   '/insights/ai': typeof InsightsAiRoute
   '/insights/benchmarks': typeof InsightsBenchmarksRoute
@@ -387,6 +421,7 @@ export interface FileRoutesById {
   '/insights/design': typeof InsightsDesignRoute
   '/insights/drivers': typeof InsightsDriversRoute
   '/insights/executive': typeof InsightsExecutiveRoute
+  '/insights/files': typeof InsightsFilesRoute
   '/insights/heatmap': typeof InsightsHeatmapRoute
   '/insights/invitations': typeof InsightsInvitationsRoute
   '/insights/reminders': typeof InsightsRemindersRoute
@@ -404,6 +439,7 @@ export interface FileRoutesById {
   '/settings/history': typeof SettingsHistoryRoute
   '/settings/integrations': typeof SettingsIntegrationsRoute
   '/settings/reminders': typeof SettingsRemindersRoute
+  '/settings/surveys': typeof SettingsSurveysRoute
   '/settings/users': typeof SettingsUsersRoute
   '/survey/complete': typeof SurveyCompleteRoute
   '/insights/': typeof InsightsIndexRoute
@@ -424,9 +460,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/setup'
+    | '/api/attachment'
     | '/api/captcha'
     | '/api/health'
     | '/api/test-access'
+    | '/api/upload'
     | '/insights/actions'
     | '/insights/ai'
     | '/insights/benchmarks'
@@ -435,6 +473,7 @@ export interface FileRouteTypes {
     | '/insights/design'
     | '/insights/drivers'
     | '/insights/executive'
+    | '/insights/files'
     | '/insights/heatmap'
     | '/insights/invitations'
     | '/insights/reminders'
@@ -452,6 +491,7 @@ export interface FileRouteTypes {
     | '/settings/history'
     | '/settings/integrations'
     | '/settings/reminders'
+    | '/settings/surveys'
     | '/settings/users'
     | '/survey/complete'
     | '/insights/'
@@ -468,9 +508,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/setup'
+    | '/api/attachment'
     | '/api/captcha'
     | '/api/health'
     | '/api/test-access'
+    | '/api/upload'
     | '/insights/actions'
     | '/insights/ai'
     | '/insights/benchmarks'
@@ -479,6 +521,7 @@ export interface FileRouteTypes {
     | '/insights/design'
     | '/insights/drivers'
     | '/insights/executive'
+    | '/insights/files'
     | '/insights/heatmap'
     | '/insights/invitations'
     | '/insights/reminders'
@@ -496,6 +539,7 @@ export interface FileRouteTypes {
     | '/settings/history'
     | '/settings/integrations'
     | '/settings/reminders'
+    | '/settings/surveys'
     | '/settings/users'
     | '/survey/complete'
     | '/insights'
@@ -514,9 +558,11 @@ export interface FileRouteTypes {
     | '/login'
     | '/reset-password'
     | '/setup'
+    | '/api/attachment'
     | '/api/captcha'
     | '/api/health'
     | '/api/test-access'
+    | '/api/upload'
     | '/insights/actions'
     | '/insights/ai'
     | '/insights/benchmarks'
@@ -525,6 +571,7 @@ export interface FileRouteTypes {
     | '/insights/design'
     | '/insights/drivers'
     | '/insights/executive'
+    | '/insights/files'
     | '/insights/heatmap'
     | '/insights/invitations'
     | '/insights/reminders'
@@ -542,6 +589,7 @@ export interface FileRouteTypes {
     | '/settings/history'
     | '/settings/integrations'
     | '/settings/reminders'
+    | '/settings/surveys'
     | '/settings/users'
     | '/survey/complete'
     | '/insights/'
@@ -561,9 +609,11 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SetupRoute: typeof SetupRoute
+  ApiAttachmentRoute: typeof ApiAttachmentRoute
   ApiCaptchaRoute: typeof ApiCaptchaRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiTestAccessRoute: typeof ApiTestAccessRoute
+  ApiUploadRoute: typeof ApiUploadRoute
   SurveyCompleteRoute: typeof SurveyCompleteRoute
   SurveyIndexRoute: typeof SurveyIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -635,6 +685,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/attachment': {
+      id: '/api/attachment'
+      path: '/api/attachment'
+      fullPath: '/api/attachment'
+      preLoaderRoute: typeof ApiAttachmentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/captcha': {
       id: '/api/captcha'
       path: '/api/captcha'
@@ -654,6 +711,13 @@ declare module '@tanstack/react-router' {
       path: '/api/test-access'
       fullPath: '/api/test-access'
       preLoaderRoute: typeof ApiTestAccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/upload': {
+      id: '/api/upload'
+      path: '/api/upload'
+      fullPath: '/api/upload'
+      preLoaderRoute: typeof ApiUploadRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/insights/': {
@@ -717,6 +781,13 @@ declare module '@tanstack/react-router' {
       path: '/executive'
       fullPath: '/insights/executive'
       preLoaderRoute: typeof InsightsExecutiveRouteImport
+      parentRoute: typeof InsightsRouteRoute
+    }
+    '/insights/files': {
+      id: '/insights/files'
+      path: '/files'
+      fullPath: '/insights/files'
+      preLoaderRoute: typeof InsightsFilesRouteImport
       parentRoute: typeof InsightsRouteRoute
     }
     '/insights/heatmap': {
@@ -845,6 +916,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRemindersRouteImport
       parentRoute: typeof SettingsRouteRoute
     }
+    '/settings/surveys': {
+      id: '/settings/surveys'
+      path: '/surveys'
+      fullPath: '/settings/surveys'
+      preLoaderRoute: typeof SettingsSurveysRouteImport
+      parentRoute: typeof SettingsRouteRoute
+    }
     '/settings/users': {
       id: '/settings/users'
       path: '/users'
@@ -892,6 +970,7 @@ interface InsightsRouteRouteChildren {
   InsightsDesignRoute: typeof InsightsDesignRoute
   InsightsDriversRoute: typeof InsightsDriversRoute
   InsightsExecutiveRoute: typeof InsightsExecutiveRoute
+  InsightsFilesRoute: typeof InsightsFilesRoute
   InsightsHeatmapRoute: typeof InsightsHeatmapRoute
   InsightsInvitationsRoute: typeof InsightsInvitationsRoute
   InsightsRemindersRoute: typeof InsightsRemindersRoute
@@ -909,6 +988,7 @@ const InsightsRouteRouteChildren: InsightsRouteRouteChildren = {
   InsightsDesignRoute: InsightsDesignRoute,
   InsightsDriversRoute: InsightsDriversRoute,
   InsightsExecutiveRoute: InsightsExecutiveRoute,
+  InsightsFilesRoute: InsightsFilesRoute,
   InsightsHeatmapRoute: InsightsHeatmapRoute,
   InsightsInvitationsRoute: InsightsInvitationsRoute,
   InsightsRemindersRoute: InsightsRemindersRoute,
@@ -934,6 +1014,7 @@ interface SettingsRouteRouteChildren {
   SettingsHistoryRoute: typeof SettingsHistoryRoute
   SettingsIntegrationsRoute: typeof SettingsIntegrationsRoute
   SettingsRemindersRoute: typeof SettingsRemindersRoute
+  SettingsSurveysRoute: typeof SettingsSurveysRoute
   SettingsUsersRoute: typeof SettingsUsersRoute
   SettingsIndexRoute: typeof SettingsIndexRoute
 }
@@ -951,6 +1032,7 @@ const SettingsRouteRouteChildren: SettingsRouteRouteChildren = {
   SettingsHistoryRoute: SettingsHistoryRoute,
   SettingsIntegrationsRoute: SettingsIntegrationsRoute,
   SettingsRemindersRoute: SettingsRemindersRoute,
+  SettingsSurveysRoute: SettingsSurveysRoute,
   SettingsUsersRoute: SettingsUsersRoute,
   SettingsIndexRoute: SettingsIndexRoute,
 }
@@ -969,9 +1051,11 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SetupRoute: SetupRoute,
+  ApiAttachmentRoute: ApiAttachmentRoute,
   ApiCaptchaRoute: ApiCaptchaRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiTestAccessRoute: ApiTestAccessRoute,
+  ApiUploadRoute: ApiUploadRoute,
   SurveyCompleteRoute: SurveyCompleteRoute,
   SurveyIndexRoute: SurveyIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

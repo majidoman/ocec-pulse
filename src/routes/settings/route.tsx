@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
 import { useState } from "react";
+import { DemoBanner, SurveySwitcher } from "@/components/survey-switcher";
 import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ function GatedSettings() {
 
 function SettingsShell() {
   const { loc } = useT();
-  const { rate, completed, headcount, status, cycleName } = useCensus();
+  const { rate, completed, headcount } = useCensus();
   const saveState = useSettings((s) => s.saveState);
   const saveError = useSettings((s) => s.saveError);
 
@@ -34,22 +35,21 @@ function SettingsShell() {
         <SideNav />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
+        <DemoBanner />
         <header className="sticky top-0 z-20 flex flex-wrap items-center gap-2 border-b border-border bg-sand/90 px-4 py-2.5 backdrop-blur-sm lg:px-8">
           <div className="flex items-center gap-2 lg:hidden">
             <MobileNav />
             <Mark className="size-8" />
           </div>
-          <p className="text-xs text-muted lg:text-sm">
-            <span className="font-medium text-ink">{loc(cycleName)}</span>
-            {" · "}
-            <StatusPill status={status} />
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted lg:text-sm">
+            <SurveySwitcher />
             {" · "}
             <span className="tabular-nums">{rate}%</span>
             {" · "}
             <span className="tabular-nums">
               {completed}/{headcount}
             </span>
-          </p>
+          </div>
           <div className="ms-auto flex flex-wrap items-center gap-2">
             <span
               className={`text-xs ${saveState === "error" ? "text-score-crit" : "text-subtle"}`}
@@ -76,22 +76,6 @@ function SettingsShell() {
   );
 }
 
-function StatusPill({ status }: { status: string }) {
-  const { t } = useT();
-  const label =
-    status === "open"
-      ? t("statusOpen")
-      : status === "closed"
-        ? t("statusClosed")
-        : status === "archived"
-          ? t("statusArchived")
-          : t("statusDraft");
-  return (
-    <span className="rounded-full bg-sand-2 px-2 py-0.5 text-[11px] font-medium uppercase tracking-wide text-ink">
-      {label}
-    </span>
-  );
-}
 
 function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   const { t } = useT();

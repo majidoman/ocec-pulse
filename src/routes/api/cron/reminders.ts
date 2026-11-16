@@ -23,22 +23,31 @@ export const Route = createFileRoute("/api/cron/reminders")({
             headers: { "content-type": "application/json" },
           });
         }
+        // Every survey that exists gets its due reminders and housekeeping (closed ones skip themselves).
+        const core = await import("@/lib/pulse/core.server");
+        const surveys = await core.listSurveyIds();
         let sent = 0;
         let failed = 0;
         let remaining = 0;
-        let skipped: string | undefined;
+        let purgedInvitees = 0;
+        const skipped: string[] = [];
         const started = Date.now();
-        // Work in small batches, stopping well before a serverless time limit.
-        for (let i = 0; i < 6 && Date.now() - started < 20_000; i += 1) {
-          const res = await mail.runDueReminders(20);
-          sent += res.sent;
-          failed += res.failed;
-          remaining = res.remaining;
-          skipped = res.skipped;
-          if (res.skipped || (!res.sent && !res.failed) || !res.remaining) break;
+        for (const id of surveys) {
+          await core.inSurvey(id, async () => {
+            // Work in small batches, stopping well before a serverless time limit.
+            for (let i = 0; i < 6 && Date.now() - started < 20_000; i += 1) {
+              const res = await mail.runDueReminders(20);
+              sent += res.sent;
+              failed += res.failed;
+              remaining += res.remaining;
+              if (res.skipped && surveys.length === 1) skipped.push(res.skipped);
+              if (res.skipped || (!res.sent && !res.failed) || !res.remaining) break;
+            }
+            purgedInvitees += (await mail.runRetention()).purgedInvitees;
+          });
         }
-        const retention = await mail.runRetention();
-        return new Response(JSON.stringify({ ok: true, sent, failed, remaining, skipped, ...retention }), {
+        const retention = { purgedInvitees };
+        return new Response(JSON.stringify({ ok: true, sent, failed, remaining, skipped: skipped[0], surveys: surveys.length, ...retention }), {
           headers: { "content-type": "application/json", "cache-control": "no-store" },
         });
       },

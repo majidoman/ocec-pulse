@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { questionsFor } from "@/lib/census";
+import { SurveySwitcher } from "@/components/survey-switcher";
+import { FILE_GROUPS, FILE_LIMIT_MB, FILES_MAX, fileRules } from "@/lib/pulse/files";
 import { openSurveyPreview } from "@/lib/pulse/preview";
 import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
@@ -62,6 +64,7 @@ function BuilderPage() {
       hint={locked ? t("lockedHint") : t("settingsHint")}
       actions={
         <div className="flex flex-wrap gap-2">
+          <SurveySwitcher />
           <Button size="sm" variant="outline" onClick={() => void openSurveyPreview()}>
             <ExternalLink className="size-4" /> {loc({ en: "Preview in a new tab", ar: "معاينة في تبويب جديد" })}
           </Button>
@@ -254,7 +257,7 @@ function QuestionEditor({
   onPatch: (p: Partial<Question>) => void;
   onRemove: () => void;
 }) {
-  const { t } = useT();
+  const { t, loc } = useT();
   const missing = !q.text.en.trim() || !q.text.ar.trim();
   return (
     <Card className="grid gap-3">
@@ -278,6 +281,7 @@ function QuestionEditor({
           <option value="short">Short text</option>
           <option value="long">Long text</option>
           <option value="text">Comment</option>
+          <option value="file">{loc({ en: "File upload", ar: "رفع ملف" })}</option>
         </select>
         <label className="flex h-11 items-center justify-between gap-2 rounded-md border border-border px-3 text-sm">
           {t("requiredMark")}
@@ -288,11 +292,78 @@ function QuestionEditor({
           <Switch checked={!!q.reverse} disabled={locked} onCheckedChange={(v) => onPatch({ reverse: v })} />
         </label>
       </div>
+      {q.type === "file" ? <FileSettings q={q} locked={locked} onPatch={onPatch} /> : null}
       {!locked ? (
         <Button size="sm" variant="ghost" onClick={onRemove}>
           {t("close")}
         </Button>
       ) : null}
     </Card>
+  );
+}
+
+/** Allowed kinds, size and number of files for a "file upload" question. */
+function FileSettings({ q, locked, onPatch }: { q: Question; locked: boolean; onPatch: (p: Partial<Question>) => void }) {
+  const { loc } = useT();
+  const rules = fileRules(q);
+  const toggle = (exts: string[], on: boolean) => {
+    const next = on ? [...new Set([...rules.types, ...exts])] : rules.types.filter((e) => !exts.includes(e));
+    if (next.length) onPatch({ fileTypes: next });
+  };
+  return (
+    <div className="grid gap-3 rounded-lg border border-border bg-sand p-3">
+      <fieldset>
+        <legend className="mb-2 text-sm font-medium text-ink">{loc({ en: "Accepted files", ar: "الملفات المقبولة" })}</legend>
+        <div className="flex flex-wrap gap-x-4 gap-y-2">
+          {FILE_GROUPS.map((g) => {
+            const on = g.exts.every((e) => rules.types.includes(e));
+            return (
+              <label key={g.id} className="flex items-center gap-2 text-sm text-fg">
+                <input type="checkbox" disabled={locked} checked={on} onChange={(e) => toggle(g.exts, e.target.checked)} className="size-4 accent-[var(--color-ink)]" />
+                {loc(g.label)}
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
+      <div className="flex flex-wrap gap-4">
+        <label className="flex items-center gap-2 text-sm text-fg">
+          {loc({ en: "Largest file", ar: "أكبر حجم للملف" })}
+          <select
+            disabled={locked}
+            className="h-9 rounded-md border border-border bg-paper px-2 text-sm"
+            value={String(rules.maxMb)}
+            onChange={(e) => onPatch({ maxSizeMb: Number(e.target.value) })}
+          >
+            {[0.5, 1, 2, 3, FILE_LIMIT_MB].map((n) => (
+              <option key={n} value={String(n)}>
+                {n} MB
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-sm text-fg">
+          {loc({ en: "Files per person", ar: "عدد الملفات للشخص" })}
+          <select
+            disabled={locked}
+            className="h-9 rounded-md border border-border bg-paper px-2 text-sm"
+            value={String(rules.maxFiles)}
+            onChange={(e) => onPatch({ maxFiles: Number(e.target.value) })}
+          >
+            {Array.from({ length: FILES_MAX }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={String(n)}>
+                {n}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <p className="text-xs leading-relaxed text-muted">
+        {loc({
+          en: `Programs, scripts and web pages are never accepted, and each file is checked to be what its name says. The hosting limit is ${FILE_LIMIT_MB} MB per file. Files are kept apart from the person's answers, like comments, and only People & Culture, executives and (for their own department) department heads can download them. Remind people that a document or photo can carry their name.`,
+          ar: `لا تُقبل البرامج أو النصوص البرمجية أو صفحات الويب أبداً، ويُفحص كل ملف للتأكد من أنه كما يدل اسمه. الحد الأقصى للاستضافة ${FILE_LIMIT_MB} ميغابايت للملف. تُحفظ الملفات منفصلة عن إجابات الشخص مثل التعليقات، ولا يحمّلها إلا الموارد البشرية والقيادة التنفيذية ورؤساء الأقسام (لقسمهم فقط). ذكّر الموظفين بأن المستند أو الصورة قد يحمل اسمهم.`,
+        })}
+      </p>
+    </div>
   );
 }

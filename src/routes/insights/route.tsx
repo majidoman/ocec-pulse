@@ -1,5 +1,6 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { Menu, Settings2 } from "lucide-react";
+import { DemoBanner, SurveySwitcher } from "@/components/survey-switcher";
 import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
 import { Button } from "@/components/ui/button";
@@ -27,29 +28,28 @@ function GatedInsights() {
 
 function InsightsShell() {
   const { t, loc } = useT();
-  const { rate, completed, headcount, cycleName, status } = useCensus();
+  const { rate, completed, headcount } = useCensus();
   return (
     <div className="flex min-h-dvh">
       <aside className="sticky top-0 hidden h-dvh w-60 shrink-0 flex-col overflow-y-auto border-e border-border bg-paper/80 p-4 print:hidden lg:flex">
         <SideNav />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
+        <DemoBanner />
         <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-sand/90 px-4 py-2.5 backdrop-blur-sm print:hidden lg:px-8">
           <div className="flex items-center gap-2 lg:hidden">
             <MobileNav />
             <Mark className="size-8" />
           </div>
-          <p className="hidden text-xs text-muted sm:block lg:text-sm">
-            <span className="font-medium text-ink">{loc(cycleName)}</span>
-            {" · "}
-            <span className="rounded-full bg-sand-2 px-2 py-0.5 text-[11px] uppercase text-ink">{status}</span>
+          <div className="hidden flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted sm:flex lg:text-sm">
+            <SurveySwitcher />
             {" · "}
             <span className="tabular-nums">{rate}%</span>
             {" · "}
             <span className="tabular-nums">
               {completed}/{headcount}
             </span>
-          </p>
+          </div>
           <div className="ms-auto flex items-center gap-2">
             <RefreshButton />
             <Link
