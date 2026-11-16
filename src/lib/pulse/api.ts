@@ -10,6 +10,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { authMiddleware } from "@/lib/auth/middleware";
 import type { StaffRole } from "@/lib/types";
+import type { ApiView } from "./api-types";
 import { brandNames, brandText, type PublicConfig, type PulseConfig, type SurveySummary } from "./config";
 import type {
   AuditRow,
@@ -1042,6 +1043,62 @@ export const setSmtpPassword = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ── Connected APIs (super admin only) ───────────────────────────────────────
+
+export const listApis = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) => z.object({}).parse(d))
+  .handler(async ({ context }): Promise<{ apis: ApiView[] }> => {
+    const core = await import("./core.server");
+    const apis = await import("./apis.server");
+    await core.requireStaff(context.userId, ["super"]);
+    return { apis: await apis.viewApis() };
+  });
+
+export const saveApi = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) =>
+    z
+      .object({
+        id: z.string().max(64).optional(),
+        name: z.string().trim().min(1, "Give the API a name.").max(80),
+        baseUrl: z
+          .string()
+          .trim()
+          .max(300)
+          .refine((u) => /^https:\/\//.test(u) || /^http:\/\/localhost(:\d+)?(\/|$)/.test(u), "The address must start with https://."),
+        note: z.string().max(200).default(""),
+        enabled: z.boolean(),
+        key: z.string().max(500).optional(),
+        clearKey: z.boolean().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const core = await import("./core.server");
+    const apis = await import("./apis.server");
+    const staff = await core.requireStaff(context.userId, ["super"]);
+    if (data.id && !apis.isKnownApi(data.id) && !(await apis.readApis()).some((a) => a.id === data.id)) {
+      throw new core.BadRequestError("Unknown API.");
+    }
+    const saved = await apis.saveApiEntry(data);
+    const change = saved.keyChanged ? " (key changed)" : "";
+    await core.audit(core.actorOf(staff), `Updated API "${saved.name}"${change}`, `تحديث الواجهة "${saved.name}"${change ? " (تغيّر المفتاح)" : ""}`);
+    return { ok: true };
+  });
+
+export const deleteApi = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) => z.object({ id: z.string().min(1).max(64) }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const core = await import("./core.server");
+    const apis = await import("./apis.server");
+    const staff = await core.requireStaff(context.userId, ["super"]);
+    const removed = await apis.deleteApiEntry(data.id);
+    if (removed) await core.audit(core.actorOf(staff), `Removed API "${removed.name}"`, `حذف الواجهة "${removed.name}"`);
+    return { ok: true };
+  });
+
 export const sendTestEmail = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator((d: unknown) => z.object({ to: z.string().email().max(254) }).parse(d))
@@ -1175,7 +1232,7 @@ export const generateAiBriefing = createServerFn({ method: "POST" })
     const core = await import("./core.server");
     const { computeResults } = await import("./results.server");
     const staff = await core.requireStaff(context.userId, ["super", "pc", "exec"]);
-    const apiKey = process.env.XAI_API_KEY;
+    const apiKey = await (await import("./apis.server")).getApiKey("xai");
     if (!apiKey) return { ok: false, error: "unavailable" };
     const config = await core.loadConfig();
     const r = await computeResults(config, { role: staff.role, departmentId: staff.departmentId });
