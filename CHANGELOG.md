@@ -4,7 +4,7 @@ Every change that reaches the live site is listed here, newest first.
 Each release has a version, a date, what changed in plain words, and how to undo it.
 
 ## [Unreleased] — on the test site, waiting for approval
-- Nothing yet.
+- Business-rule fixes (live 16 Nov 2026): reminders send at most one email per person per run (the latest due step, at least 20 hours apart); the invitation list is deleted N days after the end date even if the survey was never closed by hand; answers, comments and files older than the retention period are deleted; the anonymity floor is at least 3 everywhere.
 
 ## [1.5.0] — 2026-11-16 — released to live ("موافق"); backup: Neon branch `backup-pre-v1.5.0-2026-11-16`
 ### Survey experience (phase 1)

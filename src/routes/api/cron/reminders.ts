@@ -30,6 +30,7 @@ export const Route = createFileRoute("/api/cron/reminders")({
         let failed = 0;
         let remaining = 0;
         let purgedInvitees = 0;
+        let purgedResponses = 0;
         const skipped: string[] = [];
         const started = Date.now();
         for (const id of surveys) {
@@ -43,10 +44,12 @@ export const Route = createFileRoute("/api/cron/reminders")({
               if (res.skipped && surveys.length === 1) skipped.push(res.skipped);
               if (res.skipped || (!res.sent && !res.failed) || !res.remaining) break;
             }
-            purgedInvitees += (await mail.runRetention()).purgedInvitees;
+            const ret = await mail.runRetention();
+            purgedInvitees += ret.purgedInvitees;
+            purgedResponses += ret.purgedResponses;
           });
         }
-        const retention = { purgedInvitees };
+        const retention = { purgedInvitees, purgedResponses };
         return new Response(JSON.stringify({ ok: true, sent, failed, remaining, skipped: skipped[0], surveys: surveys.length, ...retention }), {
           headers: { "content-type": "application/json", "cache-control": "no-store" },
         });

@@ -59,7 +59,7 @@ export const getPublic = createServerFn({ method: "GET" })
     const config = await loadConfig(survey);
     const total = await responseCount(survey);
     const headcount = totalHeadcount(config);
-    const k = Math.max(2, Number(config.anonymity.kFloor) || 5);
+    const k = Math.max(3, Number(config.anonymity.kFloor) || 5);
     return {
       config: toPublicConfig(config),
       stats: {
@@ -1403,7 +1403,7 @@ export const listAttachments = createServerFn({ method: "GET" })
     const { getSql } = await import("@/lib/db");
     const staff = await core.requireStaff(context.userId);
     const config = await core.loadConfig();
-    const k = Math.max(2, Number(config.anonymity.kFloor) || 5);
+    const k = Math.max(3, Number(config.anonymity.kFloor) || 5);
     if (!canReadComments(staff.role)) return { k, allowed: false, questions: [] };
     const sql = await getSql();
     const rows = await sql<{ id: string; question_id: string; filename: string; size: number; mime: string; submitted_on: string | null; department_id: string | null }>`

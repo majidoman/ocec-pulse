@@ -92,7 +92,7 @@ export async function responseCount(survey: string = surveyId()): Promise<number
 
 export async function computeResults(config: PulseConfig, viewer: Pick<StaffContext, "role" | "departmentId">): Promise<Results> {
   const sql = await getSql();
-  const k = Math.max(2, Number(config.anonymity.kFloor) || 5);
+  const k = Math.max(3, Number(config.anonymity.kFloor) || 5);
   const headcount = totalHeadcount(config);
   const survey = surveyId();
   const responses = await sql<ResponseRow>`select id, department_id, tenure, level, contract from pulse_responses where survey_id = ${survey}`;

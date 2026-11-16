@@ -285,7 +285,7 @@ export async function addInvitees(
 
 export async function inviteeStats(config: PulseConfig): Promise<InviteeStats> {
   const sql = await getSql();
-  const k = Math.max(2, Number(config.anonymity.kFloor) || 5);
+  const k = Math.max(3, Number(config.anonymity.kFloor) || 5);
   const rows = await sql<{ department_id: string | null; total: number; invited: number; opened: number; completed: number; failed: number }>`
     select department_id,
            count(*) as total,
@@ -426,18 +426,25 @@ export async function runDueReminders(
   let failed = 0;
   let remaining = 0;
   let budget = limit;
-  for (let step = 0; step < rules.length; step += 1) {
+  // Newest due step first, and at most one email per person per run: someone who was missed for a
+  // while gets only the latest reminder that is due, never several at once. A day must also pass
+  // since the last email to that person.
+  const mailedNow = new Set<string>();
+  for (let step = rules.length - 1; step >= 0; step -= 1) {
     const rule = rules[step];
     if (!rule.enabled) continue;
     const days = Math.max(0, Math.round(Number(rule.dayOffset) || 0));
-    const due = await sql<{ id: string; email: string; token: string }>`
+    const due = (
+      await sql<{ id: string; email: string; token: string }>`
       select id, email, token from pulse_invitees
       where survey_id = ${surveyId()} and used = false and send_error is null and invited_at is not null
         and reminders_sent <= ${step}
         and invited_at <= now() - make_interval(days => ${days})
+        and (last_sent_at is null or last_sent_at <= now() - interval '20 hours')
       order by invited_at, id
-      limit ${Math.max(budget, 0) + 1}
-    `;
+      limit ${Math.max(budget, 0) + 1 + mailedNow.size}
+    `
+    ).filter((r) => !mailedNow.has(r.id));
     if (!due.length) continue;
     const batch = due.slice(0, Math.max(budget, 0));
     remaining += due.length - batch.length;
@@ -447,6 +454,7 @@ export async function runDueReminders(
       batch.map((r) => inviteMail(config, origin, r, { en: rule.bodyEn, ar: rule.bodyAr })),
     );
     for (let i = 0; i < batch.length; i += 1) {
+      mailedNow.add(batch[i].id);
       if (results[i]?.ok) {
         sent += 1;
         await sql`update pulse_invitees set reminders_sent = ${step + 1}, last_sent_at = now() where id = ${batch[i].id}`;
@@ -467,18 +475,44 @@ export async function runDueReminders(
  * Housekeeping that should happen even if nobody presses a button: delete the
  * invitation list once the configured number of days after close has passed.
  */
-export async function runRetention(): Promise<{ purgedInvitees: number }> {
+export async function runRetention(): Promise<{ purgedInvitees: number; purgedResponses: number }> {
   const config = await loadConfig();
-  const days = Number(config.anonymity.inviteDeleteDays) || 0;
-  if (config.general.status !== "closed" || !config.general.closedAt || days <= 0) return { purgedInvitees: 0 };
-  const closed = new Date(config.general.closedAt).getTime();
-  if (!Number.isFinite(closed) || Date.now() - closed < days * 86_400_000) return { purgedInvitees: 0 };
   const sql = await getSql();
-  // The demo survey keeps its sample invitation list so its pages can be explored.
+  // The demo survey keeps its sample data so its pages can be explored.
   const demo = await sql<{ is_demo: boolean }>`select is_demo from pulse_surveys where id = ${surveyId()}`;
-  if (demo[0]?.is_demo) return { purgedInvitees: 0 };
-  const rows = await sql<{ id: string }>`delete from pulse_invitees where survey_id = ${surveyId()} returning id`;
-  return { purgedInvitees: rows.length };
+  if (demo[0]?.is_demo) return { purgedInvitees: 0, purgedResponses: 0 };
+  let purgedInvitees = 0;
+  let purgedResponses = 0;
+
+  // 1. Invitation list: deleted N days after the survey ended — when it was closed, or when its end
+  //    date passed even if nobody pressed "Close survey".
+  const days = Number(config.anonymity.inviteDeleteDays) || 0;
+  const endedAt =
+    config.general.status === "closed" && config.general.closedAt
+      ? new Date(config.general.closedAt).getTime()
+      : config.calendar.fieldClose
+        ? new Date(`${config.calendar.fieldClose}T23:59:59Z`).getTime()
+        : NaN;
+  if (days > 0 && Number.isFinite(endedAt) && Date.now() - endedAt >= days * 86_400_000) {
+    const rows = await sql<{ id: string }>`delete from pulse_invitees where survey_id = ${surveyId()} returning id`;
+    purgedInvitees = rows.length;
+  }
+
+  // 2. Answers, comments and files older than the retention period in Settings → Anonymity & privacy.
+  const months = Number(config.anonymity.retentionMonths) || 0;
+  if (months > 0) {
+    const old = await sql<{ id: string }>`
+      select id from pulse_responses where survey_id = ${surveyId()} and submitted_on < (current_date - make_interval(months => ${months}))`;
+    if (old.length) {
+      await sql`delete from pulse_answers where response_id in (
+        select id from pulse_responses where survey_id = ${surveyId()} and submitted_on < (current_date - make_interval(months => ${months})))`;
+      await sql`delete from pulse_responses where survey_id = ${surveyId()} and submitted_on < (current_date - make_interval(months => ${months}))`;
+      purgedResponses = old.length;
+    }
+    await sql`delete from pulse_comments where survey_id = ${surveyId()} and submitted_on < (current_date - make_interval(months => ${months}))`;
+    await sql`delete from pulse_attachments where survey_id = ${surveyId()} and submitted and submitted_on < (current_date - make_interval(months => ${months}))`;
+  }
+  return { purgedInvitees, purgedResponses };
 }
 
 /** A random key that lets an external scheduler call the reminder endpoint. */

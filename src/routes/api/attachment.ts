@@ -36,7 +36,7 @@ export const Route = createFileRoute("/api/attachment")({
         if (!f) return deny(404);
         if (staff.role === "head") {
           const config = await core.loadConfig(f.survey_id);
-          const k = Math.max(2, Number(config.anonymity.kFloor) || 5);
+          const k = Math.max(3, Number(config.anonymity.kFloor) || 5);
           const n = await sql<{ n: number }>`
             select count(*) as n from pulse_attachments where survey_id = ${f.survey_id} and submitted = true and department_id = ${f.department_id}`;
           if (!f.department_id || f.department_id !== staff.departmentId || Number(n[0]?.n ?? 0) < k) return deny(403);
