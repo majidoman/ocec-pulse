@@ -40,18 +40,21 @@ function Overview() {
                   value={r.engagement.index.toFixed(1)}
                   delta={hasPrior ? r.engagement.index - (prior.engagement ?? 0) : undefined}
                   note={`${r.engagement.favorable}% ${t("favorable")}`}
+                  gauge={{ share: r.engagement.index / 100, color: toneColor(r.engagement.index) }}
                 />
                 <Kpi
                   label={t("kpiEnps")}
                   value={r.enps ? signed(r.enps.score) : "—"}
                   delta={r.enps && prior.enps !== null ? r.enps.score - prior.enps : undefined}
                   note={r.enps ? `${r.enps.n} ${t("nPeople")}` : undefined}
+                  gauge={r.enps ? { share: (r.enps.score + 100) / 200, color: r.enps.score >= 30 ? "var(--color-score-high)" : r.enps.score >= 0 ? "var(--color-score-mid)" : "var(--color-score-crit)" } : undefined}
                 />
                 <Kpi
                   label={t("kpiResp")}
                   value={`${r.rate}%`}
                   delta={prior.response !== null ? r.rate - prior.response : undefined}
                   note={`${r.total} / ${r.headcount}`}
+                  gauge={{ share: r.rate / 100, color: "var(--color-accent)" }}
                 />
                 <Card>
                   <p className="text-xs font-medium uppercase tracking-[0.12em] text-subtle">
@@ -219,19 +222,51 @@ function Donut({ data, unit }: { data: { name: string; value: number; color: str
   );
 }
 
-function Kpi({ label, value, delta, note }: { label: string; value: string; delta?: number; note?: string }) {
+function Kpi({
+  label,
+  value,
+  delta,
+  note,
+  gauge,
+}: {
+  label: string;
+  value: string;
+  delta?: number;
+  note?: string;
+  /** Share of the gauge to fill, 0–1, and its colour. */
+  gauge?: { share: number; color: string };
+}) {
   const { t } = useT();
   return (
-    <Card>
-      <p className="text-xs font-medium uppercase tracking-[0.12em] text-subtle">{label}</p>
-      <p className="mt-2 font-display text-3xl font-medium tabular-nums text-ink">{value}</p>
-      {typeof delta === "number" ? (
-        <p className="mt-1 text-xs text-muted">
-          <Delta value={delta} /> {t("kpiDelta")}
-        </p>
-      ) : (
-        <p className="mt-1 text-xs text-muted">{note ?? ""}</p>
-      )}
+    <Card className="flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <p className="text-xs font-medium uppercase tracking-[0.12em] text-subtle">{label}</p>
+        <p className="mt-2 font-display text-3xl font-medium tabular-nums text-ink">{value}</p>
+        {typeof delta === "number" ? (
+          <p className="mt-1 text-xs text-muted">
+            <Delta value={delta} /> {t("kpiDelta")}
+          </p>
+        ) : (
+          <p className="mt-1 text-xs text-muted">{note ?? ""}</p>
+        )}
+      </div>
+      {gauge ? <Gauge share={gauge.share} color={gauge.color} /> : null}
     </Card>
   );
 }
+
+/** Small ring gauge for a KPI card. */
+function Gauge({ share, color }: { share: number; color: string }) {
+  const v = Math.max(0, Math.min(1, share));
+  const r = 26;
+  const c = 2 * Math.PI * r;
+  return (
+    <svg viewBox="0 0 64 64" className="size-16 shrink-0 -rotate-90" aria-hidden>
+      <circle cx="32" cy="32" r={r} fill="none" stroke="var(--color-sand-2)" strokeWidth="8" />
+      <circle cx="32" cy="32" r={r} fill="none" stroke={color} strokeWidth="8" strokeLinecap="round" strokeDasharray={`${v * c} ${c}`} />
+    </svg>
+  );
+}
+
+const toneColor = (score: number) =>
+  score >= 75 ? "var(--color-score-high)" : score >= 60 ? "var(--color-score-good)" : score >= 45 ? "var(--color-score-mid)" : "var(--color-score-crit)";
