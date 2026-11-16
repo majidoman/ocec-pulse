@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { PageFrame } from "@/components/page-frame";
 import { EnpsMix } from "@/components/mix-bar";
 import { NeedResults } from "@/components/results";
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/insights/")({ component: Overview });
 
 function Overview() {
   const { t, loc } = useT();
-  const { likertDimensions, dimensions, benchmarks, cycleName } = useCensus();
+  const { likertDimensions, dimensions, benchmarks, cycleName, departments } = useCensus();
   const prior = benchmarks.prior;
   const hasPrior = prior.engagement !== null;
 
@@ -28,6 +28,10 @@ function Overview() {
             prior: prior.dimensions[d.id] ?? null,
           }));
           const hasPriorDims = chart.some((c) => c.prior !== null);
+          const deptChart = r.departments
+            .filter((d) => d.index !== null)
+            .map((d) => ({ name: loc(departments.find((x) => x.id === d.id)?.name ?? { en: d.id, ar: d.id }), index: Math.round(d.index ?? 0), rate: d.rate ?? 0 }))
+            .sort((a, b) => b.index - a.index);
           return (
             <>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -74,6 +78,64 @@ function Overview() {
                   <DimList rows={opportunitiesOf(r)} />
                 </Card>
               </div>
+
+              <div className="grid gap-3 lg:grid-cols-2">
+                <Card className="h-80">
+                  <h2 className="mb-2 text-sm font-semibold text-ink">{loc({ en: "Answer mix", ar: "توزيع الإجابات" })}</h2>
+                  <Donut
+                    data={[
+                      { name: t("favorable"), value: r.engagement.favorable, color: "var(--color-score-high)" },
+                      { name: t("neutral"), value: r.engagement.neutral, color: "var(--color-score-mid)" },
+                      { name: t("unfav"), value: r.engagement.unfavorable, color: "var(--color-score-crit)" },
+                    ]}
+                    unit="%"
+                  />
+                </Card>
+                <Card className="h-80">
+                  <h2 className="mb-2 text-sm font-semibold text-ink">{loc({ en: "Recommend to a friend (eNPS)", ar: "التوصية بجهة العمل (eNPS)" })}</h2>
+                  {r.enps ? (
+                    <Donut
+                      data={[
+                        { name: loc({ en: "Promoters", ar: "مروّجون" }), value: r.enps.promoters, color: "var(--color-score-high)" },
+                        { name: loc({ en: "Passives", ar: "محايدون" }), value: r.enps.passives, color: "var(--color-score-mid)" },
+                        { name: loc({ en: "Detractors", ar: "منتقدون" }), value: r.enps.detractors, color: "var(--color-score-crit)" },
+                      ]}
+                      unit="%"
+                    />
+                  ) : (
+                    <p className="text-sm text-muted">—</p>
+                  )}
+                </Card>
+              </div>
+
+              {deptChart.length ? (
+                <div className="grid gap-3 lg:grid-cols-2">
+                  <Card style={{ height: Math.max(240, deptChart.length * 34 + 70) }}>
+                    <h2 className="mb-2 text-sm font-semibold text-ink">{loc({ en: "Engagement index by department", ar: "مؤشر الارتباط حسب الإدارة" })}</h2>
+                    <ResponsiveContainer width="100%" height="88%">
+                      <BarChart data={deptChart} layout="vertical" margin={{ top: 0, right: 16, left: 8, bottom: 0 }}>
+                        <CartesianGrid stroke="var(--color-border)" horizontal={false} />
+                        <XAxis type="number" domain={[0, 100]} tick={{ fill: "var(--color-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <YAxis type="category" dataKey="name" width={110} tick={{ fill: "var(--color-ink)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={tip} />
+                        <Bar dataKey="index" fill="var(--color-accent)" radius={[0, 4, 4, 0]} name={t("kpiEngage")} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Card>
+                  <Card style={{ height: Math.max(240, deptChart.length * 34 + 70) }}>
+                    <h2 className="mb-2 text-sm font-semibold text-ink">{loc({ en: "Response rate by department", ar: "نسبة الاستجابة حسب الإدارة" })}</h2>
+                    <ResponsiveContainer width="100%" height="88%">
+                      <BarChart data={deptChart} layout="vertical" margin={{ top: 0, right: 16, left: 8, bottom: 0 }}>
+                        <CartesianGrid stroke="var(--color-border)" horizontal={false} />
+                        <XAxis type="number" domain={[0, 100]} unit="%" tick={{ fill: "var(--color-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <YAxis type="category" dataKey="name" width={110} tick={{ fill: "var(--color-ink)", fontSize: 11 }} axisLine={false} tickLine={false} />
+                        <Tooltip contentStyle={tip} />
+                        <Bar dataKey="rate" fill="var(--color-ink)" radius={[0, 4, 4, 0]} name={t("kpiResp")} unit="%" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Card>
+                </div>
+              ) : null}
 
               <Card>
                 <h2 className="mb-3 text-sm font-semibold text-ink">{t("kpiEnps")}</h2>
@@ -137,6 +199,24 @@ function Overview() {
       </ul>
     );
   }
+}
+
+const tip = { background: "var(--color-paper)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 };
+
+function Donut({ data, unit }: { data: { name: string; value: number; color: string }[]; unit: string }) {
+  return (
+    <ResponsiveContainer width="100%" height="88%">
+      <PieChart margin={{ top: 16, right: 8, bottom: 0, left: 8 }}>
+        <Pie data={data} dataKey="value" nameKey="name" innerRadius="55%" outerRadius="80%" paddingAngle={2} label={(e: { value: number }) => `${e.value}${unit}`}>
+          {data.map((d) => (
+            <Cell key={d.name} fill={d.color} />
+          ))}
+        </Pie>
+        <Tooltip contentStyle={tip} formatter={(v: number) => `${v}${unit}`} />
+        <Legend wrapperStyle={{ fontSize: 12 }} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
 }
 
 function Kpi({ label, value, delta, note }: { label: string; value: string; delta?: number; note?: string }) {
