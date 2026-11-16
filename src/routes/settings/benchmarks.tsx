@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { redirect, createFileRoute } from "@tanstack/react-router";
 import { PageFrame } from "@/components/page-frame";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,7 +8,10 @@ import { useCensus } from "@/lib/census";
 import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 
-export const Route = createFileRoute("/settings/benchmarks")({ component: BenchSetPage });
+export const Route = createFileRoute("/settings/benchmarks")({
+  beforeLoad: () => {
+    throw redirect({ to: "/insights/trends", hash: "enter" });
+  }, component: BenchSetPage });
 
 const num = (v: string): number | null => (v.trim() === "" || !Number.isFinite(Number(v)) ? null : Number(v));
 

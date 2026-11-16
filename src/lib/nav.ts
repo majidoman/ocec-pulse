@@ -35,7 +35,7 @@ export const NAV = [
     items: [
       { to: "/insights", key: "navOverview" as CopyKey, icon: LayoutDashboard, exact: true },
       { to: "/insights/departments", key: "navDepts" as CopyKey, icon: Building2, exact: false, also: ["/insights/heatmap"] },
-      { to: "/insights/trends", key: "navCompareAll" as CopyKey, icon: LineChart, exact: false, also: ["/insights/compare", "/insights/benchmarks"] },
+      { to: "/insights/trends", key: "navCompareAll" as CopyKey, icon: LineChart, exact: false, also: ["/insights/compare", "/insights/benchmarks", "/settings/benchmarks"] },
       { to: "/insights/files", key: "navFiles" as CopyKey, icon: Paperclip, exact: false, onlyWithFiles: true },
     ],
   },
@@ -62,7 +62,6 @@ export const SETTINGS_NAV = [
   { to: "/settings/anonymity", key: "setAnon" as CopyKey, icon: Shield, exact: false },
   { to: "/settings/branding", key: "setBrand" as CopyKey, icon: Globe, exact: false },
   { to: "/settings/integrations", key: "setIntegrations" as CopyKey, icon: Link2, exact: false },
-  { to: "/settings/benchmarks", key: "setBench" as CopyKey, icon: Scale, exact: false },
   { to: "/settings/history", key: "setHistory" as CopyKey, icon: History, exact: false },
   { to: "/settings/danger", key: "setDanger" as CopyKey, icon: TriangleAlert, exact: false },
 ] as const;

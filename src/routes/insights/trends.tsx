@@ -1,4 +1,4 @@
-import { Route as CompareRoute } from "./compare";
+import { Route as BenchSettingsRoute } from "../settings/benchmarks";
 import { Route as BenchmarksRoute } from "./benchmarks";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -78,20 +78,23 @@ function TrendsPage() {
   );
 }
 
-const CompareSection = CompareRoute.options.component!;
 const BenchmarksSection = BenchmarksRoute.options.component!;
+const BenchSettingsSection = BenchSettingsRoute.options.component!;
 
 /** All related pages on one page, one after another (no tabs). */
 function CombinedPage() {
+  const canEdit = canEditSettings(useCensus().currentRole);
   return (
     <>
       <TrendsPage />
-      <section id="year">
-        <CompareSection />
-      </section>
       <section id="benchmarks">
         <BenchmarksSection />
       </section>
+      {canEdit ? (
+        <section id="enter">
+          <BenchSettingsSection />
+        </section>
+      ) : null}
     </>
   );
 }

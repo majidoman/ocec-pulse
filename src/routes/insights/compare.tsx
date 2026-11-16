@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/insights/compare")({
   beforeLoad: () => {
-    throw redirect({ to: "/insights/trends", hash: "year" });
+    throw redirect({ to: "/insights/trends", hash: "benchmarks" });
   }, component: ComparePage });
 
 function ComparePage() {
