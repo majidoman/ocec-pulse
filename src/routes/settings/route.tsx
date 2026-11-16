@@ -1,6 +1,7 @@
 import { useRouterState, createFileRoute, Link, Outlet } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
 import { useState } from "react";
+import { SaveBar } from "@/components/save-bar";
 import { DemoBanner, SurveySwitcher } from "@/components/survey-switcher";
 import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
@@ -35,6 +36,7 @@ function SettingsShell() {
         <SideNav />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
+        <SaveBar />
         <DemoBanner />
         <header className="sticky top-0 z-20 flex flex-wrap items-center gap-2 border-b border-border bg-sand/90 px-4 py-2.5 backdrop-blur-sm lg:px-8">
           <div className="flex items-center gap-2 md:hidden">

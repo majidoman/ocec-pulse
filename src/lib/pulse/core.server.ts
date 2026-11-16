@@ -288,7 +288,13 @@ export async function audit(actor: string, en: string, ar: string): Promise<void
  * `minutes` old, its time is moved forward instead of adding a duplicate line (settings save
  * as you type).
  */
-export async function auditCoalesced(actor: string, en: string, ar: string, minutes = 15): Promise<void> {
+export async function auditCoalesced(
+  actor: string,
+  en: string,
+  ar: string,
+  minutes = 15,
+  before?: { snapshot: PulseConfig; survey: string },
+): Promise<void> {
   const sql = await getSql();
   const last = await sql<{ id: number; actor: string; action_en: string; recent: boolean }>`
     select id, actor, action_en, (at > now() - make_interval(mins => ${minutes})) as recent
@@ -296,7 +302,13 @@ export async function auditCoalesced(actor: string, en: string, ar: string, minu
   `;
   const row = last[0];
   if (row && row.actor === actor && row.action_en === en && row.recent) {
+    // Keep the earliest "before" copy, so Undo goes back to the state before this run of edits.
     await sql`update pulse_audit set at = now() where id = ${row.id}`;
+    return;
+  }
+  if (before) {
+    await sql`insert into pulse_audit (actor, action_en, action_ar, snapshot, survey_id)
+              values (${actor}, ${en}, ${ar}, ${JSON.stringify(before.snapshot)}::jsonb, ${before.survey})`;
     return;
   }
   await audit(actor, en, ar);

@@ -131,6 +131,8 @@ export interface AuditRow {
   actor: string;
   en: string;
   ar: string;
+  /** A settings change that can be undone from Change history. */
+  canUndo?: boolean;
 }
 
 /** The last completed staff-list upload, shown on the Invitations page. */

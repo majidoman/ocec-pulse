@@ -571,7 +571,8 @@ export const saveAdminConfig = createServerFn({ method: "POST" })
       next as unknown as Record<string, unknown>,
     );
     await core.saveConfig(next);
-    if (change) await core.auditCoalesced(core.actorOf(staff), change.en.slice(0, 1000), change.ar.slice(0, 1000));
+    if (change)
+      await core.auditCoalesced(core.actorOf(staff), change.en.slice(0, 1000), change.ar.slice(0, 1000), 15, { snapshot: previous, survey: core.surveyId() });
     return { ok: true, closedAt: next.general.closedAt ?? null };
   });
 
@@ -593,10 +594,11 @@ export const listAudit = createServerFn({ method: "GET" })
     const { getSql } = await import("@/lib/db");
     await core.requireStaff(context.userId, core.ADMIN_ROLES);
     const sql = await getSql();
-    const rows = await sql<{ id: number; at: string | Date; actor: string; action_en: string; action_ar: string }>`
-      select id, at, actor, action_en, action_ar from pulse_audit order by at desc, id desc limit ${data?.limit ?? 60}
+    const rows = await sql<{ id: number; at: string | Date; actor: string; action_en: string; action_ar: string; undo: boolean }>`
+      select id, at, actor, action_en, action_ar, snapshot is not null as undo from pulse_audit order by at desc, id desc limit ${data?.limit ?? 60}
     `;
     return rows.map((r) => ({
+      canUndo: Boolean(r.undo),
       id: Number(r.id),
       at: new Date(r.at).toISOString(),
       actor: r.actor,
@@ -1424,4 +1426,35 @@ export const listAttachments = createServerFn({ method: "GET" })
       byQ.set(r.question_id, list);
     }
     return { k, allowed: true, questions: [...byQ.entries()].map(([id, files]) => ({ id, files })) };
+  });
+
+
+/** Undo a settings change from Change history: puts the settings back as they were just before it. */
+export const undoAuditChange = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((d: unknown) => z.object({ id: z.number().int().positive() }).parse(d))
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const core = await import("./core.server");
+    const { getSql } = await import("@/lib/db");
+    const { normalizeConfig } = await import("./config");
+    const staff = await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    const sql = await getSql();
+    const rows = await sql<{ snapshot: unknown; survey_id: string | null; action_en: string; action_ar: string }>`
+      select snapshot, survey_id, action_en, action_ar from pulse_audit where id = ${data.id}`;
+    const row = rows[0];
+    if (!row?.snapshot) throw new core.BadRequestError("This entry cannot be undone.");
+    const survey = row.survey_id ?? core.MAIN_SURVEY;
+    if (!(await core.surveyExists(survey))) throw new core.BadRequestError("That survey no longer exists.");
+    const current = await core.loadConfig(survey);
+    const restored = normalizeConfig(typeof row.snapshot === "string" ? JSON.parse(row.snapshot) : row.snapshot);
+    // The survey's open/closed state and the questionnaire lock are never changed by an undo.
+    restored.general = { ...restored.general, status: current.general.status, closedAt: current.general.closedAt };
+    restored.instrumentStatus = current.instrumentStatus;
+    restored.frozenAt = current.frozenAt;
+    await core.saveConfig(restored, survey);
+    await core.auditCoalesced(core.actorOf(staff), `Undid: ${row.action_en}`.slice(0, 1000), `تراجع عن: ${row.action_ar}`.slice(0, 1000), 0, {
+      snapshot: current,
+      survey,
+    });
+    return { ok: true };
   });

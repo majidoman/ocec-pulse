@@ -3,7 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageFrame } from "@/components/page-frame";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { listAudit } from "@/lib/pulse/api";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { listAudit, undoAuditChange } from "@/lib/pulse/api";
 import type { AuditRow } from "@/lib/pulse/results-types";
 import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
@@ -18,11 +20,26 @@ function HistoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
 
-  useEffect(() => {
+  const [busy, setBusy] = useState<number | null>(null);
+  const load = () =>
     listAudit({ data: { limit: 500 } })
       .then(setRows)
       .catch((e) => setError(e instanceof Error ? e.message : "Could not load the history."));
+  useEffect(() => {
+    void load();
   }, []);
+  async function undo(id: number) {
+    if (!window.confirm(loc({ en: "Put the settings back as they were before this change?", ar: "إرجاع الإعدادات كما كانت قبل هذا التعديل؟" }))) return;
+    setBusy(id);
+    try {
+      await undoAuditChange({ data: { id } });
+      toast.success(loc({ en: "Change undone. Reloading…", ar: "تم التراجع عن التعديل. جارٍ إعادة التحميل…" }));
+      setTimeout(() => window.location.reload(), 800);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+      setBusy(null);
+    }
+  }
 
   const fmt = useMemo(() => {
     try {
@@ -46,8 +63,8 @@ function HistoryPage() {
     <PageFrame
       title={t("setHistory")}
       hint={loc({
-        en: "Every change an administrator made: settings, questions, departments, uploads, invitations, exports. Times are in the survey's time zone.",
-        ar: "كل تغيير قام به المسؤولون: الإعدادات والأسئلة والإدارات والرفع والدعوات والتصدير. الأوقات بتوقيت الاستبيان.",
+        en: "Every change an administrator made: settings, questions, departments, uploads, invitations, exports. Times are in the survey's time zone. Settings changes can be reversed with Undo. Entries are never deleted, so the record stays trustworthy.",
+        ar: "كل تغيير قام به المسؤولون: الإعدادات والأسئلة والإدارات والرفع والدعوات والتصدير. الأوقات بتوقيت الاستبيان. يمكن التراجع عن تعديلات الإعدادات بزر «تراجع». لا يُحذف السجل حفاظاً على المساءلة.",
       })}
     >
       <Card>
@@ -61,11 +78,18 @@ function HistoryPage() {
         {rows === null && !error ? <p className="text-sm text-muted">{loc({ en: "Loading…", ar: "جارٍ التحميل…" })}</p> : null}
         <ul className="flex flex-col gap-2 text-sm">
           {shown.map((a) => (
-            <li key={a.id} className="flex flex-col gap-1 border-b border-border pb-2 last:border-0">
-              <span className="text-ink">{lang === "ar" ? a.ar : a.en}</span>
-              <span className="text-xs text-subtle">
-                <span dir="ltr">{a.actor}</span> · {fmt.format(new Date(a.at))}
+            <li key={a.id} className="flex items-start justify-between gap-3 border-b border-border pb-2 last:border-0">
+              <span className="flex flex-col gap-1">
+                <span className="text-ink">{lang === "ar" ? a.ar : a.en}</span>
+                <span className="text-xs text-subtle">
+                  <span dir="ltr">{a.actor}</span> · {fmt.format(new Date(a.at))}
+                </span>
               </span>
+              {a.canUndo ? (
+                <Button size="sm" variant="outline" disabled={busy === a.id} onClick={() => void undo(a.id)}>
+                  {loc({ en: "Undo", ar: "تراجع" })}
+                </Button>
+              ) : null}
             </li>
           ))}
           {rows && !shown.length ? <li className="text-muted">—</li> : null}
