@@ -12,7 +12,7 @@ function BrandPage() {
   const b = useSettings((s) => s.branding);
   const patch = useSettings((s) => s.patchBranding);
   return (
-    <PageFrame title={t("setBrand")} hint="Arabic stays RTL. IBM Plex Arabic is the house face.">
+    <PageFrame title={t("setBrand")} hint="Arabic stays RTL. Cairo is the main font.">
       <Card className="grid gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1.5 text-sm font-medium md:col-span-2">
           Logo
