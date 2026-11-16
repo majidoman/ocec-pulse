@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Score } from "@/components/score";
@@ -21,6 +22,7 @@ function DriversPage() {
         ar: "الارتباط بين كل بُعد ومؤشر التوصية. الأعلى يعني صلة أقوى بتوصية الموظفين بالعمل هنا.",
       })}
     >
+      <PageTabs group="actions" />
       <NeedResults>
         {(r) => {
           if (!r.drivers) {

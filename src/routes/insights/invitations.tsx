@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { Qr } from "@/components/qr";
 import { RosterUpload } from "@/components/roster-upload";
@@ -50,6 +51,7 @@ function InvitationsPage() {
   if (!canEditSettings(currentRole)) {
     return (
       <PageFrame title={t("navInvite")}>
+      <PageTabs group="invites" />
         <Card>
           <p className="text-sm text-muted">{loc({ en: "Only administrators manage invitations.", ar: "إدارة الدعوات للمديرين فقط." })}</p>
         </Card>
@@ -91,6 +93,7 @@ function InvitationsPage() {
 
   return (
     <PageFrame title={t("navInvite")} hint={t("inviteHint")}>
+      <PageTabs group="invites" />
       {error ? (
         <Card>
           <p className="text-sm text-score-crit">{error}</p>

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Score } from "@/components/score";
@@ -17,6 +18,7 @@ function TrendsPage() {
 
   return (
     <PageFrame title={t("navTrends")} hint={earlier.length ? t("trendHint") : t("baselineOnly")}>
+      <PageTabs group="compare" />
       <NeedResults>
         {(r) => {
           const thisYear = new Date(r.generatedAt).getFullYear();

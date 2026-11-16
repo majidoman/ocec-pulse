@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { PlanBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,7 @@ function ActionsPage() {
       actions={
         canEdit ? (
           <Button className="print:hidden" onClick={() => setOpen(!open)}>
+      <PageTabs group="actions" />
             {loc({ en: "Add an action", ar: "إضافة إجراء" })}
           </Button>
         ) : undefined

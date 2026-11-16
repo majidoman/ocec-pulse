@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { EnpsMix } from "@/components/mix-bar";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { PlanBadge } from "@/components/status-badge";
@@ -23,6 +24,7 @@ function ExecutivePage() {
 
   return (
     <PageFrame title={t("navExec")} hint={t("execHint")}>
+      <PageTabs group="reports" />
       <NeedResults>
         {(r) => {
           const story = buildNarrative(r, { dimensions, departments, general, benchmarks }, lang);

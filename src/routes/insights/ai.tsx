@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ function AiPage() {
       })}
       actions={
         <Button onClick={() => void run()} disabled={busy} className="print:hidden">
+      <PageTabs group="reports" />
           <Sparkles className="size-4" />
           {busy ? t("generating") : t("generateAi")}
         </Button>

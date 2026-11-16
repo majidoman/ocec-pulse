@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { HiddenNote, NeedResults } from "@/components/results";
 import { Score } from "@/components/score";
@@ -18,6 +19,7 @@ function DepartmentsPage() {
 
   return (
     <PageFrame title={t("navDepts")} hint={t("deptHint")}>
+      <PageTabs group="depts" />
       <NeedResults>
         {(r) => {
           const rows = r.departments

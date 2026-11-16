@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Score } from "@/components/score";
@@ -20,6 +21,7 @@ function BenchmarksPage() {
 
   return (
     <PageFrame title={t("navBench")} hint={t("benchHint")}>
+      <PageTabs group="compare" />
       <NeedResults>
         {(r) => {
           if (!sources.length) {

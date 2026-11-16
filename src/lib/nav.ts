@@ -34,32 +34,21 @@ export const NAV = [
     group: "groupListen" as CopyKey,
     items: [
       { to: "/insights", key: "navOverview" as CopyKey, icon: LayoutDashboard, exact: true },
-      { to: "/insights/heatmap", key: "navHeat" as CopyKey, icon: Map, exact: false },
-      { to: "/insights/trends", key: "navTrends" as CopyKey, icon: LineChart, exact: false },
-      { to: "/insights/drivers", key: "navDrivers" as CopyKey, icon: Activity, exact: false },
-      { to: "/insights/departments", key: "navDepts" as CopyKey, icon: Building2, exact: false },
-      { to: "/insights/files", key: "navFiles" as CopyKey, icon: Paperclip, exact: false },
+      { to: "/insights/departments", key: "navDepts" as CopyKey, icon: Building2, exact: false, also: ["/insights/heatmap"] },
+      { to: "/insights/trends", key: "navCompareAll" as CopyKey, icon: LineChart, exact: false, also: ["/insights/compare", "/insights/benchmarks"] },
+      { to: "/insights/files", key: "navFiles" as CopyKey, icon: Paperclip, exact: false, onlyWithFiles: true },
     ],
   },
   {
     group: "groupLead" as CopyKey,
     items: [
-      { to: "/insights/executive", key: "navExec" as CopyKey, icon: FileText, exact: false },
-      { to: "/insights/actions", key: "navActions" as CopyKey, icon: Flame, exact: false },
-      { to: "/insights/ai", key: "navAi" as CopyKey, icon: Sparkles, exact: false },
-      { to: "/insights/benchmarks", key: "navBench" as CopyKey, icon: Scale, exact: false },
-      { to: "/insights/compare", key: "navCompare" as CopyKey, icon: GitCompare, exact: false },
+      { to: "/insights/drivers", key: "navFocus" as CopyKey, icon: Flame, exact: false, also: ["/insights/actions"] },
+      { to: "/insights/executive", key: "navReportsAll" as CopyKey, icon: FileText, exact: false, also: ["/insights/ai", "/insights/reports", "/insights/design"] },
     ],
   },
   {
     group: "groupRun" as CopyKey,
-    items: [
-      { to: "/insights/invitations", key: "navInvite" as CopyKey, icon: Mail, exact: false },
-      { to: "/insights/reminders", key: "navRemind" as CopyKey, icon: Bell, exact: false },
-      { to: "/insights/design", key: "navDesign" as CopyKey, icon: PenLine, exact: false },
-      { to: "/insights/reports", key: "navReports" as CopyKey, icon: Brain, exact: false },
-      { to: "/faq", key: "faq" as CopyKey, icon: CircleHelp, exact: false },
-    ],
+    items: [{ to: "/insights/invitations", key: "navInviteAll" as CopyKey, icon: Mail, exact: false, also: ["/insights/reminders"] }],
   },
 ] as const;
 

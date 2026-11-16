@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -37,6 +38,7 @@ function RemindersPage() {
   if (!admin) {
     return (
       <PageFrame title={t("navRemind")}>
+      <PageTabs group="invites" />
         <Card>
           <p className="text-sm text-muted">{loc({ en: "Only administrators manage reminders.", ar: "إدارة التذكيرات للمديرين فقط." })}</p>
         </Card>
@@ -74,6 +76,7 @@ function RemindersPage() {
       hint={t("remindHint")}
       actions={
         <Button disabled={busy} onClick={() => void sendNow()}>
+      <PageTabs group="invites" />
           {loc({ en: "Send due reminders now", ar: "إرسال التذكيرات المستحقة الآن" })}
         </Button>
       }

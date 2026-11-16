@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { HeatmapGrid } from "@/components/heatmap-grid";
 import { ScoreLegend } from "@/components/mix-bar";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { HiddenNote, NeedResults } from "@/components/results";
 import { Card } from "@/components/ui/card";
@@ -21,6 +22,7 @@ function HeatmapPage() {
         ar: "نسبة الإيجابية حسب الإدارة والبُعد. تبقى الإدارة فارغة حتى يجيب عدد كافٍ.",
       })}
     >
+      <PageTabs group="depts" />
       <NeedResults>
         {(r) => {
           let low: { dept: string; dim: string; score: number } | null = null;

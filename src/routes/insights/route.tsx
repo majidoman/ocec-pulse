@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NAV, SETTINGS_NAV } from "@/lib/nav";
 import { useCensus } from "@/lib/census";
-import { canEditSettings } from "@/lib/settings-store";
+import { canEditSettings, useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 import { useState } from "react";
 import { AdminGate } from "@/components/admin-gate";
@@ -54,7 +54,7 @@ function InsightsShell() {
             <RefreshButton />
             <Link
               to="/faq"
-              className="hidden h-11 items-center px-3 text-sm font-medium text-muted hover:text-ink sm:inline-flex"
+              className="inline-flex h-11 items-center px-2 text-sm font-medium text-muted hover:text-ink sm:px-3"
             >
               {t("faq")}
             </Link>
@@ -72,6 +72,7 @@ function InsightsShell() {
 
 function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = useRouterState({ select: (st) => st.location.pathname });
+  const hasFileQuestion = useSettings((s) => s.questions.some((q) => q.type === "file" && q.visible));
   const { t } = useT();
   const role = useCensus().currentRole;
   return (
@@ -92,13 +93,14 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
             <ul className="flex flex-col gap-0.5">
               {group.items
                 .filter((item) => canEditSettings(role) || !ADMIN_ONLY.has(item.to))
+                .filter((item) => !("onlyWithFiles" in item) || hasFileQuestion)
                 .map((item) => (
                 <li key={item.to}>
                   <Link
                     to={item.to}
                     onClick={onNavigate}
                     activeOptions={{ exact: item.exact }}
-                    className="flex h-10 items-center gap-2 rounded-lg px-2 text-sm text-muted hover:bg-sand-2 hover:text-ink"
+                    className={`flex h-10 items-center gap-2 rounded-lg px-2 text-sm text-muted hover:bg-sand-2 hover:text-ink ${"also" in item && (item.also as readonly string[]).includes(pathname) ? "bg-sand-2 font-medium text-ink" : ""}`}
                     activeProps={{ className: "bg-sand-2 font-medium text-ink" }}
                   >
                     <item.icon className="size-4 shrink-0" />

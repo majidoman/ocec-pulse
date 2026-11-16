@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { HeatmapGrid } from "@/components/heatmap-grid";
 import { EnpsMix } from "@/components/mix-bar";
+import { PageTabs } from "@/components/page-tabs";
 import { PageFrame } from "@/components/page-frame";
 import { HiddenNote, NeedResults } from "@/components/results";
 import { Score } from "@/components/score";
@@ -51,6 +52,7 @@ function ReportsPage() {
       hint={t("reportHint")}
       actions={
         <Button className="print:hidden" onClick={() => window.print()}>
+      <PageTabs group="reports" />
           {t("print")}
         </Button>
       }
