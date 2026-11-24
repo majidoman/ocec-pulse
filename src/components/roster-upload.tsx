@@ -110,7 +110,7 @@ export function RosterUpload({
 
   const active = departments.filter((d) => !d.archived);
   const fmt = useMemo(() => {
-    const locale = lang === "ar" ? "ar-OM" : "en-GB";
+    const locale = lang === "ar" ? "ar-OM-u-nu-latn" : "en-GB";
     try {
       return new Intl.DateTimeFormat(locale, { timeZone: timezone || "Asia/Muscat", dateStyle: "full", timeStyle: "short" });
     } catch {
@@ -126,7 +126,7 @@ export function RosterUpload({
       return;
     }
     if (rows.length > 20000) {
-      toast.error(loc({ en: "Too many rows (over 20,000). Split the file.", ar: "عدد الصفوف كبير جداً (أكثر من ٢٠٬٠٠٠). قسّم الملف." }));
+      toast.error(loc({ en: "Too many rows (over 20,000). Split the file.", ar: "عدد الصفوف كبير جداً (أكثر من 20٬000). قسّم الملف." }));
       return;
     }
     setResult(null);
@@ -196,7 +196,7 @@ export function RosterUpload({
 
   return (
     <Card>
-      <h2 className="mb-1 text-sm font-semibold text-ink">{loc({ en: "1 · Add people", ar: "١ · إضافة أشخاص" })}</h2>
+      <h2 className="mb-1 text-sm font-semibold text-ink">{loc({ en: "1 · Add people", ar: "1 · إضافة أشخاص" })}</h2>
       <p className="mb-3 text-sm text-muted">
         {loc({
           en: "One person per row: email, and the department name. Upload an Excel (.xlsx) or CSV file, or paste the rows. You will see a check before anything is saved.",

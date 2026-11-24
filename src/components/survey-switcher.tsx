@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { requireSaved } from "@/components/save-bar";
 import { FlaskConical } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useCurrentSurvey, useSurveys } from "@/lib/pulse/surveys-store";
@@ -36,7 +37,7 @@ export function SurveySwitcher({ className = "" }: { className?: string }) {
           const v = e.target.value;
           if (v === NEW) void navigate({ to: "/settings/surveys", search: { new: true } });
           else if (v === MANAGE) void navigate({ to: "/settings/surveys" });
-          else if (v !== current) void switchTo(v);
+          else if (v !== current && requireSaved()) void switchTo(v);
         }}
         className="h-9 max-w-[16rem] truncate rounded-md border border-border bg-paper px-2 text-sm font-medium text-ink outline-none focus-visible:ring-2 focus-visible:ring-ring sm:max-w-xs"
       >

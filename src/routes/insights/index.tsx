@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from "recharts";
+import { BarList } from "@/components/bar-list";
 import { PageFrame } from "@/components/page-frame";
 import { EnpsMix } from "@/components/mix-bar";
 import { NeedResults } from "@/components/results";
@@ -23,6 +24,7 @@ function Overview() {
       <NeedResults>
         {(r) => {
           const chart = likertDimensions.map((d) => ({
+            id: d.id,
             name: loc(d.short),
             score: r.dimensions[d.id]?.score ?? 0,
             prior: prior.dimensions[d.id] ?? null,
@@ -30,7 +32,7 @@ function Overview() {
           const hasPriorDims = chart.some((c) => c.prior !== null);
           const deptChart = r.departments
             .filter((d) => d.index !== null)
-            .map((d) => ({ name: loc(departments.find((x) => x.id === d.id)?.name ?? { en: d.id, ar: d.id }), index: Math.round(d.index ?? 0), rate: d.rate ?? 0 }))
+            .map((d) => ({ id: d.id, name: loc(departments.find((x) => x.id === d.id)?.name ?? { en: d.id, ar: d.id }), index: Math.round(d.index ?? 0), rate: d.rate ?? 0 }))
             .sort((a, b) => b.index - a.index);
           return (
             <>
@@ -113,29 +115,17 @@ function Overview() {
 
               {deptChart.length ? (
                 <div className="grid gap-3 lg:grid-cols-2">
-                  <Card style={{ height: Math.max(240, deptChart.length * 34 + 70) }}>
-                    <h2 className="mb-2 text-sm font-semibold text-ink">{loc({ en: "Engagement index by department", ar: "مؤشر الارتباط حسب الإدارة" })}</h2>
-                    <ResponsiveContainer width="100%" height="88%">
-                      <BarChart data={deptChart} layout="vertical" margin={{ top: 0, right: 16, left: 8, bottom: 0 }}>
-                        <CartesianGrid stroke="var(--color-border)" horizontal={false} />
-                        <XAxis type="number" domain={[0, 100]} tick={{ fill: "var(--color-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                        <YAxis type="category" dataKey="name" width={110} tick={{ fill: "var(--color-ink)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={tip} />
-                        <Bar dataKey="index" fill="var(--color-accent)" radius={[0, 4, 4, 0]} name={t("kpiEngage")} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <Card>
+                    <h2 className="mb-4 text-sm font-semibold text-ink">{loc({ en: "Engagement index by department", ar: "مؤشر الارتباط حسب الإدارة" })}</h2>
+                    <BarList items={deptChart.map((d) => ({ id: d.id, label: d.name, value: d.index, color: toneColor(d.index) }))} />
                   </Card>
-                  <Card style={{ height: Math.max(240, deptChart.length * 34 + 70) }}>
-                    <h2 className="mb-2 text-sm font-semibold text-ink">{loc({ en: "Response rate by department", ar: "نسبة الاستجابة حسب الإدارة" })}</h2>
-                    <ResponsiveContainer width="100%" height="88%">
-                      <BarChart data={deptChart} layout="vertical" margin={{ top: 0, right: 16, left: 8, bottom: 0 }}>
-                        <CartesianGrid stroke="var(--color-border)" horizontal={false} />
-                        <XAxis type="number" domain={[0, 100]} unit="%" tick={{ fill: "var(--color-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                        <YAxis type="category" dataKey="name" width={110} tick={{ fill: "var(--color-ink)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={tip} />
-                        <Bar dataKey="rate" fill="var(--color-ink)" radius={[0, 4, 4, 0]} name={t("kpiResp")} unit="%" />
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <Card>
+                    <h2 className="mb-4 text-sm font-semibold text-ink">{loc({ en: "Response rate by department", ar: "نسبة الاستجابة حسب الإدارة" })}</h2>
+                    <BarList
+                      items={[...deptChart]
+                        .sort((x, y) => y.rate - x.rate)
+                        .map((d) => ({ id: d.id, label: d.name, value: d.rate, display: `${d.rate}%`, color: "var(--color-primary)" }))}
+                    />
                   </Card>
                 </div>
               ) : null}
@@ -145,24 +135,12 @@ function Overview() {
                 <EnpsMix enps={r.enps} />
               </Card>
 
-              <Card className="h-80">
-                <h2 className="mb-4 text-sm font-semibold text-ink">
-                  {hasPriorDims
-                    ? `${loc({ en: "Dimensions", ar: "الأبعاد" })} · ${t("thisCycle")} / ${benchmarks.priorYearLabel || t("lastCycle")}`
-                    : loc({ en: "Dimensions · favourable %", ar: "الأبعاد · نسبة الإيجابية" })}
-                </h2>
-                <ResponsiveContainer width="100%" height="85%">
-                  <BarChart data={chart} barCategoryGap={10} margin={{ top: 4, right: 8, left: -16, bottom: 4 }}>
-                    <CartesianGrid stroke="var(--color-border)" vertical={false} />
-                    <XAxis dataKey="name" tick={{ fill: "var(--color-muted)", fontSize: 11 }} axisLine={false} tickLine={false} interval={0} />
-                    <YAxis domain={[0, 100]} tick={{ fill: "var(--color-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ background: "var(--color-paper)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-                    {hasPriorDims ? (
-                      <Bar dataKey="prior" fill="var(--color-sand-2)" radius={[4, 4, 0, 0]} name={benchmarks.priorYearLabel || t("lastCycle")} />
-                    ) : null}
-                    <Bar dataKey="score" fill="var(--color-accent)" radius={[4, 4, 0, 0]} name={t("thisCycle")} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <Card>
+                <h2 className="mb-4 text-sm font-semibold text-ink">{loc({ en: "Dimensions · favourable %", ar: "الأبعاد · نسبة الإيجابية" })}</h2>
+                <BarList
+                  items={chart.map((c) => ({ id: c.id, label: c.name, value: c.score, display: `${c.score}%`, prior: c.prior, color: toneColor(c.score) }))}
+                  priorLabel={hasPriorDims ? benchmarks.priorYearLabel || t("lastCycle") : undefined}
+                />
               </Card>
 
               <div className="grid gap-3 md:grid-cols-3">

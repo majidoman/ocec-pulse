@@ -18,21 +18,29 @@ function AnonPage() {
           label={t("kFloor")}
           type="number"
           value={a.kFloor}
-          hint={loc({ en: "Smallest group whose results may be shown. Between 3 and 50; 5 is the usual standard.", ar: "أصغر مجموعة تُعرض نتائجها. بين ٣ و٥٠؛ والمعتاد ٥." })}
+          hint={loc({ en: "Smallest group whose results may be shown. Between 3 and 50; 5 is the usual standard.", ar: "أصغر مجموعة تُعرض نتائجها. بين 3 و50؛ والمعتاد 5." })}
           onChange={(v) => patch({ kFloor: Math.min(50, Math.max(3, Math.round(Number(v)) || 5)) })}
         />
         <TextField
           label={loc({ en: "Delete the invitation list (days after close)", ar: "حذف قائمة الدعوات (أيام بعد الإغلاق)" })}
           type="number"
           value={a.inviteDeleteDays}
-          hint={loc({ en: "Email addresses are deleted automatically this many days after the survey is closed. 0 keeps them until you delete them.", ar: "تُحذف عناوين البريد تلقائياً بعد هذا العدد من الأيام من إغلاق الاستبيان. ٠ يبقيها حتى تحذفها." })}
+          hint={loc({ en: "Email addresses are deleted automatically this many days after the survey is closed or its end date passes. 0 keeps them until you delete them by hand.", ar: "تُحذف عناوين البريد تلقائياً بعد هذا العدد من الأيام من إغلاق الاستبيان أو مرور تاريخ انتهائه. 0 يبقيها حتى تحذفها يدوياً." })}
           onChange={(v) => patch({ inviteDeleteDays: Math.max(0, Math.round(Number(v)) || 0) })}
         />
+        {!a.inviteDeleteDays ? (
+          <p className="-mt-2 text-xs text-score-crit md:col-span-2">
+            {loc({
+              en: "Invited email addresses are currently kept forever. Most privacy notices promise deletion; 30 days is the usual choice.",
+              ar: "عناوين البريد المدعوة محفوظة حالياً بلا حد. معظم إشعارات الخصوصية تعد بالحذف؛ والمعتاد 30 يوماً.",
+            })}
+          </p>
+        ) : null}
         <TextField
           label={loc({ en: "Agreed retention of responses (months)", ar: "مدة الاحتفاظ بالإجابات المتفق عليها (أشهر)" })}
           type="number"
           value={a.retentionMonths}
-          hint={loc({ en: "For your records. Responses are not deleted automatically: delete them from the Danger zone when this period ends.", ar: "للتوثيق. لا تُحذف الإجابات تلقائياً: احذفها من منطقة الخطر عند انتهاء المدة." })}
+          hint={loc({ en: "Answers, comments and files older than this are deleted automatically by the daily job. 0 keeps them until you delete them.", ar: "تُحذف الإجابات والتعليقات والملفات الأقدم من هذه المدة تلقائياً في المهمة اليومية. 0 يبقيها حتى تحذفها." })}
           onChange={(v) => patch({ retentionMonths: Math.max(0, Math.round(Number(v)) || 0) })}
         />
       </Card>
@@ -55,6 +63,20 @@ function AnonPage() {
       <Card className="grid gap-4 md:grid-cols-2">
         <AreaField label="Privacy notice (EN)" value={a.privacyNotice.en} onChange={(v) => patch({ privacyNotice: { ...a.privacyNotice, en: v } })} />
         <AreaField label="إشعار الخصوصية" dir="rtl" value={a.privacyNotice.ar} onChange={(v) => patch({ privacyNotice: { ...a.privacyNotice, ar: v } })} />
+        <p className="text-xs text-subtle md:col-span-2">
+          {loc({
+            en: "Write @K@ where the minimum group size should appear; staff see the number set above, so the notice always matches the rule.",
+            ar: "اكتب @K@ في موضع الحد الأدنى لحجم المجموعة؛ يرى الموظفون الرقم المحدد أعلاه، فيطابق الإشعار القاعدة دائماً.",
+          }).replace("@K@", "{{k}}")}
+        </p>
+        {[a.privacyNotice.en, a.privacyNotice.ar].some((n) => /\b(three|four|five|six|seven|eight|nine|ten|\d+)\b|ثلاث|أربع|خمس|ست|سبع|ثمان|تسع|عشر/.test(n) && !n.includes("{{k}}")) ? (
+          <p className="text-xs text-score-crit md:col-span-2">
+            {loc({
+              en: "The notice mentions a number but not @K@. Check it still matches the minimum group size.",
+              ar: "يذكر الإشعار رقماً دون @K@. تأكد أنه ما زال يطابق الحد الأدنى لحجم المجموعة.",
+            }).replace("@K@", "{{k}}")}
+          </p>
+        ) : null}
       </Card>
     </PageFrame>
   );

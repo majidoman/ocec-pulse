@@ -43,13 +43,13 @@ function HistoryPage() {
 
   const fmt = useMemo(() => {
     try {
-      return new Intl.DateTimeFormat(lang === "ar" ? "ar-OM" : "en-GB", {
+      return new Intl.DateTimeFormat(lang === "ar" ? "ar-OM-u-nu-latn" : "en-GB", {
         timeZone: timezone,
         dateStyle: "medium",
         timeStyle: "short",
       });
     } catch {
-      return new Intl.DateTimeFormat(lang === "ar" ? "ar-OM" : "en-GB", { dateStyle: "medium", timeStyle: "short" });
+      return new Intl.DateTimeFormat(lang === "ar" ? "ar-OM-u-nu-latn" : "en-GB", { dateStyle: "medium", timeStyle: "short" });
     }
   }, [lang, timezone]);
 
@@ -95,7 +95,7 @@ function HistoryPage() {
           {rows && !shown.length ? <li className="text-muted">—</li> : null}
         </ul>
         {rows && rows.length >= 500 ? (
-          <p className="mt-3 text-xs text-subtle">{loc({ en: "Showing the latest 500 entries.", ar: "تُعرض آخر ٥٠٠ عملية." })}</p>
+          <p className="mt-3 text-xs text-subtle">{loc({ en: "Showing the latest 500 entries.", ar: "تُعرض آخر 500 عملية." })}</p>
         ) : null}
       </Card>
     </PageFrame>

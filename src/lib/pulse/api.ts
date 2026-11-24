@@ -781,7 +781,7 @@ export const inviteStaff = createServerFn({ method: "POST" })
             `${org.en} — access to the survey results`,
             `${org.ar} — صلاحية الاطلاع على نتائج الاستبيان`,
             `You have been invited to the ${org.en} survey workspace.\n\nOpen this link and choose a password to finish your account (${data.email.trim().toLowerCase()}). Your access is activated straight away:\n\n${link}\n\nThe link works once, for 30 days.`,
-            `تمت دعوتك إلى مساحة استبيان ${org.ar}.\n\nافتح هذا الرابط واختر كلمة مرور لإكمال حسابك (${data.email.trim().toLowerCase()}). تُفعَّل صلاحيتك مباشرة:\n\n${link}\n\nيعمل الرابط مرة واحدة خلال ٣٠ يوماً.`,
+            `تمت دعوتك إلى مساحة استبيان ${org.ar}.\n\nافتح هذا الرابط واختر كلمة مرور لإكمال حسابك (${data.email.trim().toLowerCase()}). تُفعَّل صلاحيتك مباشرة:\n\n${link}\n\nيعمل الرابط مرة واحدة خلال 30 يوماً.`,
           ),
         ]);
         emailed = Boolean(res[0]?.ok);
@@ -1530,4 +1530,95 @@ export const undoAuditChange = createServerFn({ method: "POST" })
       survey,
     });
     return { ok: true };
+  });
+
+/* ------------------------------ response monitor ------------------------------ */
+
+/**
+ * PUBLIC. Counts one more browser reaching a survey page, for the drop-off chart.
+ * Stores a counter per page only: nothing about the person, link, device, address or time.
+ * Each browser reports each page once (the page keeps a note on the device).
+ */
+export const trackProgress = createServerFn({ method: "POST" })
+  .validator((d: unknown) =>
+    z.object({ step: z.string().regex(/^[A-Za-z0-9_-]{1,40}$/), survey: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/).optional(), token: z.string().min(8).max(200).optional() }).parse(d),
+  )
+  .handler(async ({ data }): Promise<{ ok: boolean }> => {
+    const { loadConfig, rateLimit, RateLimitedError } = await import("./core.server");
+    const { getSql } = await import("@/lib/db");
+    try {
+      await rateLimit("progress", 600);
+    } catch (e) {
+      if (e instanceof RateLimitedError) return { ok: false };
+      throw e;
+    }
+    const survey = await resolvePublicSurvey({ survey: data.survey, token: data.token });
+    const config = await loadConfig(survey);
+    if (config.general.status !== "open") return { ok: false };
+    const known = new Set([...config.dimensions.map((d) => d.id), "open", "demo"]);
+    if (!known.has(data.step)) return { ok: false };
+    const sql = await getSql();
+    await sql`
+      insert into pulse_progress (survey_id, step, n) values (${survey}, ${data.step}, 1)
+      on conflict (survey_id, step) do update set n = pulse_progress.n + 1`;
+    return { ok: true };
+  });
+
+export interface MonitorData {
+  k: number;
+  headcount: number;
+  submitted: number;
+  fieldOpen: string;
+  fieldClose: string;
+  /** Answers per day (organisation-wide only), oldest first. Empty below k answers. */
+  daily: { day: string; n: number }[];
+  /** Invitations first sent per day. */
+  mailed: { day: string; n: number }[];
+  /** Browsers that reached each page, in survey order. */
+  steps: { step: string; n: number }[];
+  email: { invited: number; failed: number; pending: number; opened: number };
+  /** When the hourly reminder and clean-up job last ran (null if never). */
+  schedulerLastRun: string | null;
+}
+
+/** STAFF (admins). Daily answers with control limits, drop-off by page and email health. */
+export const getMonitor = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }): Promise<MonitorData> => {
+    const core = await import("./core.server");
+    const { getSql } = await import("@/lib/db");
+    const { totalHeadcount } = await import("./config");
+    await core.requireStaff(context.userId, core.ADMIN_ROLES);
+    const survey = core.surveyId();
+    const config = await core.loadConfig(survey);
+    const k = Math.max(3, Number(config.anonymity.kFloor) || 5);
+    const sql = await getSql();
+    const daily = await sql<{ day: string; n: number }>`
+      select to_char(submitted_on, 'YYYY-MM-DD') as day, count(*)::int as n from pulse_responses
+      where survey_id = ${survey} group by submitted_on order by submitted_on`;
+    const submitted = daily.reduce((a, d) => a + Number(d.n), 0);
+    const mailed = await sql<{ day: string; n: number }>`
+      select to_char((invited_at at time zone ${config.general.timezone})::date, 'YYYY-MM-DD') as day, count(*)::int as n
+      from pulse_invitees where survey_id = ${survey} and invited_at is not null group by 1 order by 1`;
+    const progress = await sql<{ step: string; n: number }>`select step, n from pulse_progress where survey_id = ${survey}`;
+    const byStep = new Map(progress.map((p) => [p.step, Number(p.n)]));
+    const order = [...config.dimensions.filter((d) => d.id !== "open").map((d) => d.id), "open", "demo"];
+    const email = await sql<{ invited: number; failed: number; pending: number; opened: number }>`
+      select count(*) filter (where invited_at is not null)::int as invited,
+             count(*) filter (where send_error is not null)::int as failed,
+             count(*) filter (where invited_at is null and used = false)::int as pending,
+             count(*) filter (where opened)::int as opened
+      from pulse_invitees where survey_id = ${survey}`;
+    return {
+      k,
+      headcount: totalHeadcount(config),
+      submitted,
+      fieldOpen: config.calendar.fieldOpen,
+      fieldClose: config.calendar.fieldClose,
+      daily: submitted >= k ? daily.map((d) => ({ day: d.day, n: Number(d.n) })) : [],
+      mailed: mailed.map((d) => ({ day: d.day, n: Number(d.n) })),
+      steps: order.filter((s) => byStep.has(s)).map((s) => ({ step: s, n: byStep.get(s) ?? 0 })),
+      email: email[0] ?? { invited: 0, failed: 0, pending: 0, opened: 0 },
+      schedulerLastRun: (await core.readSetting<{ at?: string }>("scheduler_last_run"))?.at ?? null,
+    };
   });

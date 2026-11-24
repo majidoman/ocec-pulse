@@ -150,7 +150,7 @@ export async function createDemoSurvey(
   const config = mergeSurveyPart(shared, {
     ...pickSurveyPart(source),
     general: {
-      cycleName: { en: "Demo — Employee Survey 2025", ar: "تجريبي — استبيان الموظفين ٢٠٢٥" },
+      cycleName: { en: "Demo — Employee Survey 2025", ar: "تجريبي — استبيان الموظفين 2025" },
       status: "closed",
       allowOpenLink: false,
       closedAt: "2025-10-27T08:00:00.000Z",

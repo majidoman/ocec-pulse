@@ -26,8 +26,21 @@ function DepartmentsPage() {
             .sort((a, b) => (b.index ?? -1) - (a.index ?? -1));
           const sel = rows.find((d) => d.id === picked) ?? rows.find((d) => d.dims) ?? rows[0];
           const name = (id: string) => loc(departments.find((d) => d.id === id)?.name ?? { en: id, ar: id });
+          // More answers than people means the headcount is out of date or people picked the wrong department.
+          const over = rows.filter((d) => d.n !== null && d.headcount > 0 && d.n > d.headcount);
           return (
             <>
+              {over.length ? (
+                <Card className="border-score-crit/40">
+                  <p className="text-sm font-semibold text-score-crit">{loc({ en: "Check the headcounts", ar: "راجع أعداد الموظفين" })}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">
+                    {loc({
+                      en: `More answers than people in: ${over.map((d) => `${name(d.id)} (${d.n} / ${d.headcount})`).join(", ")}. Their response rate shows 100%. Update the headcount in Settings → Departments, or people may be choosing the wrong department.`,
+                      ar: `إجابات أكثر من عدد الموظفين في: ${over.map((d) => `${name(d.id)} (${d.n} / ${d.headcount})`).join("، ")}. تظهر نسبة الاستجابة 100٪. حدّث العدد في الإعدادات ← الإدارات، أو قد يختار البعض إدارة خاطئة.`,
+                    })}
+                  </p>
+                </Card>
+              ) : null}
               <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_20rem]">
                 <Card className="overflow-hidden p-0">
                   <div className="overflow-x-auto">

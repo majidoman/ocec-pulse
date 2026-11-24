@@ -8,10 +8,10 @@ import type {
   ContractId,
 } from "./types";
 
-export const SURVEY_NAME: Localized = { en: "Employee Survey 2026", ar: "استبيان الموظفين ٢٠٢٦" };
+export const SURVEY_NAME: Localized = { en: "Employee Survey 2026", ar: "استبيان الموظفين 2026" };
 
 export const SURVEY_CLOSE = "9 November 2026";
-export const SURVEY_CLOSE_AR = "٩ نوفمبر ٢٠٢٦";
+export const SURVEY_CLOSE_AR = "9 نوفمبر 2026";
 export const K_ANONYMITY = 5;
 
 export const DIMENSIONS: Dimension[] = [
@@ -203,9 +203,9 @@ export const DEPARTMENTS: Department[] = [
 
 export const TENURE: { id: TenureId; name: Localized }[] = [
   { id: "lt1", name: { en: "Less than 1 year", ar: "أقل من سنة" } },
-  { id: "1to3", name: { en: "1–3 years", ar: "١–٣ سنوات" } },
-  { id: "3to7", name: { en: "3–7 years", ar: "٣–٧ سنوات" } },
-  { id: "7plus", name: { en: "7 years or more", ar: "٧ سنوات فأكثر" } },
+  { id: "1to3", name: { en: "1–3 years", ar: "1–3 سنوات" } },
+  { id: "3to7", name: { en: "3–7 years", ar: "3–7 سنوات" } },
+  { id: "7plus", name: { en: "7 years or more", ar: "7 سنوات فأكثر" } },
 ];
 
 export const LEVELS: { id: LevelId; name: Localized }[] = [

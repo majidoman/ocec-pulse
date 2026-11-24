@@ -1,5 +1,5 @@
 import { redirect, createFileRoute, Link } from "@tanstack/react-router";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { BarList } from "@/components/bar-list";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Delta, Score } from "@/components/score";
@@ -46,7 +46,6 @@ function ComparePage() {
           const rows = likertDimensions
             .map((d) => ({ d, now: r.dimensions[d.id]?.score ?? null, was: prior.dimensions[d.id] }))
             .filter((x) => typeof x.was === "number" && x.now !== null);
-          const chart = rows.map((x) => ({ name: loc(x.d.short), prior: x.was, now: x.now }));
           return (
             <>
               <div className="grid gap-3 sm:grid-cols-3">
@@ -56,20 +55,14 @@ function ComparePage() {
               </div>
               {rows.length ? (
                 <>
-                  <Card className="h-80">
+                  <Card>
                     <h2 className="mb-4 text-sm font-semibold text-ink">
                       {label} → {t("thisCycle")}
                     </h2>
-                    <ResponsiveContainer width="100%" height="85%">
-                      <BarChart data={chart} barCategoryGap={8} margin={{ top: 4, right: 8, left: -16, bottom: 4 }}>
-                        <CartesianGrid stroke="var(--color-border)" vertical={false} />
-                        <XAxis dataKey="name" tick={{ fill: "var(--color-muted)", fontSize: 11 }} axisLine={false} tickLine={false} interval={0} />
-                        <YAxis domain={[0, 100]} tick={{ fill: "var(--color-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                        <Tooltip contentStyle={{ background: "var(--color-paper)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-                        <Bar dataKey="prior" fill="var(--color-sand-2)" radius={[4, 4, 0, 0]} name={label} />
-                        <Bar dataKey="now" fill="var(--color-accent)" radius={[4, 4, 0, 0]} name={t("thisCycle")} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <BarList
+                      priorLabel={label}
+                      items={rows.map((x) => ({ id: x.d.id, label: loc(x.d.short), value: x.now as number, display: `${x.now}%`, prior: x.was as number }))}
+                    />
                   </Card>
                   <Card>
                     <ul className="flex flex-col">

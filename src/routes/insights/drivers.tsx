@@ -1,6 +1,6 @@
 import { Route as ActionsRoute } from "./actions";
 import { createFileRoute } from "@tanstack/react-router";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { BarList } from "@/components/bar-list";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Score } from "@/components/score";
@@ -44,17 +44,13 @@ function DriversPage() {
           const max = Math.max(0.2, ...chart.map((c) => Math.abs(c.r)));
           return (
             <>
-              <Card className="h-96">
+              <Card>
                 <h2 className="mb-4 text-sm font-semibold text-ink">{t("driverR")}</h2>
-                <ResponsiveContainer width="100%" height="88%">
-                  <BarChart data={chart} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
-                    <CartesianGrid stroke="var(--color-border)" horizontal={false} />
-                    <XAxis type="number" domain={[Math.min(0, ...chart.map((c) => c.r)), Math.ceil(max * 10) / 10]} tick={{ fill: "var(--color-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" width={96} tick={{ fill: "var(--color-ink)", fontSize: 11 }} axisLine={false} tickLine={false} interval={0} />
-                    <Tooltip contentStyle={{ background: "var(--color-paper)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-                    <Bar dataKey="r" fill="var(--color-accent)" radius={[0, 4, 4, 0]} name={t("driverR")} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <BarList
+                  max={Math.ceil(max * 10) / 10}
+                  showScale={false}
+                  items={ranked.map((d) => ({ id: d.dimension, label: loc(d.def!.short), value: Math.max(0, d.r), display: d.r.toFixed(2), color: "var(--color-primary)" }))}
+                />
               </Card>
               <div className="grid gap-3 md:grid-cols-3">
                 {top.map((d, i) => (

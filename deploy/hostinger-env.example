@@ -1,0 +1,19 @@
+# Environment variables for the Hostinger Node.js app (hPanel → Node.js → Environment variables).
+# Names only. Never put real values in this file.
+#
+# The Hostinger API replaces the WHOLE list on every change: always send every variable below,
+# or the ones left out are deleted.
+#
+# Do NOT set NODE_ENV: with it, Hostinger skips the build tools and the build fails.
+
+DATABASE_URL=            # Neon main branch connection string (real answers)
+BETTER_AUTH_URL=         # https://estbanat.com
+BETTER_AUTH_SECRET=      # set once on 21 Nov 2026; changing it signs everyone out and breaks saved passwords/keys
+CRON_SECRET=             # optional bearer secret for the reminder job
+SMTP_HOST=
+SMTP_PORT=
+SMTP_SECURE=
+SMTP_USER=
+SMTP_FROM=
+SMTP_PASSWORD=
+VITE_GROK_EXTENSIONS=0

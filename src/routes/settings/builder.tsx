@@ -167,7 +167,7 @@ function BuilderPage() {
                     {(
                       [
                         ["cards", { en: "Cards", ar: "بطاقات" }],
-                        ["matrix", { en: "Grid (1–5)", ar: "مصفوفة (١–٥)" }],
+                        ["matrix", { en: "Grid (1–5)", ar: "مصفوفة (1–5)" }],
                       ] as const
                     ).map(([id, label]) => {
                       const on = (dim.display ?? "cards") === id;

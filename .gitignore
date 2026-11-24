@@ -5,6 +5,7 @@ node_modules
 .env
 .env.*
 !.env.example
+owner-login.txt
 *.log
 .grok/preview.log
 .grok/status

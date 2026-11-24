@@ -66,7 +66,7 @@ function Join() {
       </>
     );
   } else if (info?.status === "expired") {
-    body = <p className="text-sm text-muted">{loc({ en: "This invitation has expired (30 days). Ask your administrator for a new one.", ar: "انتهت صلاحية هذه الدعوة (٣٠ يوماً). اطلب من المسؤول دعوة جديدة." })}</p>;
+    body = <p className="text-sm text-muted">{loc({ en: "This invitation has expired (30 days). Ask your administrator for a new one.", ar: "انتهت صلاحية هذه الدعوة (30 يوماً). اطلب من المسؤول دعوة جديدة." })}</p>;
   } else if (isPending || !info) {
     body = <div className="h-11" aria-busy="true" />;
   } else if (user && signedInEmail && signedInEmail !== info.email) {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { requireSaved } from "@/components/save-bar";
 import { redirect, createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { PageFrame } from "@/components/page-frame";
@@ -50,7 +51,7 @@ function RemindersPage() {
   async function sendNow() {
     setBusy(true);
     try {
-      await useSettings.getState().flush();
+      if (!requireSaved()) return;
       let sent = 0;
       let failed = 0;
       let note: string | undefined;

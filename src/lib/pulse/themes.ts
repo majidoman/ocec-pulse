@@ -77,5 +77,6 @@ export function themeStyle(id: ThemeId | undefined): Record<string, string> {
   if (!theme?.tokens) return {};
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(theme.tokens)) out[`--color-${k}`] = v;
+  out["--color-accent-text"] = theme.tokens.accent;
   return out;
 }

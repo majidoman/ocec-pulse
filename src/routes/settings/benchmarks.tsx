@@ -31,7 +31,7 @@ function BenchSetPage() {
     >
       <Card className="grid gap-4 md:grid-cols-4">
         <h2 className="text-sm font-semibold text-ink md:col-span-4">{loc({ en: "Previous survey", ar: "الاستبيان السابق" })}</h2>
-        <TextField label={loc({ en: "Name (e.g. Survey 2025)", ar: "الاسم (مثل استبيان ٢٠٢٥)" })} value={b.priorYearLabel} onChange={(v) => patch({ priorYearLabel: v })} />
+        <TextField label={loc({ en: "Name (e.g. Survey 2025)", ar: "الاسم (مثل استبيان 2025)" })} value={b.priorYearLabel} onChange={(v) => patch({ priorYearLabel: v })} />
         <TextField label={t("kpiEngage")} type="number" value={b.prior.engagement ?? ""} onChange={(v) => patch({ prior: { ...b.prior, engagement: num(v) } })} />
         <TextField label={t("kpiEnps")} type="number" value={b.prior.enps ?? ""} onChange={(v) => patch({ prior: { ...b.prior, enps: num(v) } })} />
         <TextField label={`${t("kpiResp")} %`} type="number" value={b.prior.response ?? ""} onChange={(v) => patch({ prior: { ...b.prior, response: num(v) } })} />

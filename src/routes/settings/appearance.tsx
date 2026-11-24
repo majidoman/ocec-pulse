@@ -84,7 +84,7 @@ function AppearancePage() {
                 title: { en: "One section per page", ar: "قسم في كل صفحة" },
                 body: {
                   en: "Recommended for longer surveys (over 20 questions). Shorter pages, a clear sense of progress, and each page is checked before moving on.",
-                  ar: "موصى به للاستبيانات الطويلة (أكثر من ٢٠ سؤالاً). صفحات أقصر وإحساس واضح بالتقدم، وتُراجع كل صفحة قبل الانتقال.",
+                  ar: "موصى به للاستبيانات الطويلة (أكثر من 20 سؤالاً). صفحات أقصر وإحساس واضح بالتقدم، وتُراجع كل صفحة قبل الانتقال.",
                 },
               },
               {
@@ -123,7 +123,7 @@ function AppearancePage() {
         <p className="mt-1 text-sm leading-relaxed text-muted">
           {loc({
             en: "Shows a section's agree questions as one table: a row per question, a column per point of the 1–5 scale. Phones always get one card per question, because grids are hard to use on a small screen. Keep grids to about 8 questions; very long grids invite the same answer all the way down.",
-            ar: "يعرض أسئلة الموافقة في القسم كجدول واحد: صف لكل سؤال وعمود لكل درجة من ١ إلى ٥. على الجوال تظهر دائماً بطاقة لكل سؤال لأن الجداول صعبة على الشاشة الصغيرة. يُفضّل ألا يزيد الجدول على ٨ أسئلة تقريباً؛ فالجداول الطويلة تدفع إلى اختيار الإجابة نفسها لكل الأسئلة.",
+            ar: "يعرض أسئلة الموافقة في القسم كجدول واحد: صف لكل سؤال وعمود لكل درجة من 1 إلى 5. على الجوال تظهر دائماً بطاقة لكل سؤال لأن الجداول صعبة على الشاشة الصغيرة. يُفضّل ألا يزيد الجدول على 8 أسئلة تقريباً؛ فالجداول الطويلة تدفع إلى اختيار الإجابة نفسها لكل الأسئلة.",
           })}
         </p>
         <p className="mt-3 text-sm text-ink">

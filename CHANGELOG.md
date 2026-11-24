@@ -3,7 +3,89 @@
 Every change that reaches the live site is listed here, newest first.
 Each release has a version, a date, what changed in plain words, and how to undo it.
 
-## [Unreleased] — on the test site, waiting for approval
+## [Unreleased]
+
+(nothing yet)
+
+## [1.9.0] — 2026-11-22 — preview before save, clearer survey pages; awaiting the owner's approval
+### Settings: preview before save (no more saving as you type)
+- Every change in Settings (and action plans, reminders) is now a **draft**. A bar at the bottom says "Unsaved changes · Staff see nothing until you save" with **Preview survey**, **Preview home page**, **Discard** and **Save**. Nothing reaches staff before Save; each Save is one entry in Change history, with Undo as before.
+- Previews open in a new tab with the draft (`?draft=1`), marked "Preview of unsaved changes". The draft is handed over through this browser's storage only, so other people and other browsers never see it; the survey preview still never sends answers. A preview tab follows further edits without a reload.
+- Discard (with a confirm step) goes back to the last saved settings. Leaving or reloading the page with a draft asks first.
+- Actions that use the saved settings refuse to run on a draft and say so: Test send, sending invitations, sending reminders now, importing or restoring questions, deleting data, switching survey. Locking or unlocking the questions saves straight away, as it is an explicit action. The setup wizard saves at each step, as before.
+### Survey pages
+- Question text is larger (16–17 px, semi-bold) than the answer buttons; scale labels 12–13 px (were 11 px).
+- Answer buttons use the strong border colour, at least 3:1 against the card (was about 1.5:1).
+- The 1–5 example on the welcome page is a scale bar, no longer shaped like clickable buttons.
+- Progress counts questions: "Questions 5–8 of 48 · about 10 minutes left" instead of "Section 2 of 15"; the bar follows answered questions. The comments and "about you" pages say "Almost done" and "Last step".
+### Home page
+- Formal copy in both languages (no "the house", "kitchens to the executive floor", "pit-stops"); eyebrow "Annual Employee Satisfaction Survey / قياس رضا الموظفين السنوي".
+- When the survey is not open, the main card says when it opens (or that it has closed) instead of a Start button that led to "The survey is not open". The "Opening soon" badge is gone.
+- The People & Culture card is removed from the staff page; "Staff sign-in" stays in the header and is added to the footer.
+### Everywhere
+- Arabic uses Western digits (1, 2, 3) in text, dates and numbers, as in the reports and Omani official correspondence.
+- Overview, before the survey opens: a "Before the survey opens" checklist (names, dates, departments, questions locked, mailbox, staff list and invitations), each step linking to its page.
+- Checks: `scripts/design-preview-check.cjs` (35 checks); `lean-check` and `survey-experience-check` updated for the new wording.
+- Database: no change.
+- **Undo:** redeploy the 1.8.1 build in hPanel (Deployments). No settings or data to restore; drafts that were never saved simply disappear.
+
+## [1.8.1] — 2026-11-21 — phone-friendly charts, released to estbanat.com; approved in chat
+- Overview (engagement and response rate by department, dimensions), Drivers, Compare and Benchmarks: the bar charts are now plain bar lists. Each row has the full name on its own line, the value at the end and the bar underneath, so Arabic names are never cut off and labels no longer overlap on a phone. Bars grow from the right in Arabic.
+- Bar colours follow the score (good / middling / low) or the brand's primary colour; the accent stays for buttons (10%).
+- Comparison with an earlier cycle shows as a thin marker on each bar.
+- **Undo:** redeploy the 1.8.0 build in hPanel. No database change.
+
+## [1.8.0] — 2026-11-21 — new look and built-in reminder schedule, released to estbanat.com; approved in chat
+### Three-colour branding (60 · 30 · 10)
+- Settings → Branding now has three colours: **Background (60%)**, **Primary (30%)**, **Accent (10%)**, each with a colour picker and a live mock of the site. Every other shade (cards, borders, body text, hints, button text, side-menu text) is worked out from them and always meets WCAG AA contrast (`src/lib/pulse/palette.ts`, tests in `palette.test.ts` for five very different palettes, including yellow on white and dark mode).
+- The side menu is the primary colour; main buttons, the progress bar and the current menu item are the accent; accent-coloured text uses a darker shade automatically when the accent is light (orange text on sand would be unreadable).
+- When the primary colour is a green, the "good" end of charts takes its shade.
+- The last colours are remembered in the browser, so returning visitors do not see a flash of the default colours.
+- OCEC set to sand `#E3D8C5`, olive `#4B5A3C`, orange `#FF8F3A` (Change history, undoable).
+- Landing page: "Start the survey" is an accent button on the primary card.
+- New installs keep the neutral default colours until a client sets their own.
+### Texts follow the anonymity floor everywhere
+- Every text that mentioned "five" for the anonymity rule (landing page, "About your role", design page) now shows the real floor; any text shown to staff can use `{{k}}`.
+### Reminders run on their own
+- The app runs due reminders and data clean-up at most once an hour whenever `/api/health` is called. A Hostinger cron job calls it every 30 minutes; no secret key in the job. `/api/cron/reminders?key=` still works for other schedulers. The Response monitor shows when the job last ran, in red if more than 3 hours ago.
+- The old Vercel copy is paused, so only estbanat.com sends email.
+- Database: no structure change. Backup: Neon branch `backup-pre-v1.8.0-2026-11-21`; old backups 1.2.0–1.4.0 deleted (owner's OK) to stay under Neon's limit.
+- **Undo:** redeploy the 1.7.0 build in hPanel; set the colours back in Settings → Branding (or undo the entry in Change history); delete the Hostinger cron job "*/30 curl …/api/health" and unpause Vercel to return to the old schedule.
+
+## [1.7.0] — 2026-11-21 — Lean Six Sigma pass, released to estbanat.com; approved in chat ("apply all lean gaps")
+### Taking the survey
+- **Shared link and QR code switched off** for the OCEC survey, and off by default for new installs. Only personal email links can answer, so reminders stop exactly when each person answers. While it is off, the invitations page no longer shows a QR poster that would not work. Settings → General can switch it back on (e.g. for a client whose staff have no work email); the page then warns that reminders cannot know who answered through the QR code.
+- **Privacy notice follows the anonymity rule.** The notice said "groups smaller than five" while the floor was 3. The notice now uses `{{k}}`, which staff see as the real floor. Settings → Anonymity explains this and warns when a notice mentions a number without `{{k}}`.
+### Data protection
+- **Invitation list deletion** set to 30 days after the end date on the live survey (it was 0, meaning never). Settings → Anonymity warns when it is 0. The hints now say what the system really does: the list is also deleted after the end date, and old answers are deleted after the retention period.
+- **Headcount check:** Departments shows a warning when a department has more answers than people (its rate was silently capped at 100%).
+### Response monitor (new page, administrators only)
+- Daily answers with an average line and control limits (c-chart, mean ± 3√mean); flags days outside the range and three days in a row below average. Shown only from k answers, organisation-wide only.
+- Where people stop: how many browsers reached each page, then how many answers were sent, with the biggest drop named. Only a counter per page is stored (table `pulse_progress`): no person, link, device, address or time.
+- Email health: invited, opened their link, failed (red from 2%).
+### Releasing (mistake-proofing)
+- `/api/health` also checks that the database has every migration this build expects; it returns 503 and lists them if not.
+- `npm run release:check` (changelog entry with undo, type check, tests, self-hosted build) and `npm run smoke -- <address>` (health, home, survey, sign-in, reminder job protected, security headers) after every deploy.
+- The 13 tests for the old Grok platform are skipped with a reason, so a failing test is always a real problem.
+- `deploy/hostinger-env.example`: every environment variable name (no values), with the two traps: the API replaces the whole list, and NODE_ENV must not be set.
+- `RELEASING.md` rewritten for Hostinger.
+### Scheduler
+- Daily Hostinger cron job calls `/api/cron/reminders` (reminders and data clean-up). Until now only the old Vercel copy ran it.
+- Database: migration 0008 (`pulse_progress`, adds a table only). Backup: Neon point-in-time restore (snapshot and branch limits were full) plus branch `backup-standalone-2026-11-21`.
+- **Undo:** redeploy the 1.6.0 build in hPanel (Deployments), and switch the shared link back on in Settings → General if needed. The extra table can stay; 1.6.0 ignores it.
+
+## [1.6.0] — 2026-11-21 — released to live at https://estbanat.com (Hostinger); approved in chat
+### Hosting
+- The live site now runs on Hostinger at estbanat.com (Node.js, `build:selfhost`), on the same Neon `main` database. New sign-in secret: everyone signs in once more; the mailbox password and saved API keys must be entered again in Settings.
+### One side menu
+- Insights and Settings pages now share one side menu: same groups, same order, on every page; only the highlighted item moves. Invitations & reminders is reachable from Settings pages too.
+- Search box in the menu: finds menu items, pages, sections and settings fields in Arabic or English.
+- The menu shows only to signed-in users with a role, and only what that role can open. A group with nothing to show is hidden.
+- Settings → Calendar (an old page that repeated the survey dates) now opens Settings → General.
+- The original 1.6.0 commit (0e0dbc9) was never pushed to GitHub; it was rebuilt on 21 Nov from the `sidebar-bilingual-search` branch plus the same three changes.
+- **Undo:** redeploy package 3378d48 in hPanel (Deployments). No database change.
+
+## [3378d48 package] — 2026-11-21 — first Hostinger release (these items had been waiting under Unreleased)
 
 - Reports: Excel workbook (.xlsx) with Summary, Departments, Questions by department, Department detail (each department against each question, with the difference from the whole organisation), Drivers, Actions and a flat Data table for Power BI. Hidden groups and cells below k stay hidden.
 

@@ -1,5 +1,5 @@
 import { redirect, createFileRoute, Link } from "@tanstack/react-router";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { BarList } from "@/components/bar-list";
 import { PageFrame } from "@/components/page-frame";
 import { NeedResults } from "@/components/results";
 import { Score } from "@/components/score";
@@ -63,17 +63,9 @@ function BenchmarksPage() {
                   );
                 })}
               </div>
-              <Card className="h-80">
+              <Card>
                 <h2 className="mb-4 text-sm font-semibold text-ink">{t("kpiEngage")}</h2>
-                <ResponsiveContainer width="100%" height="85%">
-                  <BarChart data={chart} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 4 }}>
-                    <CartesianGrid stroke="var(--color-border)" horizontal={false} />
-                    <XAxis type="number" domain={[0, 100]} tick={{ fill: "var(--color-muted)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <YAxis type="category" dataKey="name" width={150} tick={{ fill: "var(--color-ink)", fontSize: 11 }} axisLine={false} tickLine={false} />
-                    <Tooltip contentStyle={{ background: "var(--color-paper)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12 }} />
-                    <Bar dataKey="score" fill="var(--color-accent)" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+                <BarList items={chart.map((c, i) => ({ id: String(i), label: c.name, value: c.score, color: i === 0 ? "var(--color-accent)" : "var(--color-primary)" }))} />
               </Card>
               {withDims.length ? (
                 <Card>

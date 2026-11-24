@@ -15,6 +15,7 @@ import {
   type ReminderSettings,
 } from "./pulse/config";
 import { logAudit, saveAdminConfig } from "./pulse/api";
+import { clearDraftPreview, writeDraftPreview } from "./pulse/draft-preview";
 
 export { ROLE_LABEL, canEditSettings, applyTokens } from "./pulse/config";
 export type {
@@ -34,15 +35,27 @@ const nowIso = () => new Date().toISOString();
  * The census configuration, mirrored from the server.
  *
  * - `source: "public"` — the subset an anonymous survey taker may see.
- * - `source: "admin"` — the full document; every change is saved to the server
- *   (debounced) and nothing is kept in browser storage.
+ * - `source: "admin"` — the full document. Changes are kept as an unsaved draft (`pending`) until an
+ *   administrator presses Save; they can be previewed on the staff-facing pages first, or discarded.
+ *   Nothing reaches staff before Save. The draft lives in this tab only, plus a copy in this browser's
+ *   storage that the preview tab reads (see `draft-preview.ts`).
  */
 export interface SettingsState extends PulseConfig {
   source: "none" | "public" | "admin";
-  saveState: "idle" | "saving" | "saved" | "error";
+  saveState: "idle" | "unsaved" | "saving" | "saved" | "error";
   saveError: string | null;
+  /** True while there are changes that have not been saved to the server. */
+  pending: boolean;
+  /** Set when this page shows another administrator's unsaved draft (preview tab). */
+  draftPreview: boolean;
   hydratePublic: (c: PublicConfig) => void;
   hydrateAdmin: (c: PulseConfig) => void;
+  /** Preview tab: show the draft written by the settings tab instead of the saved settings. */
+  applyDraftPreview: (c: PulseConfig) => void;
+  /** Save the draft now. */
+  commit: () => Promise<void>;
+  /** Throw the draft away and go back to the last saved settings. */
+  discard: () => void;
   patchGeneral: (p: Partial<GeneralSettings>) => void;
   patchBranding: (p: Partial<BrandingSettings>) => void;
   patchPresentation: (p: Partial<PresentationSettings>) => void;
@@ -66,7 +79,7 @@ export interface SettingsState extends PulseConfig {
   freezeInstrument: () => { ok: true } | { ok: false; error: Localized };
   cloneCycle: () => void;
   log: (en: string, ar: string) => void;
-  /** Save immediately (used before actions that depend on the stored settings). */
+  /** Save the draft now (same as `commit`; kept for the setup wizard and older callers). */
   flush: () => Promise<void>;
 }
 
@@ -96,21 +109,29 @@ function snapshot(s: SettingsState): PulseConfig {
   return out as unknown as PulseConfig;
 }
 
-let timer: ReturnType<typeof setTimeout> | undefined;
+/** The settings as last saved on the server; Discard goes back to these. */
+let baseline: PulseConfig | null = null;
 let inFlight: Promise<void> | null = null;
-let dirty = false;
+/** A change arrived while a save was on its way, so the draft is still not fully saved. */
+let changedDuringSave = false;
 
 async function push() {
   const state = useSettings.getState();
-  if (state.source !== "admin") return;
-  dirty = false;
+  if (state.source !== "admin" || !state.pending) return;
+  changedDuringSave = false;
+  const sent = snapshot(state);
   useSettings.setState({ saveState: "saving", saveError: null });
   try {
-    const res = await saveAdminConfig({ data: { config: snapshot(state) as unknown as Record<string, unknown> } });
+    const res = await saveAdminConfig({ data: { config: sent as unknown as Record<string, unknown> } });
+    baseline = { ...sent, general: { ...sent.general, closedAt: res.closedAt ?? undefined } };
+    const still = changedDuringSave;
     useSettings.setState((s) => ({
-      saveState: dirty ? "saving" : "saved",
+      pending: still,
+      saveState: still ? "unsaved" : "saved",
       general: { ...s.general, closedAt: res.closedAt ?? undefined },
     }));
+    if (still) writeDraftPreview(snapshot(useSettings.getState()));
+    else clearDraftPreview();
   } catch (err) {
     useSettings.setState({
       saveState: "error",
@@ -119,28 +140,40 @@ async function push() {
   }
 }
 
-function scheduleSave() {
-  if (useSettings.getState().source !== "admin") return;
-  dirty = true;
-  useSettings.setState({ saveState: "saving" });
-  if (timer) clearTimeout(timer);
-  timer = setTimeout(() => {
-    timer = undefined;
-    inFlight = (inFlight ?? Promise.resolve()).then(push);
-  }, 700);
+let draftTimer: ReturnType<typeof setTimeout> | undefined;
+function markPending() {
+  const st = useSettings.getState();
+  if (st.source !== "admin") return;
+  if (st.saveState === "saving") changedDuringSave = true;
+  useSettings.setState({ pending: true, saveState: st.saveState === "saving" ? "saving" : "unsaved", saveError: null });
+  // Keep the copy the preview tab reads up to date (cheap, but not on every keystroke).
+  if (draftTimer) clearTimeout(draftTimer);
+  draftTimer = setTimeout(() => {
+    draftTimer = undefined;
+    const now = useSettings.getState();
+    if (now.pending) writeDraftPreview(snapshot(now));
+  }, 250);
+}
+
+/** The latest draft, written straight away (used just before opening a preview). */
+export function publishDraftPreview() {
+  const st = useSettings.getState();
+  if (st.source === "admin") writeDraftPreview(snapshot(st));
 }
 
 export const useSettings = create<SettingsState>()((set, get) => {
-  /** Apply a change and queue a save. */
+  /** Apply a change to the draft. It is saved when an administrator presses Save. */
   const change = (fn: (s: SettingsState) => Partial<SettingsState>) => {
     set(fn);
-    scheduleSave();
+    markPending();
   };
   return {
     ...defaultConfig(),
     source: "none",
     saveState: "idle",
     saveError: null,
+    pending: false,
+    draftPreview: false,
     hydratePublic: (c) => {
       if (get().source === "admin") return;
       set((s) => ({
@@ -155,7 +188,41 @@ export const useSettings = create<SettingsState>()((set, get) => {
         questions: c.questions,
       }));
     },
-    hydrateAdmin: (c) => set({ ...c, source: "admin", saveState: "idle", saveError: null }),
+    hydrateAdmin: (c) => {
+      baseline = c;
+      set({ ...c, source: "admin", saveState: "idle", saveError: null, pending: false });
+    },
+    applyDraftPreview: (c) => {
+      if (get().source === "admin") return;
+      set((s) => ({
+        draftPreview: true,
+        general: { ...s.general, ...c.general },
+        branding: { ...s.branding, ...c.branding },
+        presentation: { ...s.presentation, ...(c.presentation ?? {}) },
+        calendar: { ...s.calendar, ...c.calendar },
+        anonymity: { ...s.anonymity, ...c.anonymity },
+        departments: c.departments.map((d) => ({ ...d, headcount: 0 })),
+        dimensions: c.dimensions,
+        questions: c.questions,
+      }));
+    },
+    commit: async () => {
+      if (draftTimer) {
+        clearTimeout(draftTimer);
+        draftTimer = undefined;
+      }
+      inFlight = (inFlight ?? Promise.resolve()).then(push);
+      await inFlight;
+    },
+    discard: () => {
+      if (get().source !== "admin" || !baseline) return;
+      if (draftTimer) {
+        clearTimeout(draftTimer);
+        draftTimer = undefined;
+      }
+      clearDraftPreview();
+      set({ ...baseline, pending: false, saveState: "idle", saveError: null });
+    },
     patchGeneral: (p) => change((s) => ({ general: { ...s.general, ...p } })),
     patchBranding: (p) => change((s) => ({ branding: { ...s.branding, ...p } })),
     patchPresentation: (p) => change((s) => ({ presentation: { ...s.presentation, ...p } })),
@@ -200,9 +267,10 @@ export const useSettings = create<SettingsState>()((set, get) => {
         ].slice(0, 50),
       }));
       get().log("Locked the survey questions", "قفل أسئلة الاستبيان");
+      void get().commit();
       return { ok: true as const };
     },
-    cloneCycle: () =>
+    cloneCycle: () => {
       change((s) => ({
         instrumentStatus: "draft",
         frozenAt: undefined,
@@ -210,18 +278,15 @@ export const useSettings = create<SettingsState>()((set, get) => {
           { id: `c-${Date.now()}`, at: nowIso(), summary: { en: "Questionnaire unlocked for editing.", ar: "فتح الاستبيان للتعديل." } },
           ...s.changelog,
         ].slice(0, 50),
-      })),
+      }));
+      void get().commit();
+    },
     log: (en, ar) => {
       if (get().source !== "admin") return;
       void logAudit({ data: { en, ar } }).catch(() => undefined);
     },
     flush: async () => {
-      if (timer) {
-        clearTimeout(timer);
-        timer = undefined;
-        inFlight = (inFlight ?? Promise.resolve()).then(push);
-      }
-      await (inFlight ?? Promise.resolve());
+      await get().commit();
     },
   };
 });

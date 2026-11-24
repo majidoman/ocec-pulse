@@ -67,7 +67,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "How does the rating scale work?",
     },
     a: {
-      ar: "معظم البنود بمقياس من ١ إلى ٥: ١ أعارض بشدة، ٢ أعارض، ٣ محايد، ٤ أوافق، ٥ أوافق بشدة. لا إجابة صحيحة — فقط إجابة صادقة.",
+      ar: "معظم البنود بمقياس من 1 إلى 5: 1 أعارض بشدة، 2 أعارض، 3 محايد، 4 أوافق، 5 أوافق بشدة. لا إجابة صحيحة — فقط إجابة صادقة.",
       en: "Most items use a 1–5 scale: 1 strongly disagree through 5 strongly agree. There is no right answer — only a true one.",
     },
   },
@@ -77,7 +77,7 @@ export const FAQS: { q: Localized; a: Localized }[] = [
       en: "What is eNPS?",
     },
     a: {
-      ar: "سؤال واحد: ما مدى احتمالية أن توصي بالعمل في {org}؟ من ٠ إلى ١٠. من ٠ إلى ٦ غير موصين، ٧–٨ محايدون، ٩–١٠ موصون. المؤشر = نسبة الموصين ناقص نسبة غير الموصين.",
+      ar: "سؤال واحد: ما مدى احتمالية أن توصي بالعمل في {org}؟ من 0 إلى 10. من 0 إلى 6 غير موصين، 7–8 محايدون، 9–10 موصون. المؤشر = نسبة الموصين ناقص نسبة غير الموصين.",
       en: "One question: how likely are you to recommend {org} as a place to work, from 0 to 10. 0–6 are detractors, 7–8 passives, 9–10 promoters. eNPS is promoters minus detractors.",
     },
   },

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { requireSaved } from "@/components/save-bar";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { PageFrame } from "@/components/page-frame";
@@ -38,7 +39,7 @@ function DangerPage() {
   async function run(action: Action) {
     setBusy(true);
     try {
-      await useSettings.getState().flush();
+      if (!requireSaved()) return;
       await manageData({ data: { action, confirm: "DELETE" } });
       toast.success(loc({ en: "Done", ar: "تم" }));
       setConfirm("");

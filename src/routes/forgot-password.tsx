@@ -60,7 +60,7 @@ function ForgotPassword() {
           <p className="mt-2 text-sm leading-relaxed text-muted" role="status">
             {loc({
               en: "If this email has an account, a link to choose a new password is on its way. It works once, for 60 minutes. Check the junk folder too.",
-              ar: "إذا كان لهذا البريد حساب فسيصله رابط لاختيار كلمة مرور جديدة. يعمل الرابط مرة واحدة ولمدة ٦٠ دقيقة. تفقّد مجلد الرسائل غير المرغوبة أيضاً.",
+              ar: "إذا كان لهذا البريد حساب فسيصله رابط لاختيار كلمة مرور جديدة. يعمل الرابط مرة واحدة ولمدة 60 دقيقة. تفقّد مجلد الرسائل غير المرغوبة أيضاً.",
             })}
           </p>
           <Link to="/login" className="mt-6 inline-block text-sm font-medium text-accent underline-offset-4 hover:underline">

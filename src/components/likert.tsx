@@ -9,7 +9,7 @@ const choice = (selected: boolean) =>
     "rounded-lg border text-ink outline-none transition-[background-color,border-color,color,transform] duration-150 ease-out",
     "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-paper",
     "motion-safe:active:scale-[0.96]",
-    selected ? "border-ink bg-ink text-sand" : "border-border bg-paper hover:border-ink/40 hover:bg-sand-2",
+    selected ? "border-ink bg-ink text-sand" : "border-border-strong bg-paper hover:border-ink hover:bg-sand-2",
   );
 
 export function Likert({
@@ -40,7 +40,7 @@ export function Likert({
             className={cn(choice(selected), "flex min-h-16 flex-col items-center justify-start gap-1 px-1 pb-2 pt-2.5 text-center")}
           >
             <span className="text-base font-medium leading-none tabular-nums">{formatNumber(opt.value, lang)}</span>
-            <span className={cn("text-[11px] leading-tight", selected ? "text-sand/85" : "text-muted")}>{loc(opt.label)}</span>
+            <span className={cn("text-xs leading-tight sm:text-[0.8125rem]", selected ? "text-sand/90" : "text-muted")}>{loc(opt.label)}</span>
           </button>
         );
       })}
@@ -143,7 +143,7 @@ export function LikertMatrix({
                 data-missing={isMissing ? "true" : undefined}
                 className={cn(i % 2 ? "bg-sand-2/40" : "", isMissing ? "outline outline-2 -outline-offset-2 outline-score-crit" : "", "border-b border-border last:border-0")}
               >
-                <th scope="row" id={`row-${q.id}`} className="px-4 py-3 text-start font-medium leading-relaxed text-ink">
+                <th scope="row" id={`row-${q.id}`} className="px-4 py-3 text-start text-base font-semibold leading-relaxed text-ink">
                   {q.label}
                   {q.optional ? <span className="ms-2 text-xs font-normal text-muted">({loc({ en: "Optional", ar: "اختياري" })})</span> : null}
                   {isMissing ? (

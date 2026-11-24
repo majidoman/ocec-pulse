@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ThemedPage } from "@/components/themed-page";
-import { ArrowUpRight, Lock, Smartphone, Languages, Bell, Mail } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Eye, Lock, Smartphone, Languages, Bell, Mail } from "lucide-react";
+import { useSettings } from "@/lib/settings-store";
 import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
 import { formatIsoDate, useCensus } from "@/lib/census";
@@ -10,9 +11,16 @@ export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
   const { t, lang, loc } = useT();
-  const { rate, fieldClose, kFloor, status } = useCensus();
+  const { rate, fieldOpen, fieldClose, kFloor, status } = useCensus();
+  const draftPreview = useSettings((s) => s.draftPreview);
   return (
     <ThemedPage>
+      {draftPreview ? (
+        <div className="sticky top-0 z-30 flex items-center justify-center gap-2 bg-accent px-4 py-2 text-center text-sm font-medium text-accent-fg" role="status">
+          <Eye className="size-4 shrink-0" aria-hidden />
+          {loc({ en: "Preview of unsaved changes — staff do not see this yet", ar: "معاينة لتغييرات غير محفوظة — لا يراها الموظفون بعد" })}
+        </div>
+      ) : null}
       <div className="relative min-h-dvh overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_at_top,rgb(44_106_106/0.08),transparent_60%)]" />
         <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-4 py-4 md:px-8">
@@ -63,39 +71,42 @@ function Home() {
                     {rate}% {t("responseLive")}
                   </span>
                 ) : null}
-                <span className="rounded-full bg-sand-2 px-2 py-0.5 text-xs text-ink">
-                  {status === "open" ? t("statusOpen") : status === "closed" || status === "archived" ? t("statusClosed") : loc({ en: "Opening soon", ar: "يُفتح قريباً" })}
-                </span>
+                {status === "open" ? <span className="rounded-full bg-sand-2 px-2 py-0.5 text-xs text-ink">{t("statusOpen")}</span> : null}
               </div>
             </div>
 
             <div className="grid gap-3 lg:col-span-5">
-              <Link
-                to="/survey"
-                className="group flex min-h-28 flex-col justify-between rounded-2xl bg-ink p-5 text-sand shadow-[var(--shadow-border)] transition-transform duration-150 active:scale-[0.99]"
-              >
-                <div className="flex items-start justify-between gap-3">
+              {status === "open" ? (
+                <Link
+                  to="/survey"
+                  className="group flex min-h-28 flex-col justify-between rounded-2xl bg-ink p-5 text-sand shadow-[var(--shadow-border)] transition-transform duration-150 active:scale-[0.99]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-display text-2xl font-medium">{t("takeSurvey")}</div>
+                      <p className="mt-1 text-sm leading-relaxed text-sand/85">{t("takeSurveyHint")}</p>
+                    </div>
+                    <ArrowUpRight className="size-5 shrink-0 text-accent transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 rtl:-scale-x-100" />
+                  </div>
+                  <span className="mt-4 self-start rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-fg">{t("startCensus")}</span>
+                </Link>
+              ) : (
+                // Not open: say when, instead of a button that leads to "the survey is not open".
+                <div className="flex min-h-28 flex-col justify-between rounded-2xl bg-ink p-5 text-sand shadow-[var(--shadow-border)]">
                   <div>
                     <div className="font-display text-2xl font-medium">{t("takeSurvey")}</div>
-                    <p className="mt-1 text-sm leading-relaxed text-sand/70">{t("takeSurveyHint")}</p>
+                    <p className="mt-1 text-sm leading-relaxed text-sand/85">{t("takeSurveyHint")}</p>
                   </div>
-                  <ArrowUpRight className="size-5 shrink-0 text-sand/70 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                  <span className="mt-4 inline-flex items-center gap-2 self-start rounded-full border border-sand/30 px-4 py-2 text-sm font-medium text-sand/90">
+                    <CalendarDays className="size-4" aria-hidden />
+                    {status === "closed" || status === "archived"
+                      ? loc({ en: "This survey has closed. Thank you.", ar: "أُغلق هذا الاستبيان. شكراً لكم." })
+                      : fieldOpen
+                        ? loc({ en: `Opens on ${formatIsoDate(fieldOpen, "en")}`, ar: `يُفتح في ${formatIsoDate(fieldOpen, "ar")}` })
+                        : loc({ en: "Opening soon. Your personal link will arrive by email.", ar: "يُفتح قريباً، وسيصلك رابطك الشخصي بالبريد." })}
+                  </span>
                 </div>
-                <span className="mt-4 text-sm font-medium text-sand/70">{t("startCensus")}</span>
-              </Link>
-              <Link
-                to="/insights"
-                className="group flex min-h-28 flex-col justify-between rounded-2xl bg-paper p-5 text-ink shadow-[var(--shadow-border)] transition-transform duration-150 active:scale-[0.99]"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="font-display text-2xl font-medium">{t("insights")}</div>
-                    <p className="mt-1 text-sm leading-relaxed text-muted">{loc({ en: "Results, heat maps, drivers and action plans. Sign-in required.", ar: "النتائج والنظرة الشاملة والمحركات وخطط العمل. يتطلب تسجيل الدخول." })}</p>
-                  </div>
-                  <ArrowUpRight className="size-5 shrink-0 text-muted transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </div>
-                <span className="mt-4 text-sm font-medium text-subtle">{t("openInsights")}</span>
-              </Link>
+              )}
             </div>
           </section>
 
@@ -121,6 +132,9 @@ function Home() {
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               <Link to="/faq" className="hover:text-ink">
                 {t("faq")}
+              </Link>
+              <Link to="/insights" className="hover:text-ink">
+                {loc({ en: "Staff sign-in", ar: "دخول الفريق" })}
               </Link>
               <span>{t("footAnon")}</span>
               <span>{t("footBi")}</span>

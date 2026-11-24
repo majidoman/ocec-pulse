@@ -7,6 +7,30 @@ import { create } from "zustand";
 import { useSettings } from "../settings-store";
 import { getAdminConfig, getMe, getPublic, getResults } from "./api";
 import type { Me, PublicStats, Results } from "./results-types";
+import { isOn, readDraftPreview, wantsDraftPreview } from "./draft-preview";
+
+/**
+ * Preview tab (`?draft=1`): show the settings draft from this browser instead of the saved settings.
+ * On the survey page only together with `?preview=1`, which is honoured for signed-in staff only and
+ * never sends answers, so a draft can never change what a real employee answers.
+ */
+let draftListener = false;
+function applyDraftIfAsked() {
+  if (typeof window === "undefined" || !wantsDraftPreview()) return;
+  const onSurvey = window.location.pathname.startsWith("/survey");
+  if (onSurvey && !isOn(new URLSearchParams(window.location.search).get("preview"))) return;
+  const draft = readDraftPreview();
+  if (draft) useSettings.getState().applyDraftPreview(draft);
+  if (!draftListener) {
+    draftListener = true;
+    // The settings tab keeps editing: follow along without a reload.
+    window.addEventListener("storage", (e) => {
+      if (e.key !== "pulse_settings_draft") return;
+      const next = readDraftPreview();
+      if (next) useSettings.getState().applyDraftPreview(next);
+    });
+  }
+}
 
 type Load = "idle" | "loading" | "ready" | "error";
 
@@ -50,6 +74,7 @@ export const usePulse = create<PulseSession>()((set, get) => ({
         },
       });
       useSettings.getState().hydratePublic(res.config);
+      applyDraftIfAsked();
       set({ publicState: "ready", stats: res.stats, publicSurveyId: res.surveyId });
     } catch {
       set({ publicState: "error" });

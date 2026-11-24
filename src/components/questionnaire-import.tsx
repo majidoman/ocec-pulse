@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { requireSaved } from "@/components/save-bar";
 import { AlertTriangle, CheckCircle2, Download, FileSpreadsheet, Library, RotateCcw, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,6 @@ interface LibraryItem {
 export function QuestionnaireImport() {
   const { loc, lang } = useT();
   const hydrateAdmin = useSettings((s) => s.hydrateAdmin);
-  const flush = useSettings((s) => s.flush);
   const [state, setState] = useState<ImportState | null>(null);
   const [file, setFile] = useState<string | null>(null);
   const [result, setResult] = useState<ImportResult | null>(null);
@@ -91,7 +91,7 @@ export function QuestionnaireImport() {
     if (!result?.data || !file) return;
     setBusy(true);
     try {
-      await flush(); // send any unsaved edits first, so they cannot overwrite the import afterwards
+      if (!requireSaved()) return; // unsaved edits would overwrite the import afterwards
       await importQuestionnaire({
         data: { fileName: file, surveyName: result.data.surveyName, dimensions: result.data.dimensions, questions: result.data.questions },
       });
@@ -112,7 +112,7 @@ export function QuestionnaireImport() {
   async function restore() {
     setBusy(true);
     try {
-      await flush();
+      if (!requireSaved()) return;
       await restoreQuestionnaireBackup();
       await reloadSettings();
       toast.success(loc({ en: "The previous questions are back.", ar: "عادت الأسئلة السابقة." }));
@@ -230,7 +230,7 @@ export function QuestionnaireImport() {
                 <CheckCircle2 className="size-4 text-score-good" aria-hidden />
                 {loc({
                   en: `Ready: ${data.counts.sections} sections, ${data.counts.scale} agree 1–5 questions, ${data.counts.enps} recommend 0–10, ${data.counts.comments} comment questions.`,
-                  ar: `جاهز: ${n(data.counts.sections)} أقسام، ${n(data.counts.scale)} سؤال موافقة ١–٥، ${n(data.counts.enps)} سؤال توصية ٠–١٠، ${n(data.counts.comments)} أسئلة تعليق.`,
+                  ar: `جاهز: ${n(data.counts.sections)} أقسام، ${n(data.counts.scale)} سؤال موافقة 1–5، ${n(data.counts.enps)} سؤال توصية 0–10، ${n(data.counts.comments)} أسئلة تعليق.`,
                 })}
               </p>
               {data.surveyName ? (

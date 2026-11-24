@@ -1,52 +1,55 @@
 # How changes reach the live site
 
-## Two environments
+## Where it runs
 
-| | Test | Live |
-|---|---|---|
-| Address | https://ocec-pulse-staging.vercel.app | https://ocec-pulse.vercel.app |
-| Code branch | `staging` | `main` |
-| Database | Neon branch `staging` (test data only) | Neon branch `production` (real answers) |
-| Emails / reminders | Only if a test mailbox is set up there | Real |
+| | Live |
+|---|---|
+| Address | https://estbanat.com |
+| Hosting | Hostinger shared hosting, account `u152013600`, Node.js app |
+| Code | GitHub `majidoman/ocec-pulse`, branch `main` |
+| Database | Neon project `ocec-pulse`, branch `main` (real answers) |
+| Health check | `/api/health` → `{"ok":true,"db":"up","migrations":"up to date"}` |
+| Scheduler | Hostinger cron every 30 min: `curl https://estbanat.com/api/health`; the app runs reminders + clean-up at most hourly (no secret needed) |
 
-The two never share data. Real survey answers are never copied into the test site.
+Build settings (stored in hPanel): Node 22 · app type Nitro · build script `build:selfhost` · output `.output` ·
+entry `server/index.mjs` · npm. Environment variable names: `deploy/hostinger-env.example`.
 
 ## The rule
 
-Nothing is pushed to `main` directly. Every change goes: build → test site → owner approves → live.
+The owner approves every change in chat before it goes live. Every release is in `CHANGELOG.md` with a
+version, a date and how to undo it. Nothing reaches live without passing the release check, and nothing
+is called done until the smoke test passes on the live address.
 
-## Steps for each change
+## Steps for each release
 
-1. Make the change on the `staging` branch and add a line under **[Unreleased]** in `CHANGELOG.md`.
-2. Run the automated end-to-end test. It must pass in full.
-3. Push `staging`. The test site updates by itself in about a minute.
-4. The owner checks the change on the test site and says **approved** (or asks for changes).
-5. On approval:
-   a. Take a snapshot of the live database, named `pre-vX.Y.Z-<date>`.
-   b. Move the **[Unreleased]** notes under a new version number and date in `CHANGELOG.md`.
-   c. Merge `staging` into `main`, tag it `vX.Y.Z`, push. The live site updates by itself.
-   d. Check the live site loads and the error log is clean.
+1. **Code** on `main`; add a `## [X.Y.Z]` section to `CHANGELOG.md` (what changed, how to undo it) and set
+   `"releaseVersion"` in `package.json`.
+2. **Gate:** `npm run release:check`: changelog entry, type check, tests, self-hosted build. All must pass.
+   For bigger changes also run the browser checks in `scripts/*-check.cjs` against `npm run dev`.
+3. **Push** `main` to GitHub. The source must be in GitHub before it goes live.
+4. **Backup** if the release changes the database: a Neon branch or snapshot `backup-pre-vX.Y.Z-<date>`.
+   Keep the latest three backups and delete older ones (Neon has a branch and snapshot limit).
+5. **Migrations:** apply any new `migrations/*.sql` file to Neon `main` and record it in `_migrations`.
+   The health check fails (503, listing the file) if this step is missed.
+6. **Deploy:** Hostinger builds from GitHub `main` (or, without the GitHub link, from a zip made with
+   `git archive --format=zip --prefix=ocec-pulse/ -o ocec-pulse-<commit>.zip HEAD`, uploaded to
+   `public_html`). Wait for the build state `completed`.
+7. **Smoke test:** `npm run smoke -- https://estbanat.com`. Every check must pass. Then send the owner the link.
 
 Version numbers: X = big redesign, Y = new feature, Z = fix.
 
 ## Going back
 
-**Features (code).** In Vercel, every past release stays available. Rolling back switches the live
-site to an earlier release in seconds, without rebuilding. Then revert the change on `main` so the
-next release does not bring it back.
+**Code.** In hPanel → Deployments, redeploy the previous successful build, or revert the release commit and
+release again.
 
-**Data.** Two safety nets on the live database:
-- A named snapshot is taken before every release and can be restored.
-- Point-in-time restore: the database can be rewound to any moment inside the history window
-  (6 hours on the current Neon plan; longer on a paid plan).
+**Data.** Restore the `backup-pre-…` branch or snapshot, or use Neon point-in-time restore inside the
+history window (6 hours on the current plan). Restoring rewinds everything, including answers received
+since; during a live survey prefer fixing forward.
 
-Restoring data rewinds *everything* to that moment, including answers received since. During a
-live survey, restoring is a last resort; prefer fixing forward.
-
-**Database structure.** Structure changes (migrations) only ever add things, never remove or
-rename, so an older version of the code keeps working against a newer database. A change that
-must remove something is done in two releases.
+**Database structure.** Migrations only ever add things, so an older version of the code keeps working
+against a newer database.
 
 ## While the survey is open
 
-No releases unless something is broken. Fixes only, tested first, with a snapshot before.
+No releases unless something is broken. Fixes only, tested first, with a backup before.

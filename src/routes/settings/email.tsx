@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { requireSaved } from "@/components/save-bar";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { PageFrame } from "@/components/page-frame";
@@ -82,7 +83,7 @@ function EmailPage() {
   async function test() {
     setBusy(true);
     try {
-      await useSettings.getState().flush();
+      if (!requireSaved()) return; // the test uses the saved mailbox settings
       const res = await sendTestEmail({ data: { to: testTo.trim() } });
       if (res.ok) toast.success(loc({ en: `Test sent to ${testTo}`, ar: `أُرسل الاختبار إلى ${testTo}` }));
       else toast.error(res.error ?? "Send failed");

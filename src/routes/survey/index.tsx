@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { CONTRACTS, LEVELS, TENURE } from "@/lib/questionnaire";
 import { questionsFor, useCensus } from "@/lib/census";
-import { checkToken, getMe, submitResponse, type SubmitResult, type TokenState } from "@/lib/pulse/api";
+import { checkToken, getMe, submitResponse, trackProgress, type SubmitResult, type TokenState } from "@/lib/pulse/api";
 import { formatIsoDate, formatNumber, formatPercent, type ThemeId } from "@/lib/pulse/config";
 import { THEMES } from "@/lib/pulse/themes";
 import { usePulse } from "@/lib/pulse/session";
@@ -20,7 +20,10 @@ import { useSettings } from "@/lib/settings-store";
 import { useApp, useT } from "@/lib/store";
 import type { Dimension, Question, SurveyDraft } from "@/lib/types";
 
-type Search = { t?: string; s?: string; preview?: true; theme?: ThemeId; mode?: "section" | "single" };
+type Search = { t?: string; s?: string; preview?: true; theme?: ThemeId; mode?: "section" | "single"; draft?: true };
+
+/** Roughly how long one rating question takes on a phone (12 minutes for about 50 questions). */
+const SECONDS_PER_QUESTION = 14;
 
 export const Route = createFileRoute("/survey/")({
   validateSearch: (s: Record<string, unknown>): Search => ({
@@ -29,6 +32,7 @@ export const Route = createFileRoute("/survey/")({
     ...(s.preview === "1" || s.preview === 1 || s.preview === true ? { preview: true as const } : {}),
     ...(typeof s.theme === "string" && THEMES.some((x) => x.id === s.theme) ? { theme: s.theme as ThemeId } : {}),
     ...(s.mode === "single" || s.mode === "section" ? { mode: s.mode } : {}),
+    ...(s.draft === "1" || s.draft === 1 || s.draft === true || s.draft === "true" ? { draft: true as const } : {}),
   }),
   component: SurveyPage,
 });
@@ -84,6 +88,7 @@ function SurveyPage() {
   const [failure, setFailure] = useState<Reason | "network" | "preview" | null>(null);
   const { dimensions, questions, departments, privacyNotice, cycleName, fieldClose, status, allowOpenLink, supportEmail } = useCensus();
   const kFloor = useSettings((s) => s.anonymity.kFloor);
+  const draftPreview = useSettings((s) => s.draftPreview);
   const num = (n: number) => formatNumber(n, lang);
   const pct = (share: number) => formatPercent(share, lang);
 
@@ -228,11 +233,59 @@ function SurveyPage() {
                 : null;
   const blockedNow = preview ? null : blocked;
 
+  // Drop-off chart: each browser reports each page it reaches once. Only a counter per page is
+  // stored on the server, never who, which link or when.
+  const trackId = pageMode === "single" ? steps[0] : stepId;
+  useEffect(() => {
+    if (preview || blockedNow || !staffChecked || publicState !== "ready" || tokenState === "checking" || status !== "open" || !trackId) return;
+    const survey = usePulse.getState().publicSurveyId ?? undefined;
+    const key = `pulse_progress:${survey ?? "main"}`;
+    let seen: string[] = [];
+    try {
+      seen = JSON.parse(localStorage.getItem(key) ?? "[]") as string[];
+    } catch {
+      seen = [];
+    }
+    if (seen.includes(trackId)) return;
+    try {
+      localStorage.setItem(key, JSON.stringify([...seen, trackId]));
+    } catch {
+      // Private browsing: count anyway; at worst a page is counted twice.
+    }
+    void trackProgress({ data: { step: trackId, survey, token } }).catch(() => undefined);
+  }, [preview, blockedNow, staffChecked, publicState, tokenState, status, trackId, token]);
+
   const answer = (id: string, v: number | string) => {
     setAnswer(id, v);
   };
-  const progressShare =
-    pageMode === "single" ? (requiredQs.length ? (requiredQs.length - missingAll.length) / requiredQs.length : 1) : step / totalSteps;
+  // Progress counts questions, not pages: "Questions 5–8 of 51 · about 10 minutes left" reads shorter
+  // and truer than "Section 2 of 15" when sections are small.
+  const answeredShare = requiredQs.length ? (requiredQs.length - missingAll.length) / requiredQs.length : 1;
+  const progressShare = pageMode === "single" ? answeredShare : Math.max(answeredShare, step / totalSteps);
+  const ratedTotal = sections.reduce((n, s) => n + s.items.length, 0);
+  const sectionIndex = sections.findIndex((s) => s.dim.id === stepId);
+  const firstQ = sections.slice(0, Math.max(0, sectionIndex)).reduce((n, s) => n + s.items.length, 0) + 1;
+  const lastQ = sectionIndex >= 0 ? firstQ + sections[sectionIndex].items.length - 1 : ratedTotal;
+  const minutesLeft = Math.max(1, Math.ceil(((sectionIndex >= 0 ? ratedTotal - firstQ + 1 : 0) * SECONDS_PER_QUESTION) / 60));
+  const minutesText = (m: number) =>
+    lang === "ar"
+      ? m === 1
+        ? "دقيقة واحدة"
+        : m === 2
+          ? "دقيقتان"
+          : m <= 10
+            ? `${num(m)} دقائق`
+            : `${num(m)} دقيقة`
+      : `${num(m)} ${m === 1 ? "minute" : "minutes"}`;
+  const stepLabel =
+    sectionIndex >= 0
+      ? loc({
+          en: `${firstQ === lastQ ? `Question ${num(firstQ)}` : `Questions ${num(firstQ)}–${num(lastQ)}`} of ${num(ratedTotal)} · about ${minutesText(minutesLeft)} left`,
+          ar: `${firstQ === lastQ ? `السؤال ${num(firstQ)}` : `الأسئلة ${num(firstQ)}–${num(lastQ)}`} من ${num(ratedTotal)} · يتبقى نحو ${minutesText(minutesLeft)}`,
+        })
+      : stepId === "open"
+        ? loc({ en: "Almost done · your comments (optional)", ar: "أوشكت على الانتهاء · ملاحظاتك (اختياري)" })
+        : loc({ en: "Last step · about you", ar: "الخطوة الأخيرة · عنك" });
   const anyMatrix = sections.some((s) => s.dim.display === "matrix");
 
   if (!staffChecked || publicState !== "ready" || tokenState === "checking") {
@@ -335,7 +388,9 @@ function SurveyPage() {
       {preview ? (
         <div className="sticky top-0 z-30 flex items-center justify-center gap-2 bg-accent px-4 py-2 text-center text-sm font-medium text-accent-fg" role="status">
           <Eye className="size-4" aria-hidden />
-          {loc({ en: "Preview — answers are not sent", ar: "معاينة — لا تُرسل الإجابات" })}
+          {draftPreview
+            ? loc({ en: "Preview of unsaved changes — staff do not see this yet. Answers are not sent.", ar: "معاينة لتغييرات غير محفوظة — لا يراها الموظفون بعد. لا تُرسل الإجابات." })
+            : loc({ en: "Preview — answers are not sent", ar: "معاينة — لا تُرسل الإجابات" })}
         </div>
       ) : null}
       <div className={`mx-auto flex min-h-dvh w-full flex-col px-4 py-4 md:py-6 ${wide && !intro ? "max-w-xl md:max-w-3xl" : "max-w-xl"}`}>
@@ -403,21 +458,23 @@ function SurveyPage() {
                 <summary className="cursor-pointer list-none text-sand/80 underline-offset-4 hover:text-sand hover:underline focus-visible:rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sand [&::-webkit-details-marker]:hidden">
                   {loc({ en: "Read the full privacy notice", ar: "اقرأ إشعار الخصوصية كاملاً" })}
                 </summary>
-                <p className="mt-2 leading-relaxed text-sand/75">{loc(privacyNotice)}</p>
+                <p className="mt-2 leading-relaxed text-sand/75">{loc(privacyNotice).replaceAll("{{k}}", String(kFloor))}</p>
               </details>
             </section>
 
             <section aria-labelledby="scale-title">
               <h2 id="scale-title" className="text-sm font-semibold text-ink">{t("scaleTitle")}</h2>
               <p className="mt-1 text-sm leading-relaxed text-muted">{t("scaleBody")}</p>
-              <div className="mt-3 grid grid-cols-5 gap-1.5" aria-hidden>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <span key={n} className="flex h-9 items-center justify-center rounded-lg border border-border bg-paper text-sm font-medium tabular-nums text-ink">
-                    {num(n)}
-                  </span>
-                ))}
+              {/* An illustration of the scale, deliberately not shaped like the answer buttons. */}
+              <div className="mt-3" aria-hidden>
+                <div className="grid grid-cols-5 text-center text-xs font-semibold tabular-nums text-ink">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <span key={n}>{num(n)}</span>
+                  ))}
+                </div>
+                <div className="mt-1 h-1.5 rounded-full bg-gradient-to-r from-border-strong to-ink rtl:bg-gradient-to-l" />
               </div>
-              <div className="mt-1.5 flex justify-between text-xs text-muted">
+              <div className="mt-1.5 flex justify-between text-xs text-muted" aria-hidden>
                 <span>{loc({ en: "Strongly disagree", ar: "أعارض بشدة" })}</span>
                 <span>{loc({ en: "Strongly agree", ar: "أوافق بشدة" })}</span>
               </div>
@@ -442,7 +499,7 @@ function SurveyPage() {
                         en: `${num(requiredQs.length - missingAll.length)} of ${num(requiredQs.length)} questions answered`,
                         ar: `تمت الإجابة على ${num(requiredQs.length - missingAll.length)} من ${num(requiredQs.length)} سؤالاً`,
                       })
-                    : loc({ en: `Section ${num(step + 1)} of ${num(totalSteps)}`, ar: `القسم ${num(step + 1)} من ${num(totalSteps)}` })}
+                    : stepLabel}
                 </span>
                 <span className="tabular-nums">{pct(progressShare)}</span>
               </div>
@@ -602,7 +659,7 @@ function QuestionCard({
       aria-describedby={missing ? `${q.id}-missing` : undefined}
       className={`rounded-2xl bg-paper p-4 shadow-[var(--shadow-border)] ${missing ? "ring-2 ring-score-crit" : ""}`}
     >
-      <legend id={`q-${q.id}`} className="float-left mb-3 w-full text-sm font-medium leading-relaxed text-ink">
+      <legend id={`q-${q.id}`} className="float-left mb-3 w-full text-base font-semibold leading-relaxed text-ink md:text-[1.0625rem]">
         {loc(q.text)}
         {!q.required ? <span className="ms-2 text-xs font-normal text-muted">({optionalLabel})</span> : null}
       </legend>

@@ -1,18 +1,14 @@
-import { useRouterState, createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { Menu } from "lucide-react";
-import { useState } from "react";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { SaveBar } from "@/components/save-bar";
 import { DemoBanner, SurveySwitcher } from "@/components/survey-switcher";
 import { LangToggle } from "@/components/lang-toggle";
 import { Mark } from "@/components/mark";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { SETTINGS_NAV } from "@/lib/nav";
 import { useCensus } from "@/lib/census";
 import { useSettings } from "@/lib/settings-store";
 import { useT } from "@/lib/store";
 import { AdminGate } from "@/components/admin-gate";
 import { UserButton } from "@/lib/auth/gates";
+import { AppMobileNav, AppSideNav } from "@/components/app-nav";
 
 export const Route = createFileRoute("/settings")({ component: GatedSettings });
 
@@ -32,15 +28,14 @@ function SettingsShell() {
 
   return (
     <div className="flex min-h-dvh">
-      <aside className="sticky top-0 hidden h-dvh w-56 lg:w-60 shrink-0 flex-col overflow-y-auto border-e border-border bg-paper/80 p-4 md:flex">
-        <SideNav />
+      <aside className="sticky top-0 hidden h-dvh w-56 lg:w-60 shrink-0 flex-col overflow-y-auto side-olive border-e border-border bg-paper/80 p-4 md:flex">
+        <AppSideNav />
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <SaveBar />
         <DemoBanner />
         <header className="sticky top-0 z-20 flex flex-wrap items-center gap-2 border-b border-border bg-sand/90 px-4 py-2.5 backdrop-blur-sm lg:px-8">
           <div className="flex items-center gap-2 md:hidden">
-            <MobileNav />
+            <AppMobileNav />
             <Mark className="size-8" />
           </div>
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted lg:text-sm">
@@ -60,6 +55,8 @@ function SettingsShell() {
             >
               {saveState === "saving"
                 ? loc({ en: "Saving…", ar: "جارٍ الحفظ…" })
+                : saveState === "unsaved"
+                  ? loc({ en: "Unsaved changes", ar: "تغييرات غير محفوظة" })
                 : saveState === "saved"
                   ? loc({ en: "All changes saved", ar: "حُفظت كل التغييرات" })
                   : saveState === "error"
@@ -73,70 +70,8 @@ function SettingsShell() {
           </div>
         </header>
         <Outlet />
+        <SaveBar />
       </div>
     </div>
-  );
-}
-
-
-function SideNav({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = useRouterState({ select: (st) => st.location.pathname });
-  const { t } = useT();
-  return (
-    <>
-      <Link to="/" className="mb-6 flex items-center gap-2.5" onClick={onNavigate}>
-        <Mark className="size-8" />
-        <div className="leading-tight">
-          <div className="text-sm font-semibold text-ink">{t("app")}</div>
-          <div className="text-xs text-muted">{t("groupSettings")}</div>
-        </div>
-      </Link>
-      <Link
-        to="/insights"
-        onClick={onNavigate}
-        className="mb-4 flex h-10 items-center rounded-lg px-2 text-sm text-muted hover:bg-sand-2 hover:text-ink"
-      >
-        {t("insights")}
-      </Link>
-      <p className="mb-1.5 px-2 text-[11px] font-medium uppercase tracking-[0.14em] text-subtle">
-        {t("groupSettings")}
-      </p>
-      <ul className="flex flex-col gap-0.5">
-        {SETTINGS_NAV.map((item) => (
-          <li key={item.to}>
-            <Link
-              to={item.to}
-              onClick={onNavigate}
-              activeOptions={{ exact: item.exact }}
-              className={`flex h-10 items-center gap-2 rounded-lg px-2 text-sm text-muted hover:bg-sand-2 hover:text-ink ${"also" in item && (item.also as readonly string[] | undefined)?.includes(pathname) ? "bg-sand-2 font-medium text-ink" : ""}`}
-              activeProps={{ className: "bg-sand-2 font-medium text-ink" }}
-            >
-              <item.icon className="size-4 shrink-0" />
-              {t(item.key)}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-}
-
-function MobileNav() {
-  const [open, setOpen] = useState(false);
-  const { t } = useT();
-  return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("groupSettings")}>
-          <Menu className="size-5" />
-        </Button>
-      </SheetTrigger>
-      <SheetContent side="start" className="overflow-y-auto pt-12">
-        <SideNav onNavigate={() => setOpen(false)} />
-        <div className="mt-6 border-t border-border pt-4">
-          <UserButton />
-        </div>
-      </SheetContent>
-    </Sheet>
   );
 }

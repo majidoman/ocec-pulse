@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { requireSaved } from "@/components/save-bar";
 import { Route as RemindersRoute } from "./reminders";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -61,7 +62,7 @@ function InvitationsPage() {
   async function send() {
     setBusy(true);
     try {
-      await useSettings.getState().flush();
+      if (!requireSaved()) return;
       const camp = await startCampaign({ data: { name, audience } });
       setProgress({ done: 0, total: camp.recipients });
       let done = 0;
@@ -118,7 +119,7 @@ function InvitationsPage() {
         <RosterUpload departments={departments} timezone={timezone} lastUpload={data?.lastUpload ?? null} onDone={load} />
 
         <Card>
-          <h2 className="mb-1 text-sm font-semibold text-ink">{loc({ en: "2 · Send personal links", ar: "٢ · إرسال الروابط الشخصية" })}</h2>
+          <h2 className="mb-1 text-sm font-semibold text-ink">{loc({ en: "2 · Send personal links", ar: "2 · إرسال الروابط الشخصية" })}</h2>
           {data?.mail.problem ? (
             <div className="mb-3 rounded-xl bg-sand-2 px-4 py-3 text-sm text-ink">
               {data.mail.problem}{" "}
@@ -161,29 +162,36 @@ function InvitationsPage() {
         </Card>
       </div>
 
-      <Card className="print:shadow-none">
-        <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-center">
-          {data?.surveyUrl ? <Qr value={data.surveyUrl} /> : <div className="size-[180px] rounded-lg bg-sand-2" />}
-          <div>
-            <h2 className="text-sm font-semibold text-ink">{loc({ en: "Shared link and QR code", ar: "الرابط المشترك ورمز QR" })}</h2>
-            <p className="mt-1 break-all font-mono text-sm text-ink" dir="ltr">{data?.surveyUrl}</p>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-              {allowOpenLink
-                ? loc({
-                    en: "For colleagues without a work email (kitchen, security, night shift): print this on a poster. Anyone with the link can answer, and one device answers once. Reminders only reach people invited by email.",
-                    ar: "للزملاء دون بريد عمل (المطبخ، الأمن، الوردية الليلية): اطبعه على ملصق. كل من لديه الرابط يستطيع الإجابة، والجهاز الواحد يجيب مرة واحدة. التذكيرات تصل فقط لمن دُعي بالبريد.",
-                  })
-                : loc({
-                    en: "The shared link is switched off: only personal email links can answer. Switch it on in Settings → General if you need a poster.",
-                    ar: "الرابط المشترك متوقف: الإجابة فقط عبر الروابط الشخصية. فعّله من الإعدادات ← عام إن احتجت ملصقاً.",
-                  })}
-            </p>
-            <Button className="mt-3 print:hidden" variant="outline" onClick={() => window.print()}>
-              {loc({ en: "Print poster", ar: "طباعة الملصق" })}
-            </Button>
+      {allowOpenLink ? (
+        <Card className="print:shadow-none">
+          <div className="grid gap-6 md:grid-cols-[auto_1fr] md:items-center">
+            {data?.surveyUrl ? <Qr value={data.surveyUrl} /> : <div className="size-[180px] rounded-lg bg-sand-2" />}
+            <div>
+              <h2 className="text-sm font-semibold text-ink">{loc({ en: "Shared link and QR code", ar: "الرابط المشترك ورمز QR" })}</h2>
+              <p className="mt-1 break-all font-mono text-sm text-ink" dir="ltr">{data?.surveyUrl}</p>
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
+                {loc({
+                  en: "For colleagues without a work email (kitchen, security, night shift): print this on a poster. Anyone with the link can answer, and one device answers once. Reminders cannot know who answered this way, so people invited by email may still be reminded.",
+                  ar: "للزملاء دون بريد عمل (المطبخ، الأمن، الوردية الليلية): اطبعه على ملصق. كل من لديه الرابط يستطيع الإجابة، والجهاز الواحد يجيب مرة واحدة. لا تعرف التذكيرات من أجاب بهذه الطريقة، فقد يصل التذكير لمن دُعي بالبريد.",
+                })}
+              </p>
+              <Button className="mt-3 print:hidden" variant="outline" onClick={() => window.print()}>
+                {loc({ en: "Print poster", ar: "طباعة الملصق" })}
+              </Button>
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      ) : (
+        <Card className="print:hidden">
+          <h2 className="text-sm font-semibold text-ink">{loc({ en: "Shared link and QR code: off", ar: "الرابط المشترك ورمز QR: متوقف" })}</h2>
+          <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted">
+            {loc({
+              en: "Only personal email links can answer, so reminders stop exactly when each person answers. Switch it on in Settings → General only if some staff have no work email.",
+              ar: "الإجابة فقط عبر الروابط الشخصية، فيتوقف التذكير عند إجابة كل شخص. فعّله من الإعدادات ← عام فقط إن كان بعض الموظفين بلا بريد عمل.",
+            })}
+          </p>
+        </Card>
+      )}
 
       {s?.byDepartment.length ? (
         <Card className="print:hidden">

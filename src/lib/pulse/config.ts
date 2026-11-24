@@ -46,7 +46,11 @@ export interface BrandingSettings {
   /** Product name in the header and browser tab, e.g. "OCEC Pulse". Blank = "<short name> Pulse". Shown as {app}. */
   appName: Localized;
   logoDataUrl: string;
+  /** 60%: page backgrounds. Cards, borders and text shades are derived from the three colours (palette.ts). */
+  background: string;
+  /** 30%: side menu, headings, selected answers. */
   primary: string;
+  /** 10%: main buttons, progress, highlights. */
   accent: string;
 }
 
@@ -183,7 +187,7 @@ export function canReadComments(role: StaffRole | null | undefined) {
 const defaultReminders: ReminderRule[] = [
   {
     id: "d3",
-    label: { en: "Day 3 · gentle nudge", ar: "اليوم ٣ · تذكير هادئ" },
+    label: { en: "Day 3 · gentle nudge", ar: "اليوم 3 · تذكير هادئ" },
     dayOffset: 3,
     enabled: true,
     sent: 0,
@@ -192,7 +196,7 @@ const defaultReminders: ReminderRule[] = [
   },
   {
     id: "d7",
-    label: { en: "Day 7 · still open", ar: "اليوم ٧ · ما زال مفتوحاً" },
+    label: { en: "Day 7 · still open", ar: "اليوم 7 · ما زال مفتوحاً" },
     dayOffset: 7,
     enabled: true,
     sent: 0,
@@ -201,7 +205,7 @@ const defaultReminders: ReminderRule[] = [
   },
   {
     id: "d10",
-    label: { en: "Day 10 · last week", ar: "اليوم ١٠ · الأسبوع الأخير" },
+    label: { en: "Day 10 · last week", ar: "اليوم 10 · الأسبوع الأخير" },
     dayOffset: 10,
     enabled: true,
     sent: 0,
@@ -224,12 +228,13 @@ export function defaultConfig(): PulseConfig {
       supportEmail: "",
       supportPhone: "",
       status: "draft",
-      allowOpenLink: true,
+      allowOpenLink: false,
       publicUrl: "",
     },
     branding: {
       appName: { en: "", ar: "" },
       logoDataUrl: "",
+      background: "#F4EFE6",
       primary: "#142A32",
       accent: "#2C6A6A",
     },
@@ -252,8 +257,8 @@ export function defaultConfig(): PulseConfig {
       stripSelfId: true,
       noExternalTraining: true,
       privacyNotice: {
-        en: "This survey is anonymous. We do not store your name, email, IP address or device fingerprint with your answers. Results are never shown for groups smaller than five people. If you received a personal link, it is used only to make sure each person answers once; it is not stored with your response.",
-        ar: "هذا الاستبيان مجهول الهوية. لا نحتفظ باسمك أو بريدك أو عنوان جهازك مع إجاباتك. لا تُعرض النتائج لمجموعات أقل من خمسة أشخاص. إن وصلك رابط شخصي فهو يُستخدم فقط لضمان إجابة واحدة لكل شخص ولا يُحفظ مع إجابتك.",
+        en: "This survey is anonymous. We do not store your name, email, IP address or device fingerprint with your answers. Results are never shown for groups smaller than {{k}} people. If you received a personal link, it is used only to make sure each person answers once; it is not stored with your response.",
+        ar: "هذا الاستبيان مجهول الهوية. لا نحتفظ باسمك أو بريدك أو عنوان جهازك مع إجاباتك. لا تُعرض النتائج لمجموعات أقل من {{k}} أشخاص. إن وصلك رابط شخصي فهو يُستخدم فقط لضمان إجابة واحدة لكل شخص ولا يُحفظ مع إجابتك.",
       },
     },
     email: {
@@ -361,11 +366,14 @@ export function applyTokens(
     .replaceAll("{{org_name}}", vars.org_name ?? "");
 }
 
+/** Arabic text with Western digits (1, 2, 3), as in Omani official correspondence and the reports. */
+export const AR_LOCALE = "ar-OM-u-nu-latn";
+
 export function formatIsoDate(iso: string, lang: Lang) {
   if (!iso) return lang === "ar" ? "يُحدَّد لاحقاً" : "to be confirmed";
   const d = new Date(`${iso}T12:00:00`);
   if (Number.isNaN(d.getTime())) return iso;
-  return new Intl.DateTimeFormat(lang === "ar" ? "ar-OM" : "en-GB", {
+  return new Intl.DateTimeFormat(lang === "ar" ? AR_LOCALE : "en-GB", {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -375,12 +383,12 @@ export function formatIsoDate(iso: string, lang: Lang) {
 
 /** Numbers in the reader's script: Arabic-Indic digits in Arabic (matching dates), Western digits in English. */
 export function formatNumber(n: number, lang: Lang) {
-  return new Intl.NumberFormat(lang === "ar" ? "ar-OM" : "en-GB").format(n);
+  return new Intl.NumberFormat(lang === "ar" ? AR_LOCALE : "en-GB").format(n);
 }
 
 /** A 0–1 share as a whole percentage, in the reader's script. */
 export function formatPercent(share: number, lang: Lang) {
-  return new Intl.NumberFormat(lang === "ar" ? "ar-OM" : "en-GB", { style: "percent", maximumFractionDigits: 0 }).format(share);
+  return new Intl.NumberFormat(lang === "ar" ? AR_LOCALE : "en-GB", { style: "percent", maximumFractionDigits: 0 }).format(share);
 }
 
 // ── White-label names ────────────────────────────────────────────────────────

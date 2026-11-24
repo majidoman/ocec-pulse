@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { requireSaved } from "@/components/save-bar";
 import { Route as BuilderRoute } from "./builder";
 import { Route as AppearanceRoute } from "./appearance";
 import { createFileRoute } from "@tanstack/react-router";
@@ -82,7 +83,7 @@ function SurveysPage() {
                 canEdit={canEdit}
                 busy={busy}
                 setBusy={setBusy}
-                onOpen={(then) => void switchTo(s.id, then)}
+                onOpen={(then) => requireSaved() && void switchTo(s.id, then)}
                 num={num}
               />
             ))}
@@ -102,12 +103,12 @@ function SurveysPage() {
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           {demo ? (
-            <Button size="sm" variant="outline" onClick={() => void switchTo(demo.id, "/insights")}>
+            <Button size="sm" variant="outline" onClick={() => requireSaved() && void switchTo(demo.id, "/insights")}>
               {loc({ en: "Open the demo results", ar: "فتح نتائج الاستبيان التجريبي" })}
             </Button>
           ) : canEdit ? (
             <Button size="sm" disabled={busy === "demo"} onClick={() => void loadDemo()}>
-              {busy === "demo" ? loc({ en: "Creating… (about 20 seconds)", ar: "جارٍ الإنشاء… (حوالي ٢٠ ثانية)" }) : loc({ en: "Load the demo survey", ar: "تحميل الاستبيان التجريبي" })}
+              {busy === "demo" ? loc({ en: "Creating… (about 20 seconds)", ar: "جارٍ الإنشاء… (حوالي 20 ثانية)" }) : loc({ en: "Load the demo survey", ar: "تحميل الاستبيان التجريبي" })}
             </Button>
           ) : null}
           {demo ? (
@@ -277,7 +278,7 @@ function NewSurvey({ onCancel }: { onCancel: () => void }) {
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="ns-ar">{loc({ en: "Name (Arabic)", ar: "الاسم (بالعربية)" })}</Label>
-            <Input id="ns-ar" dir="rtl" value={ar} onChange={(e) => setAr(e.target.value)} placeholder="استبيان نبض — الربع الأول ٢٠٢٧" />
+            <Input id="ns-ar" dir="rtl" value={ar} onChange={(e) => setAr(e.target.value)} placeholder="استبيان نبض — الربع الأول 2027" />
           </div>
         </div>
         <fieldset className="flex flex-col gap-2">

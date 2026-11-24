@@ -48,7 +48,10 @@ export const NAV = [
   },
   {
     group: "groupRun" as CopyKey,
-    items: [{ to: "/insights/invitations", key: "navInviteAll" as CopyKey, icon: Mail, exact: false, also: ["/insights/reminders"] }],
+    items: [
+      { to: "/insights/invitations", key: "navInviteAll" as CopyKey, icon: Mail, exact: false, also: ["/insights/reminders"] },
+      { to: "/insights/monitor", key: "navMonitor" as CopyKey, icon: Activity, exact: false },
+    ],
   },
 ] as const;
 

@@ -35,6 +35,7 @@ import { Route as InsightsExecutiveRouteImport } from './routes/insights/executi
 import { Route as InsightsFilesRouteImport } from './routes/insights/files'
 import { Route as InsightsHeatmapRouteImport } from './routes/insights/heatmap'
 import { Route as InsightsInvitationsRouteImport } from './routes/insights/invitations'
+import { Route as InsightsMonitorRouteImport } from './routes/insights/monitor'
 import { Route as InsightsRemindersRouteImport } from './routes/insights/reminders'
 import { Route as InsightsReportsRouteImport } from './routes/insights/reports'
 import { Route as InsightsTrendsRouteImport } from './routes/insights/trends'
@@ -188,6 +189,11 @@ const InsightsInvitationsRoute = InsightsInvitationsRouteImport.update({
   path: '/invitations',
   getParentRoute: () => InsightsRouteRoute,
 } as any)
+const InsightsMonitorRoute = InsightsMonitorRouteImport.update({
+  id: '/monitor',
+  path: '/monitor',
+  getParentRoute: () => InsightsRouteRoute,
+} as any)
 const InsightsRemindersRoute = InsightsRemindersRouteImport.update({
   id: '/reminders',
   path: '/reminders',
@@ -325,6 +331,7 @@ export interface FileRoutesByFullPath {
   '/insights/files': typeof InsightsFilesRoute
   '/insights/heatmap': typeof InsightsHeatmapRoute
   '/insights/invitations': typeof InsightsInvitationsRoute
+  '/insights/monitor': typeof InsightsMonitorRoute
   '/insights/reminders': typeof InsightsRemindersRoute
   '/insights/reports': typeof InsightsReportsRoute
   '/insights/trends': typeof InsightsTrendsRoute
@@ -373,6 +380,7 @@ export interface FileRoutesByTo {
   '/insights/files': typeof InsightsFilesRoute
   '/insights/heatmap': typeof InsightsHeatmapRoute
   '/insights/invitations': typeof InsightsInvitationsRoute
+  '/insights/monitor': typeof InsightsMonitorRoute
   '/insights/reminders': typeof InsightsRemindersRoute
   '/insights/reports': typeof InsightsReportsRoute
   '/insights/trends': typeof InsightsTrendsRoute
@@ -424,6 +432,7 @@ export interface FileRoutesById {
   '/insights/files': typeof InsightsFilesRoute
   '/insights/heatmap': typeof InsightsHeatmapRoute
   '/insights/invitations': typeof InsightsInvitationsRoute
+  '/insights/monitor': typeof InsightsMonitorRoute
   '/insights/reminders': typeof InsightsRemindersRoute
   '/insights/reports': typeof InsightsReportsRoute
   '/insights/trends': typeof InsightsTrendsRoute
@@ -476,6 +485,7 @@ export interface FileRouteTypes {
     | '/insights/files'
     | '/insights/heatmap'
     | '/insights/invitations'
+    | '/insights/monitor'
     | '/insights/reminders'
     | '/insights/reports'
     | '/insights/trends'
@@ -524,6 +534,7 @@ export interface FileRouteTypes {
     | '/insights/files'
     | '/insights/heatmap'
     | '/insights/invitations'
+    | '/insights/monitor'
     | '/insights/reminders'
     | '/insights/reports'
     | '/insights/trends'
@@ -574,6 +585,7 @@ export interface FileRouteTypes {
     | '/insights/files'
     | '/insights/heatmap'
     | '/insights/invitations'
+    | '/insights/monitor'
     | '/insights/reminders'
     | '/insights/reports'
     | '/insights/trends'
@@ -804,6 +816,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InsightsInvitationsRouteImport
       parentRoute: typeof InsightsRouteRoute
     }
+    '/insights/monitor': {
+      id: '/insights/monitor'
+      path: '/monitor'
+      fullPath: '/insights/monitor'
+      preLoaderRoute: typeof InsightsMonitorRouteImport
+      parentRoute: typeof InsightsRouteRoute
+    }
     '/insights/reminders': {
       id: '/insights/reminders'
       path: '/reminders'
@@ -973,6 +992,7 @@ interface InsightsRouteRouteChildren {
   InsightsFilesRoute: typeof InsightsFilesRoute
   InsightsHeatmapRoute: typeof InsightsHeatmapRoute
   InsightsInvitationsRoute: typeof InsightsInvitationsRoute
+  InsightsMonitorRoute: typeof InsightsMonitorRoute
   InsightsRemindersRoute: typeof InsightsRemindersRoute
   InsightsReportsRoute: typeof InsightsReportsRoute
   InsightsTrendsRoute: typeof InsightsTrendsRoute
@@ -991,6 +1011,7 @@ const InsightsRouteRouteChildren: InsightsRouteRouteChildren = {
   InsightsFilesRoute: InsightsFilesRoute,
   InsightsHeatmapRoute: InsightsHeatmapRoute,
   InsightsInvitationsRoute: InsightsInvitationsRoute,
+  InsightsMonitorRoute: InsightsMonitorRoute,
   InsightsRemindersRoute: InsightsRemindersRoute,
   InsightsReportsRoute: InsightsReportsRoute,
   InsightsTrendsRoute: InsightsTrendsRoute,

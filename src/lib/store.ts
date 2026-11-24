@@ -70,9 +70,12 @@ export function useBrand() {
 export function useT() {
   const lang = useApp((s) => s.lang);
   const names = useBrand();
+  // {{k}} in any text is the anonymity floor, so wording always matches the rule actually applied.
+  const k = String(Math.max(3, Number(useSettings((s) => s.anonymity.kFloor)) || 5));
+  const fill = (text: string) => (text.includes("{{k}}") ? text.replaceAll("{{k}}", k) : text);
   return {
     lang,
-    t: (key: CopyKey) => brandText(tx(lang, key), names, lang),
-    loc: (value: Localized) => brandText(value[lang], names, lang),
+    t: (key: CopyKey) => fill(brandText(tx(lang, key), names, lang)),
+    loc: (value: Localized) => fill(brandText(value[lang], names, lang)),
   };
 }

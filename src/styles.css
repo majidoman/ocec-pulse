@@ -13,6 +13,9 @@
   --color-subtle: #8a969b;
   --color-accent: #2c6a6a;
   --color-accent-fg: #f4efe6;
+  /* Accent-coloured text; the brand palette (palette.ts) darkens light accents for readability. */
+  --color-accent-text: #2c6a6a;
+  --color-primary: #142a32;
   --color-border: #d9d1c3;
   --color-border-strong: #c4baa8;
   --color-score-high: #1f5c5c;
@@ -127,4 +130,34 @@
   --altcha-color-error: var(--color-score-crit);
   --altcha-checkbox-border-radius: 0.25rem;
   --altcha-shadow: none;
+}
+
+/* Menu search: briefly highlight the heading or field it took you to. */
+.nav-search-flash {
+  border-radius: 0.375rem;
+  outline: 2px solid var(--color-ring, currentColor);
+  outline-offset: 4px;
+  transition: outline-color 0.6s;
+}
+
+@layer utilities {
+  .text-accent {
+    color: var(--color-accent-text, var(--color-accent));
+  }
+}
+
+/* The 30%: the app's side menu is the primary colour; its text colours come from palette.ts. */
+.side-olive {
+  background: var(--color-primary, #142a32) !important;
+  --color-ink: var(--side-fg, #f6f1e8);
+  --color-fg: var(--side-fg, #f6f1e8);
+  --color-muted: var(--side-muted, #e4ddcf);
+  --color-subtle: var(--side-muted, #d6cfbf);
+  --color-sand-2: rgb(0 0 0 / 0.2);
+  --color-paper: rgb(255 255 255 / 0.08);
+  --color-border: rgb(255 255 255 / 0.2);
+  --color-border-strong: rgb(255 255 255 / 0.35);
+  --color-accent-text: var(--color-accent);
+  --color-sand: var(--side-mark, #142a32);
+  color: var(--color-fg);
 }

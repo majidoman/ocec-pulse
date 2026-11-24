@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
  * Scheduler endpoint. Any external scheduler (or uptime monitor) can call
  *   GET /api/cron/reminders?key=<key shown in Settings → Reminders>
  * once or twice a day to send due reminders and run data-retention housekeeping.
+ * Not needed when something calls /api/health regularly: that runs the same work hourly.
  * The key is a random secret stored in the database; without it the call is refused.
  */
 export const Route = createFileRoute("/api/cron/reminders")({
@@ -23,34 +24,9 @@ export const Route = createFileRoute("/api/cron/reminders")({
             headers: { "content-type": "application/json" },
           });
         }
-        // Every survey that exists gets its due reminders and housekeeping (closed ones skip themselves).
-        const core = await import("@/lib/pulse/core.server");
-        const surveys = await core.listSurveyIds();
-        let sent = 0;
-        let failed = 0;
-        let remaining = 0;
-        let purgedInvitees = 0;
-        let purgedResponses = 0;
-        const skipped: string[] = [];
-        const started = Date.now();
-        for (const id of surveys) {
-          await core.inSurvey(id, async () => {
-            // Work in small batches, stopping well before a serverless time limit.
-            for (let i = 0; i < 6 && Date.now() - started < 20_000; i += 1) {
-              const res = await mail.runDueReminders(20);
-              sent += res.sent;
-              failed += res.failed;
-              remaining += res.remaining;
-              if (res.skipped && surveys.length === 1) skipped.push(res.skipped);
-              if (res.skipped || (!res.sent && !res.failed) || !res.remaining) break;
-            }
-            const ret = await mail.runRetention();
-            purgedInvitees += ret.purgedInvitees;
-            purgedResponses += ret.purgedResponses;
-          });
-        }
-        const retention = { purgedInvitees, purgedResponses };
-        return new Response(JSON.stringify({ ok: true, sent, failed, remaining, skipped: skipped[0], surveys: surveys.length, ...retention }), {
+        const { runScheduledWork } = await import("@/lib/pulse/scheduler.server");
+        const run = await runScheduledWork();
+        return new Response(JSON.stringify({ ok: true, ...run }), {
           headers: { "content-type": "application/json", "cache-control": "no-store" },
         });
       },

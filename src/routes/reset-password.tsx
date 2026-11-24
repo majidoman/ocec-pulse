@@ -78,7 +78,7 @@ function ResetPassword() {
           <h1 className="font-display text-3xl font-medium tracking-tight text-ink">{loc({ en: "Choose a new password", ar: "اختر كلمة مرور جديدة" })}</h1>
           <form className="flex flex-col gap-3" onSubmit={submit}>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="new-password">{loc({ en: "New password (at least 10 characters)", ar: "كلمة المرور الجديدة (١٠ أحرف على الأقل)" })}</Label>
+              <Label htmlFor="new-password">{loc({ en: "New password (at least 10 characters)", ar: "كلمة المرور الجديدة (10 أحرف على الأقل)" })}</Label>
               <Input id="new-password" type="password" required minLength={10} autoComplete="new-password" dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
             <div className="flex flex-col gap-1.5">
